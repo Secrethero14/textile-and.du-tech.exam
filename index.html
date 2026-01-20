@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title> Target HSTU and CoU| Home</title>
+    <title>Target HSTU and CoU| Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -246,11 +246,11 @@
                 </div>
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" placeholder="ইমেইল এড্রেস" required>
+                    <input type="email" id="email" name="email" placeholder="ইমেইল এড্রেস" required autocomplete="username">
                 </div>
                 <div class="input-group" style="margin-bottom:10px;">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required>
+                    <input type="password" id="password" name="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required autocomplete="current-password">
                 </div>
                 <div class="remember-me" id="rememberGroup">
                     <input type="checkbox" id="rememberCheck" checked>
@@ -450,6 +450,7 @@
                 updateNavBar(user);
                 checkEnrollment(user.email);
             } else if (isGuest) {
+                // Keep the logic here, but handleGuest now triggers UI changes directly too
                 sysLoader.style.display = 'none';
                 loginView.style.display = 'none';
                 dashboardView.style.display = 'block';
@@ -463,17 +464,25 @@
             }
         });
 
+        // --- UPDATED GOOGLE LOGIN (FIXED) ---
         function handleGoogleLogin() {
-            document.getElementById('system-loader').style.display = 'flex';
-            document.querySelector('#system-loader p').innerText = "অপেক্ষা করুন... Google Login পেজ আসছে...";
+            // Using signInWithPopup as requested to avoid redirect loops
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithRedirect(provider);
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    console.log("Logged in:", result.user);
+                    // onAuthStateChanged will handle the redirect to dashboard
+                })
+                .catch((error) => {
+                    console.error("Login Error:", error);
+                    document.getElementById('system-loader').style.display = 'none';
+                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+                        alert("আপনার ব্রাউজার পপ-আপ ব্লক করেছে।\nদয়া করে 'Always Show' বা 'Allow' অপশনটি সিলেক্ট করে আবার চেষ্টা করুন।");
+                    } else {
+                        alert("লগইন সমস্যা: " + error.message);
+                    }
+                });
         }
-
-        auth.getRedirectResult().then((result) => { if (result.user) {} }).catch((error) => {
-            document.getElementById('system-loader').style.display = 'none';
-            alert('Login Failed: ' + error.message);
-        });
 
         function handleGuestWithWarning() {
             if(confirm('লগইন ছাড়া এক্সাম দিলে আপনার মেরিট পজিশন সেভ হবে না।\nআপনি কি নিশ্চিত?')) {
@@ -481,7 +490,18 @@
             }
         }
 
-        function handleGuest() { isGuest = true; location.reload(); } 
+        // --- UPDATED GUEST MODE (FIXED) ---
+        function handleGuest() { 
+            isGuest = true; 
+            // Removed location.reload() to prevent state reset and loop
+            document.getElementById('login-view').style.display = 'none';
+            const dashboardView = document.getElementById('dashboard-view');
+            dashboardView.style.display = 'block';
+            setTimeout(() => dashboardView.style.opacity = '1', 50);
+            updateNavBar(null, true);
+            loadExams();
+        } 
+        
         function logout() { isGuest = false; document.getElementById('system-loader').style.display = 'flex'; auth.signOut().then(() => location.reload()); }
 
         function showLoginModal() { 
@@ -641,7 +661,7 @@
                 backBtn.style.display = 'none';
                 pathTitle.innerText = "ভার্সিটি অনুযায়ী এক্সাম দিন";
                 
-                // 'General' ক্যাটাগরি ফিল্টার করে বাদ দেওয়া হয়েছে
+                // 'General' ক্যাটাগরি ফিল্টার করে বাদ দেওয়া হয়েছে
                 const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                 
                 categories.forEach(cat => {
