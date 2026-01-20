@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title> Target HSTU and CoU| Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 50px; padding-top: 70px; }
+        
+        /* --- SYSTEM LOADER --- */
+        #system-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 6000; display: flex;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+
+        /* --- LOGIN VIEW --- */
+        #login-view {
+            height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center; width: 90%; max-width: 380px; position: relative;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .close-login-card {
+            position: absolute; top: 15px; right: 15px; font-size: 20px; color: #b2bec3;
+            cursor: pointer; transition: 0.3s; width: 30px; height: 30px; line-height: 30px; border-radius: 50%;
+        }
+        .close-login-card:hover { background: #ffeaa7; color: #d63031; }
+
+        .btn-login {
+            border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-google { background: #4285F4; color: white; }
+        .btn-email { background: #2d3436; color: white; }
+        .btn-guest { background: #b2bec3; color: white; }
+
+        /* --- AUTH MODAL --- */
+        .auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 3000;
+        }
+        .auth-card-modal {
+            background: white; padding: 30px; border-radius: 20px;
+            width: 90%; max-width: 400px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .input-group { position: relative; margin-bottom: 15px; text-align: left; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+        .input-group input {
+            width: 100%; padding: 12px 15px 12px 40px;
+            border: 2px solid #eee; border-radius: 10px;
+            font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--primary); }
+        
+        .btn-submit { background: var(--primary); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .btn-submit:disabled { background: #b2bec3; cursor: not-allowed; opacity: 0.8; }
+        
+        .auth-message { font-size: 14px; margin-top: 10px; font-weight: bold; min-height: 20px; display: none; padding: 5px; border-radius: 5px; }
+        .auth-message.error { color: #d63031; background: #ffe6e6; display: block; }
+        .auth-message.info { color: #0984e3; background: #e1f5fe; display: block; }
+        .auth-message.success { color: #00b894; background: #e6fffa; display: block; }
+
+        .switch-auth { margin-top: 20px; font-size: 14px; }
+        .switch-auth a { color: var(--primary); text-decoration: none; font-weight: bold; cursor: pointer; }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; }
+        
+        .forgot-pass { margin-top: 10px; font-size: 13px; cursor: pointer; color: #e17055; text-decoration: underline; display: inline-block; }
+        .remember-me { text-align: left; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; color: #666; }
+
+        /* --- DASHBOARD STYLES --- */
+        #dashboard-view { display: none; opacity: 0; transition: opacity 0.5s ease-in; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 65px;
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; z-index: 1000; box-sizing: border-box;
+        }
+        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        
+        .auth-buttons { display: flex; align-items: center; gap: 8px; }
+        .profile-btn-highlight {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white;
+            text-decoration: none; padding: 8px 12px; border-radius: 8px;
+            font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); transition: transform 0.2s;
+        }
+        .btn-logout-text {
+            background: #ff7675; color: white; border: none; padding: 8px 12px; 
+            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; 
+            display: flex; align-items: center; gap: 6px; transition: 0.2s;
+        }
+        .btn-logout-text:hover { background: #d63031; }
+
+        .promo-banner { 
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; 
+            padding: 15px; border-radius: 15px; margin-bottom: 15px; display: none; 
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2); cursor: pointer;
+        }
+        .promo-content h2 { margin:0; font-size: 16px; line-height: 1.3; }
+        .promo-content p { margin: 3px 0 0 0; font-size: 12px; opacity: 0.9; }
+        .promo-actions { display:flex; gap:8px; }
+
+        .bonus-banner { 
+            background: linear-gradient(135deg, #fdcb6e, #fab1a0); color: #2d3436; 
+            padding: 12px 15px; border-radius: 15px; margin-bottom: 15px; display: none; 
+            align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3); 
+            animation: slideIn 0.5s ease-out; font-size: 13px;
+        }
+        @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .success-banner { 
+            background: linear-gradient(135deg, #00b894, #55efc4); color: white; 
+            padding: 15px; border-radius: 15px; margin: 15px 0; display: none; 
+            align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0, 184, 148, 0.2); 
+        }
+        
+        #fun-loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 5000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; transition: opacity 0.5s;
+        }
+        .loading-text { font-size: 18px; color: var(--primary); margin-top: 20px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        .btn-pay { background: white; color: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 12px; white-space: nowrap; }
+        .btn-pay:hover { transform: scale(1.05); }
+        .btn-verify { background: rgba(255,255,255,0.2); color: white; border: 1.5px solid white; margin-left: 0; }
+        
+        .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
+        
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .item-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; cursor: pointer; position: relative; border-bottom: 4px solid transparent; }
+        .item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .folder-card { border-bottom-color: #f9ca24; }
+        .exam-card { border-bottom-color: var(--primary); }
+        .icon-box { font-size: 45px; margin-bottom: 15px; }
+        .folder-icon { color: #f9ca24; }
+        .exam-icon { color: var(--primary); }
+        .badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: bold; }
+        .badge-free { background: #e6fffa; color: #00b894; }
+        .badge-paid { background: #fff5f5; color: #ff7675; }
+        .btn-start { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #eee; color: #555; font-weight: bold; cursor: pointer; margin-top: 15px; pointer-events: none; }
+        .btn-start.unlocked { background: var(--primary); color: white; }
+        
+        .modal-overlay { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
+        .modal-content { background:white; padding:25px; border-radius:15px; width:100%; max-width:450px; text-align:center; position: relative; max-height: 90vh; overflow-y: auto; }
+        .pack-option { padding: 15px; border-radius: 10px; background: #fff; border: 1px solid #ddd; cursor: pointer; margin-bottom: 10px; text-align: left; transition: 0.2s; display: block; }
+        .pack-option:hover { background: #f8f9fa; }
+        .pack-option.selected-pack { border: 2px solid var(--primary); background: #f3f0ff; }
+        .pack-option input { margin-right: 10px; }
+        .method-btn { flex:1; border:1px solid #ddd; padding:10px; border-radius:10px; cursor:pointer; background: white; font-weight: bold; }
+        .method-btn.active { border-color: var(--primary); background: #f3f0ff; color: var(--primary); }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        
+        .support-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        .float-btn { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border: none; border-radius: 50px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4); display: flex; align-items: center; gap: 8px; transition: transform 0.3s; }
+        .float-btn:hover { transform: scale(1.05); }
+        .social-box { position: absolute; bottom: 60px; right: 0; background: white; width: 180px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); padding: 15px; display: none; flex-direction: column; gap: 10px; animation: slideUp 0.3s ease-out; }
+        .social-box.show { display: flex; }
+        .help-header { font-size: 12px; color: #888; text-align: center; margin-bottom: 5px; }
+        .s-link { text-decoration: none; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .whatsapp { background: #e6fffa; color: #00b894; }
+        .whatsapp:hover { background: #00b894; color: white; }
+        .telegram { background: #f0f9ff; color: #0088cc; }
+        .telegram:hover { background: #0088cc; color: white; }
+        
+        .site-footer { background-color: #1e272e; color: #ffffff; padding-top: 40px; margin-top: 40px; font-family: 'Hind Siliguri', sans-serif; border-top: 5px solid var(--primary); }
+        .footer-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .footer-col h4 { color: #a29bfe; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #4b4b4b; padding-bottom: 8px; }
+        .footer-links { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: #dcdde1; text-decoration: none; transition: 0.3s; font-size: 14px; display: block; }
+        .footer-links a:hover { color: #fff; transform: translateX(5px); color: var(--warning); }
+        .footer-bottom { background: #000; text-align: center; padding: 15px; margin-top: 30px; font-size: 13px; color: #7f8fa6; }
+    </style>
+</head>
+<body>
+
+    <div id="system-loader">
+        <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary); margin-bottom:15px;"></i>
+        <p style="color:#666; font-weight:bold;">অপেক্ষা করুন...</p>
+    </div>
+
+    <div id="fun-loader-overlay" style="display:none;">
+        <i class="fas fa-rocket fa-bounce fa-3x" style="color:var(--primary)"></i>
+        <p class="loading-text" id="fun-text">আপনার প্রোফাইল রেডি হচ্ছে...</p>
+    </div>
+
+    <div id="login-view">
+        <div class="login-card">
+            <i class="fas fa-times close-login-card" onclick="handleGuestWithWarning()" title="Close & Guest Mode"></i>
+            <i class="fas fa-graduation-cap app-logo" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2 style="color:#2d3436; margin:0 0 5px 0;">Exam Portal</h2>
+            <p style="color:#666; margin-bottom:30px;">পরীক্ষা দিতে লগইন করুন</p>
+            <button class="btn-login btn-email" onclick="showLoginModal()">
+                <i class="fas fa-envelope"></i> Email Login / Register
+            </button>
+            <button class="btn-login btn-google" onclick="handleGoogleLogin()">
+                <i class="fab fa-google"></i> Google Login
+            </button>
+            <p style="margin: 10px 0; color:#aaa; font-size:14px;">অথবা</p>
+            <button class="btn-login btn-guest" onclick="handleGuestWithWarning()">
+                <i class="fas fa-user-secret"></i> Guest Mode
+            </button>
+        </div>
+    </div>
+
+    <div id="authModal" class="auth-overlay">
+        <div class="auth-card-modal">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            <div class="auth-header">
+                <h2 id="authTitle" style="color:var(--primary); margin:0;">স্বাগতম!</h2>
+                <p id="authSubtitle" style="color:#888; margin:5px 0 20px 0;">অ্যাকাউন্টে প্রবেশ করুন</p>
+            </div>
+            <form id="authForm">
+                <div id="nameGroup" class="input-group" style="display:none;">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="regName" placeholder="আপনার নাম লিখুন">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="ইমেইল এড্রেস" required>
+                </div>
+                <div class="input-group" style="margin-bottom:10px;">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required>
+                </div>
+                <div class="remember-me" id="rememberGroup">
+                    <input type="checkbox" id="rememberCheck" checked>
+                    <label for="rememberCheck">Remember me</label>
+                </div>
+                <div id="authMsg" class="auth-message"></div>
+                <button type="submit" class="btn-submit" id="authBtn">লগইন করুন</button>
+            </form>
+            <p class="forgot-pass" onclick="handleForgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</p>
+            <div class="switch-auth">
+                <span id="switchText">অ্যাকাউন্ট নেই?</span>
+                <a onclick="toggleAuthMode()" id="switchLink">নতুন অ্যাকাউন্ট খুলুন</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard-view">
+        <div class="top-nav">
+            <a href="index.html" class="home-link">
+                <i class="fas fa-graduation-cap"></i> Exam Portal
+            </a>
+            <div id="authContainer" class="auth-buttons"></div>
+        </div>
+
+        <div class="container">
+            <div id="successBanner" class="success-banner">
+                <div style="font-size: 24px; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 50%;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div style="flex:1;">
+                    <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
+                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">৩০ দিনের ফ্রি কোর্সের ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
+                </div>
+                <a href="https://t.me/GST_Preparation" target="_blank" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
+                    <i class="fab fa-telegram-plane"></i> Join
+                </a>
+            </div>
+
+            <div id="bonusBanner" class="bonus-banner">
+                <div style="font-size:20px;"><i class="fas fa-gift"></i></div>
+                <div>
+                    <h3 style="margin:0; font-size:14px;"> ATTENTION! 🔥</h3>
+                    <p style="margin:3px 0 0 0; font-size:12px;">HSTU + CoU কোর্স দুটি মডেল টেস্ট নিলে <b>"৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি কোর্স"</b> সম্পূর্ণ ফ্রি!</p>
+                </div>
+            </div>
+
+            <div id="promoBanner" class="promo-banner">
+                <div class="promo-content">
+                    <h2> "সব পেইড এক্সাম আনলক করুন!"</h2>
+                    <p>HSTU (39tk), CoU (39tk) অথবা দুইটা কোর্স একসাথে (কম্বো) মাত্র ৪৯ টাকায়। সাথে ৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি </p>
+                </div>
+                <div class="promo-actions">
+                    <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
+                    <button onclick="verifyPaymentStatus()" class="btn-pay btn-verify">Verify Status</button>
+                </div>
+            </div>
+
+            <div class="nav-header">
+                <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
+                <h3 id="currentPathTitle" style="margin:0;">ভার্সিটি অনুযায়ী এক্সাম দিন</h3>
+            </div>
+
+            <div id="loader" style="text-align: center; padding: 50px;">
+                <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary)"></i><br>লোড হচ্ছে...
+            </div>
+            <div id="examContainer" class="exam-grid"></div>
+        </div>
+
+        <footer class="site-footer">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h4><i class="fab fa-telegram-plane"></i> টেলিগ্রাম কমিউনিটি</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://t.me/GST_Preparation" target="_blank">গুচ্ছ ফ্রি প্রস্তুতি (Join Now)</a></li>
+                        <li><a href="https://t.me/careforcandidates" target="_blank">টেক্সটাইল ইঞ্জিঃ তথ্য ও গাইডলাইন</a></li>
+                        <li><a href="https://t.me/Study_on_Telegram" target="_blank">Admission & Academic News</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4><i class="fab fa-youtube"></i> ফ্রি ভিডিও ক্লাস</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://www.youtube.com/@olosbd" target="_blank">গুচ্ছ ফ্রি প্রস্তুতি ক্লাস</a></li>
+                        <li><a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank">টেক্সটাইল ও ঢাবি প্রযুক্তি ইউনিট</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4><i class="fas fa-globe"></i> কানেক্টেড থাকুন</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://www.facebook.com/habibs.care.edu" target="_blank"><i class="fab fa-facebook-square"></i> Facebook Page</a></li>
+                        <li><a href="https://facebook.com/groups/489136275227144/" target="_blank"><i class="fas fa-users"></i> Facebook Group</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Habib's Care × Study On Telegram. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">এক্সাম ব্যাচ বাছাই করুন</h3>
+            <label class="pack-option" onclick="selectPack(this, 39)">
+                <input type="radio" name="coursePack" value="HSTU"> <b>HSTU (A+B Unit)</b> - ৩৯ টাকা
+            </label>
+            <label class="pack-option" onclick="selectPack(this, 39)">
+                <input type="radio" name="coursePack" value="CoU"> <b>CoU (A Unit)</b> - ৩৯ টাকা
+            </label>
+            <label class="pack-option" onclick="selectPack(this, 49)">
+                <input type="radio" name="coursePack" value="COMBO"> <b>HSTU + CoU (Combo,সাথে ৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি)</b> - ৪৯ টাকা 🔥
+            </label>
+            <div id="paymentSteps" style="display:none; text-align:left; background:#fff; margin-top:15px;">
+                <p style="font-size:14px;">১. মেথড বেছে নিয়ে <b><span id="displayPrice">0</span> টাকা</b> Send Money করুন:</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <div class="method-btn" onclick="selectMethod('bKash', '01873275283', this)">bKash</div>
+                    <div class="method-btn" onclick="selectMethod('Nagad', '01873275283', this)">Nagad</div>
+                    <div class="method-btn" onclick="selectMethod('Rocket', '01925251621', this)">Rocket</div>
+                </div>
+                <div id="methodDetails" style="display:none; background:#f9f9f9; padding:15px; border-radius:10px;">
+                    <div style="display:flex; justify-content:space-between; background:white; padding:10px; border:1px solid #ddd; border-radius:5px; margin-bottom:10px;">
+                        <span id="targetNum" style="font-weight:bold; color:#333;">নম্বর লোড হচ্ছে...</span>
+                        <button onclick="copyNumber()" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:bold;">Copy</button>
+                    </div>
+                    <a id="appLink" href="#" style="display:block; text-align:center; background:var(--primary); color:white; padding:10px; border-radius:5px; text-decoration:none; margin-bottom:15px; font-weight:bold;">Open App</a>
+                    <p style="font-size:14px; margin-bottom:5px;">২. ভেরিফিকেশন তথ্য দিন:</p>
+                    <input type="text" id="senderNum" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
+                    <input type="text" id="studentName" placeholder="আপনার নাম ">
+                    <button onclick="submitPaymentRequest()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Verify Payment</button>
+                </div>
+            </div>
+            <button onclick="document.getElementById('paymentModal').style.display='none'" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="supportWidget" class="support-container">
+        <div id="socialLinks" class="social-box">
+            <div class="help-header">সাহায্য প্রয়োজন?</div>
+            <a href="https://wa.me/8801925251621" target="_blank" class="s-link whatsapp">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="https://t.me/admissionhelper007" target="_blank" class="s-link telegram">
+                <i class="fab fa-telegram-plane"></i> Telegram
+            </a>
+        </div>
+        <button class="float-btn" onclick="toggleHelp()">
+            <i class="fas fa-headset"></i>
+            <span class="btn-text">Help</span>
+        </button>
+    </div>
+
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        let allExams = [];
+        let navigationStack = []; 
+        let userEnrollment = null;
+        let isRegistering = false;
+        let isGuest = false;
+
+        const funMessages = [
+            "আপনার এক্সাম তৈরি হচ্ছে...",
+            "আপনি  রেডি তো?",
+            "ব্রেইনের মেমোরি ঝালাই করা হচ্ছে...",
+            "প্রশ্নপত্র সেট করা হচ্ছে...",
+            "সাফল্যের পথে আপনাকে স্বাগতম!"
+        ];
+
+        function showFunLoader() {
+            const overlay = document.getElementById('fun-loader-overlay');
+            const txt = document.getElementById('fun-text');
+            txt.innerText = funMessages[Math.floor(Math.random() * funMessages.length)];
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+        }
+
+        function hideFunLoader() {
+            const overlay = document.getElementById('fun-loader-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        }
+
+        auth.onAuthStateChanged(user => {
+            const sysLoader = document.getElementById('system-loader');
+            const loginView = document.getElementById('login-view');
+            const dashboardView = document.getElementById('dashboard-view');
+
+            if (user) {
+                sysLoader.style.display = 'none';
+                loginView.style.display = 'none';
+                dashboardView.style.display = 'block';
+                dashboardView.style.opacity = '1';
+                updateNavBar(user);
+                checkEnrollment(user.email);
+            } else if (isGuest) {
+                sysLoader.style.display = 'none';
+                loginView.style.display = 'none';
+                dashboardView.style.display = 'block';
+                dashboardView.style.opacity = '1';
+                updateNavBar(null, true);
+                loadExams();
+            } else {
+                sysLoader.style.display = 'none';
+                dashboardView.style.display = 'none';
+                loginView.style.display = 'flex';
+            }
+        });
+
+        function handleGoogleLogin() {
+            document.getElementById('system-loader').style.display = 'flex';
+            document.querySelector('#system-loader p').innerText = "অপেক্ষা করুন... Google Login পেজ আসছে...";
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithRedirect(provider);
+        }
+
+        auth.getRedirectResult().then((result) => { if (result.user) {} }).catch((error) => {
+            document.getElementById('system-loader').style.display = 'none';
+            alert('Login Failed: ' + error.message);
+        });
+
+        function handleGuestWithWarning() {
+            if(confirm('লগইন ছাড়া এক্সাম দিলে আপনার মেরিট পজিশন সেভ হবে না।\nআপনি কি নিশ্চিত?')) {
+                handleGuest();
+            }
+        }
+
+        function handleGuest() { isGuest = true; location.reload(); } 
+        function logout() { isGuest = false; document.getElementById('system-loader').style.display = 'flex'; auth.signOut().then(() => location.reload()); }
+
+        function showLoginModal() { 
+            document.getElementById('authModal').style.display = 'flex'; 
+            document.getElementById('authMsg').innerText = "";
+            document.getElementById('authMsg').className = 'auth-message';
+        }
+        function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+        
+        function toggleAuthMode() {
+            isRegistering = !isRegistering;
+            document.getElementById('authTitle').innerText = isRegistering ? "রেজিস্ট্রেশন" : "স্বাগতম!";
+            document.getElementById('authSubtitle').innerText = isRegistering ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "অ্যাকাউন্টে প্রবেশ করুন";
+            document.getElementById('nameGroup').style.display = isRegistering ? 'block' : 'none';
+            document.getElementById('regName').required = isRegistering;
+            document.getElementById('authBtn').innerText = isRegistering ? "রেজিস্টার করুন" : "লগইন করুন";
+            document.getElementById('switchText').innerText = isRegistering ? "অলরেডি অ্যাকাউন্ট আছে?" : "অ্যাকাউন্ট নেই?";
+            document.getElementById('switchLink').innerText = isRegistering ? "লগইন করুন" : "নতুন অ্যাকাউন্ট খুলুন";
+            document.getElementById('rememberGroup').style.display = isRegistering ? 'none' : 'flex';
+            document.getElementById('authMsg').innerText = "";
+            document.getElementById('authMsg').className = 'auth-message';
+        }
+
+        function handleForgotPassword() {
+            const email = document.getElementById('email').value;
+            const msgDiv = document.getElementById('authMsg');
+            if (!email) {
+                msgDiv.innerText = "পাসওয়ার্ড রিসেট করতে ইমেইল বক্সে আপনার ইমেইলটি লিখুন।";
+                msgDiv.className = 'auth-message error';
+                return;
+            }
+            msgDiv.innerText = "পাঠানো হচ্ছে...";
+            msgDiv.className = 'auth-message info';
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    msgDiv.innerText = "ইমেইল চেক করুন, পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে।";
+                    msgDiv.className = 'auth-message success';
+                })
+                .catch((error) => {
+                    let msg = error.message;
+                    if (error.code === 'auth/user-not-found') msg = "এই ইমেইলে কোনো অ্যাকাউন্ট নেই।";
+                    msgDiv.innerText = msg;
+                    msgDiv.className = 'auth-message error';
+                });
+        }
+
+        document.getElementById('authForm').addEventListener('submit', handleAuth);
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('regName').value;
+            const btn = document.getElementById('authBtn');
+            const msgDiv = document.getElementById('authMsg');
+
+            msgDiv.className = 'auth-message'; 
+            msgDiv.innerHTML = "";
+            const originalBtnText = isRegistering ? "রেজিস্টার করুন" : "লগইন করুন";
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> যাচাই করা হচ্ছে...'; 
+            btn.disabled = true;
+
+            try {
+                if (isRegistering) {
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
+                    await cred.user.updateProfile({ displayName: name });
+                    closeAuthModal();
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    closeAuthModal();
+                }
+            } catch (error) {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+                msgDiv.className = 'auth-message error';
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/invalid-login-credentials') {
+                    msgDiv.className = 'auth-message info';
+                    msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> অ্যাকাউন্ট নেই বা তথ্য ভুল! রেজিস্ট্রেশন মোডে নেওয়া হচ্ছে...';
+                    if (!isRegistering) {
+                        setTimeout(() => {
+                            toggleAuthMode();
+                            document.getElementById('regName').focus();
+                            const newMsgDiv = document.getElementById('authMsg');
+                            newMsgDiv.className = 'auth-message info';
+                            newMsgDiv.innerText = "আপনার অ্যাকাউন্ট নেই। দয়া করে নাম লিখে রেজিস্ট্রেশন করুন।";
+                        }, 1200);
+                    }
+                    return; 
+                }
+                if(error.code === 'auth/email-already-in-use') {
+                    msgDiv.className = 'auth-message info';
+                    msgDiv.innerHTML = '<i class="fas fa-info-circle"></i> এই ইমেইল আগেই আছে। লগইন মোডে নেওয়া হচ্ছে...';
+                    setTimeout(() => {
+                        toggleAuthMode();
+                        const newMsgDiv = document.getElementById('authMsg');
+                        newMsgDiv.className = 'auth-message info';
+                        newMsgDiv.innerText = "অ্যাকাউন্ট আগেই খোলা আছে। দয়া করে লগইন করুন।";
+                    }, 1200);
+                    return;
+                }
+                if(error.code === 'auth/wrong-password') msgDiv.innerText = "পাসওয়ার্ড ভুল হয়েছে।";
+                else if(error.code === 'auth/weak-password') msgDiv.innerText = "পাসওয়ার্ড দুর্বল (কমপক্ষে ৬ সংখ্যা)।";
+                else msgDiv.innerText = "সমস্যা: " + error.message;
+            }
+        }
+
+        function updateNavBar(user, guest=false) {
+            const container = document.getElementById('authContainer');
+            if (guest) {
+                container.innerHTML = `<span style="font-weight:bold; color:gray; font-size:13px; margin-right:8px;">Guest</span> <button onclick="location.reload()" class="btn-logout-text" style="background:#b2bec3;">Exit</button>`;
+            } else {
+                container.innerHTML = `
+                    <a href="profile.html" class="profile-btn-highlight">
+                        <i class="fas fa-user"></i> প্রোফাইল
+                    </a>
+                    <button onclick="logout()" class="btn-logout-text" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                `;
+            }
+        }
+
+        async function checkEnrollment(email) {
+            try {
+                const snap = await db.collection("payment_requests")
+                    .where("email", "==", email).where("status", "==", "approved").get();
+                const promoBanner = document.getElementById('promoBanner');
+                const bonusBanner = document.getElementById('bonusBanner');
+                const successBanner = document.getElementById('successBanner');
+                if (!snap.empty) {
+                    const payments = snap.docs.map(doc => doc.data());
+                    userEnrollment = payments.some(p => p.package === 'COMBO') ? 'COMBO' : payments[0].package;
+                    promoBanner.style.display = 'none'; bonusBanner.style.display = 'none'; successBanner.style.display = 'flex';
+                } else {
+                    promoBanner.style.display = 'flex'; bonusBanner.style.display = 'flex'; successBanner.style.display = 'none';
+                }
+                loadExams();
+            } catch (error) { console.error(error); loadExams(); }
+        }
+
+        async function loadExams() {
+            try {
+                const res = await fetch(SHEET_URL + "?action=getExamList");
+                allExams = await res.json();
+                renderView();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderView() {
+            const container = document.getElementById('examContainer');
+            const pathTitle = document.getElementById('currentPathTitle');
+            const backBtn = document.getElementById('backBtn');
+            document.getElementById('loader').style.display = 'none';
+            container.innerHTML = "";
+
+            if (navigationStack.length === 0) {
+                backBtn.style.display = 'none';
+                pathTitle.innerText = "ভার্সিটি অনুযায়ী এক্সাম দিন";
+                
+                // 'General' ক্যাটাগরি ফিল্টার করে বাদ দেওয়া হয়েছে
+                const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
+                
+                categories.forEach(cat => {
+                    const count = allExams.filter(e => e['Category'] === cat).length;
+                    container.innerHTML += `
+                        <div class="item-card folder-card" onclick="navigationStack.push('${cat}'); renderView()">
+                            <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
+                            <h3 style="margin:0;">${cat}</h3>
+                            <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
+                        </div>`;
+                });
+            } else {
+                backBtn.style.display = 'block';
+                const currentCat = navigationStack[0];
+                pathTitle.innerText = currentCat;
+                const filtered = allExams.filter(e => e['Category'] === currentCat);
+
+                filtered.forEach(exam => {
+                    const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
+                    let unlocked = !isPaid;
+                    if(userEnrollment) {
+                        const pack = userEnrollment.toLowerCase();
+                        if(pack === 'combo' || currentCat.toLowerCase().includes(pack)) unlocked = true;
+                    }
+                    const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
+                    const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
+                    const btnClass = unlocked ? 'btn-start unlocked' : 'btn-start';
+                    const btnText = unlocked ? 'Start Exam' : '<i class="fas fa-lock"></i> Unlock Now';
+                    container.innerHTML += `
+                        <div class="item-card exam-card" onclick="${action}">
+                            ${badge}
+                            <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
+                            <h3 style="margin:0;">${exam['Exam Name']}</h3>
+                            <small style="color:#666;">${exam['Total Time']} Min | Marks: ${exam['Total Marks']}</small>
+                            <button class="${btnClass}">${btnText}</button>
+                        </div>`;
+                });
+            }
+        }
+
+        function navigateBack() { navigationStack = []; renderView(); }
+        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
+        function selectPack(el, p) { 
+            document.querySelectorAll('.pack-option').forEach(e => e.classList.remove('selected-pack'));
+            el.classList.add('selected-pack'); el.querySelector('input').checked = true;
+            document.getElementById('displayPrice').innerText = p; document.getElementById('paymentSteps').style.display = 'block';
+        }
+        function selectMethod(m, n, el) {
+            document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('targetNum').innerText = n;
+            document.getElementById('methodDetails').style.display = 'block';
+            document.getElementById('appLink').innerText = `Open ${m} App`;
+        }
+        function copyNumber() { navigator.clipboard.writeText(document.getElementById('targetNum').innerText); Swal.fire('Copied!', '', 'success'); }
+        async function submitPaymentRequest() {
+            const pack = document.querySelector('input[name="coursePack"]:checked')?.value;
+            const sender = document.getElementById('senderNum').value;
+            const student = document.getElementById('studentName').value;
+            if(!pack || !sender) return Swal.fire('Error', 'Fill all fields', 'error');
+            await db.collection("payment_requests").add({
+                email: auth.currentUser.email, name: student, phone: sender, package: pack, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            Swal.fire('Success', 'Request Sent!', 'success'); document.getElementById('paymentModal').style.display = 'none';
+        }
+        function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
+        async function verifyPaymentStatus() {
+             const user = auth.currentUser;
+             if(!user) return;
+             Swal.fire({title: 'Checking...', didOpen: ()=>Swal.showLoading()});
+             const snap = await db.collection("payment_requests").where("email", "==", user.email).get();
+             if(snap.empty) { Swal.fire('Not Found', 'No pending requests', 'info'); }
+             else {
+                 const data = snap.docs[0].data();
+                 Swal.fire('Status: ' + data.status.toUpperCase(), '', data.status==='approved'?'success':'info').then(()=>{
+                     if(data.status==='approved') location.reload();
+                 });
+             }
+        }
+    </script>
+</body>
+</html>

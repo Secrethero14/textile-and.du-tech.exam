@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Result | Detailed View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #6c5ce7; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; --bg: #f8f9fd; --card: #fff; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; padding-top: 70px; padding-bottom: 50px; color:#2d3436; }
+        
+        .top-nav { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; padding: 0 20px; z-index: 1000; }
+        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+
+        .container { max-width: 800px; margin: 20px auto; padding: 15px; }
+        
+        .score-card { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 25px; }
+        .score-circle { width: 110px; height: 110px; border: 6px solid var(--primary); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+        .score-circle h1 { margin: 0; font-size: 35px; color: var(--primary); }
+        .feedback-msg { font-size: 17px; font-weight: 700; color: #4e54c8; margin-bottom: 15px; font-style: italic; }
+
+        /* --- GRID LAYOUT FIX (2 Columns) --- */
+        .stats-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Two equal columns */
+            gap: 15px; 
+            margin-top: 20px; 
+        }
+        .stat-box { background: #f8f9fa; padding: 15px; border-radius: 12px; border-bottom: 4px solid #ddd; font-weight: bold; font-size: 16px; }
+        .stat-box.s-correct { border-color: var(--success); color: var(--success); }
+        .stat-box.s-wrong { border-color: var(--danger); color: var(--danger); }
+        .stat-box.s-skip { border-color: var(--warning); color: #d35400; }
+
+        .btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 25px; flex-wrap: wrap; }
+        .btn-main { padding: 10px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .btn-main:hover { transform: translateY(-2px); }
+
+        .controls-area { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; background: white; padding: 10px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Questions Styles */
+        .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; }
+        .q-card-full.show { display: block; }
+        .status-correct { border-left-color: var(--success); }
+        .status-wrong { border-left-color: var(--danger); }
+        .status-skip { border-left-color: var(--warning); }
+        
+        .opt-row { display: flex; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; position: relative; }
+        .circle { width: 25px; height: 25px; border: 2px solid #ccc; border-radius: 50%; margin-right: 10px; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
+        .opt-correct { background: #e6fffa; border-color: var(--success); color: #00624e; }
+        .opt-wrong { background: #fff5f5; border-color: var(--danger); color: #c0392b; }
+
+        .explanation-box { margin-top: 15px; padding: 12px; background: #f0f3f6; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary); }
+        
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 80vh; overflow-y: auto; text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+
+        #errorBox { display: none; color: red; text-align: center; padding: 20px; background: #fff5f5; border-radius: 10px; margin-top: 20px; border: 1px solid #ff7675; }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="index.html" class="home-link"><i class="fas fa-home"></i> ড্যাশবোর্ড</a>
+    </div>
+
+    <div class="container">
+        <div class="score-card">
+            <h2 id="examName" style="margin-bottom: 10px;">Loading...</h2>
+            
+            <div id="examTypeBadge" style="display:inline-block; padding:4px 12px; border-radius:15px; font-size:12px; font-weight:bold; margin-bottom:10px;"></div>
+
+            <div id="feedbackContainer" class="feedback-msg">ফলাফল বিশ্লেষণ করা হচ্ছে...</div>
+            <div class="score-circle"><h1 id="scoreDisplay">0</h1><small>স্কোর</small></div>
+            
+            <div class="stats-container">
+                <div class="stat-box s-correct">সঠিক: <span id="correct">0</span></div>
+                <div class="stat-box s-wrong">ভুল: <span id="wrong">0</span></div>
+                <div class="stat-box s-skip">স্কিপ: <span id="skip">0</span></div>
+                <div class="stat-box">সময়: <span id="timeTakenDisplay">00:00</span></div>
+            </div>
+
+            <div class="btn-row">
+                <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
+                <button onclick="openLeaderboard()" class="btn-main" style="background:var(--warning); color:#856404;"><i class="fas fa-trophy"></i> মেরিট লিস্ট</button>
+            </div>
+        </div>
+
+        <div class="controls-area">
+            <button class="btn-filter active" onclick="filterQuestions('all')">সব প্রশ্ন</button>
+            <button class="btn-filter" style="color:var(--danger)" onclick="filterQuestions('wrong')">শুধু ভুল</button>
+            <button class="btn-filter" style="color:#856404" onclick="filterQuestions('skip')">শুধু স্কিপ</button>
+            <button class="btn-filter" style="color:var(--success)" onclick="filterQuestions('correct')">সঠিকগুলো</button>
+        </div>
+
+        <div id="loader" style="text-align:center; padding:20px;">
+            <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br>
+            <span style="color:#666; margin-top:10px; display:block;">তোমার ইন্টারনেট স্পিড নির্ভর করে,প্রশ্নগুলো লোড হচ্ছে...</span>
+        </div>
+        
+        <div id="errorBox">
+            <i class="fas fa-exclamation-triangle fa-2x"></i><br>
+            <h4 id="errorMsg" style="margin:10px 0;">সমস্যা হয়েছে!</h4>
+            <button onclick="location.reload()" style="padding:5px 15px; margin-top:10px; cursor:pointer;">Reload Page</button>
+        </div>
+
+        <div id="qList"></div>
+
+        <div class="score-card" style="margin-top: 30px;">
+            <h3>পরবর্তী ধাপ</h3>
+            <div class="btn-row">
+                <a href="profile.html" class="btn-main" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe);">
+                    <i class="fas fa-user"></i> প্রোফাইল
+                </a>
+                <a href="index.html" class="btn-main" style="background:#eee; color:#333;">
+                    <i class="fas fa-home"></i> হোম
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="chapterModal" class="modal-overlay" onclick="closeChapterModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>অধ্যায়ভিত্তিক রিপোর্ট</h3>
+                <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div id="chapterTableContainer">Loading...</div>
+        </div>
+    </div>
+
+    <div id="lbModal" class="modal-overlay" onclick="document.getElementById('lbModal').style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="lbTitle">🏆 মেরিট লিস্ট</h3>
+            <div id="lbContent" style="padding: 20px; font-size: 18px;">লোড হচ্ছে..সবুর করো.</div>
+            <button onclick="document.getElementById('lbModal').style.display='none'" style="margin-top:15px; padding:8px 20px; border:none; background:#eee; cursor:pointer; border-radius:5px; font-weight: bold;">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        let resultData = null;
+
+        window.onload = async function() {
+            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
+            try {
+                // 1. Fetch Result
+                const doc = await db.collection("exam_results").doc(docId).get();
+                if(doc.exists) {
+                    resultData = doc.data();
+                    loadDataAndRender(); 
+                } else {
+                    showError("ডাটাবেসে এই রেজাল্ট পাওয়া যায়নি।");
+                }
+            } catch (e) { 
+                console.error(e);
+                showError("Firestore Error: " + e.message);
+            }
+        };
+
+        async function loadDataAndRender() {
+            try {
+                if(!resultData || !resultData.examId) throw new Error("রেজাল্ট ডাটাতে Exam ID নেই!");
+
+                const tabId = resultData.examId;
+                
+                // 2. Fetch Questions and Info
+                const [qRes, indexRes] = await Promise.all([
+                    fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`).then(r => r.json()),
+                    fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json())
+                ]);
+
+                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ভুল ডাটা এসেছে।");
+
+                const userAnsMap = resultData.userAnswers || {};
+                const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
+                
+                // --- UI UPDATES ---
+                document.getElementById('examName').innerText = resultData.examName || "Exam Result";
+                
+                // Badge Logic
+                const typeBadge = document.getElementById('examTypeBadge');
+                if(resultData.isPractice) {
+                    typeBadge.innerText = "Practice Mode";
+                    typeBadge.style.background = "#dfe6e9"; typeBadge.style.color = "#636e72";
+                } else {
+                    typeBadge.innerText = "Live Exam";
+                    typeBadge.style.background = "#e6fffa"; typeBadge.style.color = "#00b894";
+                }
+
+                // Time Format
+                const m = Math.floor((resultData.timeTaken || 0) / 60);
+                const s = (resultData.timeTaken || 0) % 60;
+                document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
+
+                // Calculate & Render
+                let realCorrect = 0, realWrong = 0, realSkip = 0, realScore = 0;
+                let negMark = examInfo['Negative Mark'] ? Number(examInfo['Negative Mark']) : 0.25;
+
+                const container = document.getElementById('qList');
+                container.innerHTML = "";
+
+                qRes.forEach((q, index) => {
+                    if (!q["প্রশ্ন (LaTeX সহ)"]) return;
+                    
+                    let myAns = userAnsMap[index];
+                    let rightAns = String(q["উত্তর"]).trim().toUpperCase();
+                    let status = 'skip';
+
+                    if (myAns) {
+                        if (String(myAns).trim().toUpperCase() === rightAns) { 
+                            status = 'correct'; realCorrect++; realScore += 1; 
+                        } else { 
+                            status = 'wrong'; realWrong++; realScore -= Number(negMark); 
+                        }
+                    } else { 
+                        realSkip++; 
+                    }
+
+                    let optionsHtml = '';
+                    ['A', 'B', 'C', 'D'].forEach(opt => {
+                        let rowClass = (opt === rightAns) ? 'opt-correct' : (opt === myAns && status === 'wrong' ? 'opt-wrong' : '');
+                        let optText = q["অপশন "+opt] || "";
+                        optionsHtml += `<div class="opt-row ${rowClass}"><div class="circle">${opt}</div><div>${optText}</div></div>`;
+                    });
+
+                    container.innerHTML += `
+                        <div class="q-card-full status-${status} show" data-status="${status}">
+                            <div style="font-weight:700; margin-bottom:12px;">Q${index+1}: ${q["প্রশ্ন (LaTeX সহ)"]}</div>
+                            <div>${optionsHtml}</div>
+                            <div class="explanation-box"><strong>💡 ব্যাখ্যা:</strong><br>${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা নেই"}</div>
+                        </div>`;
+                });
+
+                document.getElementById('scoreDisplay').innerText = realScore.toFixed(2);
+                document.getElementById('correct').innerText = realCorrect;
+                document.getElementById('wrong').innerText = realWrong;
+                document.getElementById('skip').innerText = realSkip;
+                document.getElementById('loader').style.display = 'none';
+
+                if(examInfo) {
+                    const totalMarks = examInfo['Total Marks'] || qRes.length;
+                    setFeedbackMessage(examInfo['Feedback'], (realScore / totalMarks) * 100);
+                }
+                
+                if(realScore > 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                }
+                
+                prepareChapterTable();
+
+            } catch (err) { 
+                console.error(err);
+                showError(err.message);
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'block';
+            document.getElementById('errorMsg').innerText = msg;
+        }
+
+        function filterQuestions(type) {
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            const cards = document.querySelectorAll('.q-card-full');
+            cards.forEach(card => {
+                if(type === 'all' || card.getAttribute('data-status') === type) card.classList.add('show');
+                else card.classList.remove('show');
+            });
+        }
+
+        function setFeedbackMessage(feedbackStr, scorePercent) {
+            const container = document.getElementById('feedbackContainer');
+            try {
+                if(!feedbackStr) { container.innerText = "পড়ো , পড়ো এবং পড়ো!"; return; }
+                const rules = JSON.parse(feedbackStr);
+                const sortedKeys = Object.keys(rules).map(Number).sort((a,b) => b-a);
+                for(let key of sortedKeys) if(scorePercent >= key) { container.innerText = "“" + rules[key] + "”"; return; }
+            } catch(e) { container.innerText = "ধন্যবাদ!"; }
+        }
+
+        function prepareChapterTable() {
+            const analysis = resultData.analysis;
+            if(!analysis) return;
+            let html = `<table><thead><tr><th>অধ্যায়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
+            for (const [chapter, data] of Object.entries(analysis)) {
+                let p = Math.round((data.correct / data.total) * 100);
+                let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
+                html += `<tr><td><strong>${chapter}</strong></td><td>${data.correct}/${data.total}</td><td style="color:${color}; font-weight:bold;">${p}%</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            document.getElementById('chapterTableContainer').innerHTML = html;
+        }
+
+        // --- LEADERBOARD LOGIC ---
+        async function openLeaderboard() {
+            const modal = document.getElementById('lbModal');
+            const lbDiv = document.getElementById('lbContent');
+            const lbTitle = document.getElementById('lbTitle');
+            
+            modal.style.display = 'flex';
+            lbDiv.innerHTML = '<div style="padding:20px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>চেক করা হচ্ছে...</div>';
+
+            if(resultData.isPractice === true) {
+                lbTitle.innerText = "Practice Mode";
+                lbDiv.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <i class="fas fa-dumbbell" style="font-size:50px; color:#e17055; margin-bottom:15px;"></i>
+                        <h3 style="color:#2d3436; margin-bottom:10px;">এটি প্র্যাকটিস এক্সাম</h3>
+                        <p style="font-size:16px; color:#636e72; line-height:1.6; font-weight:500;">
+                            "প্র্যাকটিস মোডে কোন মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখো, একশোয় একশো পাওয়ার চেষ্টা করো এবং বারবার এক্সাম দাও।"
+                        </p>
+                    </div>`;
+                return;
+            }
+
+            try {
+                const examId = resultData.examId;
+                const snapshot = await db.collection("exam_results").where("examId", "==", examId).get();
+
+                let participants = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.isPractice !== true) {
+                        participants.push({
+                            id: doc.id, 
+                            score: parseFloat(data.score) || 0,
+                            time: parseFloat(data.timeTaken) || 0
+                        });
+                    }
+                });
+
+                participants.sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.time - b.time;
+                });
+
+                const totalParticipants = participants.length;
+                const myRank = participants.findIndex(p => p.id === docId) + 1;
+
+                if(myRank > 0) {
+                    lbTitle.innerText = "🏆তোমার মেরিট পজিশন";
+                    lbDiv.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <i class="fas fa-trophy" style="font-size: 60px; color: #fdcb6e; margin-bottom: 20px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));"></i>
+                            <h2 style="margin: 0; color: var(--primary);">পড়ো , পড়ো এবং পড়ো! 🎉</h2>
+                            <div style="margin: 20px 0; font-size: 18px; line-height: 1.6; color: #2d3436;">
+                                আপনি এ পর্যন্ত অংশগ্রহণকারী<br>
+                                <span style="font-size: 28px; font-weight: 800; color: var(--primary);">${totalParticipants}</span> 
+                                জনের মধ্যে <br>
+                                <span style="font-size: 40px; font-weight: 800; color: var(--danger);">${myRank}</span> 
+                                তম হয়েছেন।
+                            </div>
+                            <p style="font-size: 13px; color: #888; background:#f1f2f6; padding:8px; border-radius:5px;">
+                                (বি.দ্র: পরবর্তীতে আরো অনেকে এক্সাম দিলে এই র‍্যাঙ্ক পরিবর্তন হতে পারে)
+                            </p>
+                        </div>`;
+                } else {
+                    lbDiv.innerHTML = `<p style="color:red; padding:20px;">Ranking Error. Try reloading.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Leaderboard Error:", error);
+                lbDiv.innerHTML = `<p style="color:red; padding:20px;">ইন্টারনেট সংযোগ চেক করুন: ${error.message}</p>`;
+            }
+        }
+
+        function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
+        function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
+    </script>
+</body>
+</html>

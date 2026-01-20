@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Section </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #6c5ce7; --bg-color: #f8f9fd; --card-bg: #ffffff; --text-color: #2d3436; }
+        body.dark-mode { --bg-color: #1e1e2e; --card-bg: #2d2d44; --text-color: #ecf0f1; --primary: #8c7ae6; }
+        
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding-bottom: 100px; transition: 0.3s; }
+        
+        .nav-bar { background: var(--card-bg); padding: 10px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .user-badge { font-size: 12px; background: #e0e0e0; padding: 3px 8px; border-radius: 10px; color: #333; display: inline-block; margin-right: 5px; font-weight: bold; }
+        
+        .progress-container { width: 100%; background-color: #e0e0e0; height: 6px; border-radius: 5px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary); width: 0%; transition: width 0.3s ease; }
+
+        .container { max-width: 800px; margin: 20px auto; padding: 15px; }
+        
+        .q-card { background: var(--card-bg); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid transparent; }
+        
+        .q-text { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+        .opt-label { display: flex; align-items: center; padding: 12px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt-label:hover { background: rgba(108, 92, 231, 0.1); border-color: var(--primary); }
+        input[type="radio"] { margin-right: 10px; accent-color: var(--primary); transform: scale(1.2); }
+
+        .opt-label.disabled { opacity: 0.6; cursor: not-allowed; background: #f0f0f0; }
+        .opt-label.selected-locked { background: #e6fffa; border-color: #00b894; color: #00624e; font-weight: bold; }
+        
+        .extra-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
+        
+        .bottom-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; z-index: 1000; border: 1px solid #eee; }
+        body.dark-mode .bottom-bar { background: #2d2d44; border-color: #444; }
+
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 10px 30px; border-radius: 20px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        
+        .loader-container { text-align: center; padding-top: 100px; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* MODALS */
+        #selectionModal, #subjectModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; }
+        
+        #motivationOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:3000; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+        .quote-text { font-size: 20px; color: var(--primary); font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* SKIPPED BUTTON STYLES */
+        .skip-btn {
+            background-color: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            color: #d63031;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            transition: 0.2s;
+        }
+        .skip-btn:hover {
+            background-color: #d63031;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="motivationOverlay">
+        <div class="spinner" style="width: 60px; height: 60px; border-width: 6px;"></div>
+        <div id="quoteText" class="quote-text">ফলাফল তৈরি হচ্ছে...</div>
+    </div>
+
+    <div id="subjectModal">
+        <div class="modal-content" style="text-align:left;">
+            <h3 style="color:var(--primary); margin-top:0;">বিষয় নির্বাচন করুন</h3>
+            <p>এই পরীক্ষায় <strong>পদার্থ, রসায়ন, বাংলা ও ইংরেজি</strong> বাধ্যতামূলক।</p>
+            <p>বাকিদের মধ্যে যেকোনো <strong>১টি</strong> বেছে নিন:</p>
+            <form id="subForm">
+                <div style="margin: 15px 0;">
+                    <label style="display:block; padding:10px; border:1px solid #eee; border-radius:8px; margin-bottom:10px; cursor:pointer;">
+                        <input type="radio" name="optSub" value="math"> গণিত (Math)
+                    </label>
+                    <label style="display:block; padding:10px; border:1px solid #eee; border-radius:8px; cursor:pointer;">
+                        <input type="radio" name="optSub" value="biology"> জীববিজ্ঞান (Biology)
+                    </label>
+                </div>
+                <button type="button" onclick="confirmSubjects()" class="btn-submit" style="width:100%;">পরীক্ষা শুরু করুন</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="selectionModal">
+        <div class="modal-content">
+            <h3>বিষয় নির্বাচন</h3>
+            <div id="subjectOptions"></div>
+            <button class="btn-submit" style="width:100%; margin-top:15px;" onclick="confirmSelection()">শুরু করুন</button>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-top">
+            <div>
+                <div id="examTitle" style="font-weight:bold; font-size: 18px;">Loading...</div>
+                <div id="userInfo" style="font-size: 12px; color: #666; margin-top: 2px;">
+                    <i class="fas fa-spinner fa-spin"></i> Checking User...
+                </div>
+            </div>
+            <button onclick="document.body.classList.toggle('dark-mode')" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-color);">🌓</button>
+        </div>
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <small style="margin-top:2px; font-size:11px; color:#888;">Progress: <span id="progressText">0%</span></small>
+    </div>
+
+    <div class="container" id="loaderContainer">
+        <div class="loader-container" id="loader">
+            <div class="spinner"></div>
+            <p>তোমার ইন্টারনেট স্পিড নির্ভর করে,প্রশ্নপত্র লোড হচ্ছে...</p>
+        </div>
+    </div>
+
+    <div class="container" id="questionContainer"></div>
+
+    <div class="bottom-bar">
+        <div style="font-weight:bold; font-size:18px;">⏱️ <span id="timer">00:00</span></div>
+        <button class="btn-submit" onclick="attemptSubmit()">জমা দিন</button>
+    </div>
+
+    <script>
+        // --- CONFIG ---
+        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec"; 
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabId = urlParams.get('id') || "Phy_1"; 
+
+        let allQuestions = [], filteredQuestions = [], examConfig = {};
+        let timerInterval, startTime, selectedSubjects = [];
+        let allFetchedQuestions = [], isSubmitting = false;
+
+        const quotes = ["ধৈর্য ধরুন...", "সফলতা আসবেই...", "ভুল থেকেই শেখা যায়...", "চেষ্টা চালিয়ে যাও!"];
+
+        // --- HELPER: Consistent MCQ Check ---
+        function isMCQ(q) {
+            if(q["অপশন A"]) return true; 
+            if(q["উত্তর"] && String(q["উত্তর"]).trim() !== "" && String(q["উত্তর"]).length === 1) return true; 
+            return false; 
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (!isSubmitting && filteredQuestions.length > 0) { e.preventDefault(); e.returnValue = ''; }
+        });
+
+        window.onload = async function() {
+            firebase.auth().onAuthStateChanged(user => {
+                const ui = document.getElementById('userInfo');
+                if (user) {
+                    ui.innerHTML = `<span class="user-badge" style="background:#d1ffd6; color:#00660e;">Logged in</span> ${user.displayName || user.email}`;
+                } else {
+                    ui.innerHTML = `<span class="user-badge" style="background:#ffe0e0; color:#a80000;">Guest Mode</span>`;
+                }
+            });
+
+            try { await loadExamConfig(); await loadQuestions(); } 
+            catch (err) { alert("Error: " + err.message); }
+        };
+
+        async function loadExamConfig() {
+            const res = await fetch(SHEET_URL + "?action=getExamList");
+            const data = await res.json();
+            const exam = data.find(e => e['Tab ID'] === tabId);
+            if(exam) {
+                examConfig = {
+                    time: Number(exam['Total Time']), neg: Number(exam['Negative Mark']), name: exam['Exam Name'],
+                    type: exam['Type'] ? String(exam['Type']).toLowerCase().trim() : 'exam', 
+                    config: exam['Config'] ? JSON.parse(exam['Config']) : null,
+                    optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
+                    fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || []
+                };
+                document.getElementById('examTitle').innerText = examConfig.name;
+            }
+        }
+
+        async function loadQuestions() {
+            const res = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`);
+            let rawQuestions = await res.json();
+            rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+
+            allFetchedQuestions = rawQuestions;
+            allQuestions = groupAndShuffle(rawQuestions); 
+
+            if (examConfig.optional) {
+                 document.getElementById('subjectModal').style.display = 'flex';
+                 document.getElementById('loaderContainer').style.display = 'none';
+            } 
+            else if (examConfig.config && examConfig.config.mode === 'selection') {
+                showSelectionModal();
+            } 
+            else {
+                filteredQuestions = allQuestions;
+                renderQuestions();
+                restoreAnswers(); 
+                startTimer(examConfig.time);
+            }
+        }
+
+        function confirmSubjects() {
+            const selected = document.querySelector('input[name="optSub"]:checked')?.value;
+            if (!selected) return Swal.fire('Warning', " গণিত অথবা জীববিজ্ঞান সিলেক্ট করুন!", 'warning');
+            
+            document.getElementById('subjectModal').style.display = 'none';
+            document.getElementById('loaderContainer').style.display = 'block';
+
+            const finalQuestions = allFetchedQuestions.filter(q => {
+                const sub = q['Subject'] ? String(q['Subject']).toLowerCase().trim() : 'general';
+                if (examConfig.fixed && examConfig.fixed.map(s=>s.toLowerCase()).includes(sub)) return true;
+                if (sub === 'general') return true; 
+                return sub === selected;
+            });
+            filteredQuestions = groupAndShuffle(finalQuestions);
+            renderQuestions(); restoreAnswers(); startTimer(examConfig.time);
+        }
+
+        function groupAndShuffle(questions) {
+            let grouped = {};
+            questions.forEach(q => {
+                let sub = q["Subject"] || "General";
+                if (!grouped[sub]) grouped[sub] = [];
+                grouped[sub].push(q);
+            });
+            let finalArray = [];
+            for (let sub in grouped) {
+                shuffleArray(grouped[sub]);
+                finalArray = finalArray.concat(grouped[sub]);
+            }
+            return finalArray;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showSelectionModal() {
+            document.getElementById('loaderContainer').style.display = 'none';
+            const modal = document.getElementById('selectionModal');
+            const container = document.getElementById('subjectOptions');
+            modal.style.display = 'flex';
+            container.innerHTML = '';
+            
+            if(examConfig.config.fixed) {
+                examConfig.config.fixed.forEach(sub => { selectedSubjects.push(sub); container.innerHTML += `<div style="margin-bottom:5px;">✅ ${sub}</div>`; });
+            }
+            if(examConfig.config.groups) {
+                examConfig.config.groups.forEach((group, idx) => {
+                    let html = `<div style="margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:5px;"><p style="margin:0 0 5px 0;">বাছাই করুন:</p>`;
+                    group.forEach(sub => { html += `<label style="margin-right:10px;"><input type="radio" name="grp_${idx}" value="${sub}"> ${sub}</label>`; });
+                    html += `</div>`;
+                    container.innerHTML += html;
+                });
+            }
+        }
+
+        function confirmSelection() {
+            let tempSelection = [...selectedSubjects];
+            if(examConfig.config.groups) {
+                for(let i=0; i<examConfig.config.groups.length; i++) {
+                    const selected = document.querySelector(`input[name="grp_${i}"]:checked`);
+                    if(!selected) return Swal.fire('Error', ' বিষয় বাছাই করুন!', 'error');
+                    tempSelection.push(selected.value);
+                }
+            }
+            filteredQuestions = allQuestions.filter(q => !q["Subject"] || tempSelection.includes(q["Subject"]) || q["Subject"] === "Extra");
+            document.getElementById('selectionModal').style.display = 'none';
+            renderQuestions(); restoreAnswers(); startTimer(examConfig.time);
+        }
+
+        // --- RENDER LOGIC ---
+        function renderQuestions() {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = "";
+            const loaderCont = document.getElementById('loaderContainer');
+            if(loaderCont) loaderCont.style.display = 'none';
+
+            if(filteredQuestions.length === 0) return container.innerHTML = "<p>প্রশ্ন পাওয়া যায়নি।</p>";
+
+            filteredQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'q-card'; card.id = `card-${index}`;
+                const qText = q["প্রশ্ন (LaTeX সহ)"];
+                const sub = q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px;">${q["Subject"]}</span>` : "";
+
+                if (!isMCQ(q)) { 
+                    // Text Input (Name, Batch, etc.)
+                    card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><input type="text" class="extra-input" id="ans-${index}" placeholder="উত্তর দিন..." onblur="saveTextInput(${index})">`;
+                } else { 
+                    // MCQ
+                    if(q["অপশন A"]) { 
+                        let optionsHtml = '';
+                        ['A', 'B', 'C', 'D'].forEach(opt => {
+                            if(q[`অপশন ${opt}`]) {
+                                optionsHtml += `<label class="opt-label" id="lbl-${index}-${opt}"><input type="radio" name="ans-${index}" value="${opt}" onclick="lockAnswer(${index}, '${opt}')"> ${q[`অপশন ${opt}`]}</label>`;
+                            }
+                        });
+                        card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div>${optionsHtml}`;
+                    } else { 
+                         card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><p>No Options Found</p>`;
+                    }
+                }
+                container.appendChild(card);
+            });
+
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+            }
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            let answered = 0;
+            for(let i=0; i<filteredQuestions.length; i++) if(localStorage.getItem(`save_${tabId}_ans_${i}`)) answered++;
+            const pct = Math.round((answered / filteredQuestions.length) * 100);
+            document.getElementById('progressBar').style.width = pct + "%";
+            document.getElementById('progressText').innerText = pct + "%";
+        }
+
+        function lockAnswer(index, val) {
+            localStorage.setItem(`save_${tabId}_ans_${index}`, val);
+            document.getElementsByName(`ans-${index}`).forEach(r => r.disabled = true);
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const label = document.getElementById(`lbl-${index}-${opt}`);
+                if(label) label.classList.add(opt === val ? 'selected-locked' : 'disabled');
+            });
+            updateProgressBar();
+        }
+
+        function saveTextInput(index) {
+            const val = document.getElementById(`ans-${index}`).value;
+            if(val.trim()) { localStorage.setItem(`save_${tabId}_ans_${index}`, val); updateProgressBar(); }
+        }
+
+        function restoreAnswers() {
+            filteredQuestions.forEach((q, index) => {
+                const saved = localStorage.getItem(`save_${tabId}_ans_${index}`);
+                if (saved) {
+                    if (isMCQ(q)) {
+                        const r = document.querySelector(`input[name="ans-${index}"][value="${saved}"]`);
+                        if(r) { r.checked = true; lockAnswer(index, saved); }
+                    } else {
+                        const inp = document.getElementById(`ans-${index}`);
+                        if(inp) inp.value = saved;
+                    }
+                }
+            });
+            updateProgressBar();
+        }
+
+        function startTimer(min) {
+            startTime = new Date();
+            let sec = min * 60;
+            if(isNaN(sec) || sec <= 0) return;
+            timerInterval = setInterval(() => {
+                let m = Math.floor(sec / 60), s = sec % 60;
+                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+                if (sec-- <= 0) { clearInterval(timerInterval); submitExam(); }
+            }, 1000);
+        }
+
+        // --- SCROLL TO QUESTION FUNCTION ---
+        window.goToQuestion = function(index) {
+            Swal.close(); // Close modal
+            const targetCard = document.getElementById(`card-${index}`);
+            if (targetCard) {
+                targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+                targetCard.style.border = "3px solid #ff7675"; // Highlight
+                targetCard.style.boxShadow = "0 0 15px rgba(255, 118, 117, 0.5)";
+                setTimeout(() => {
+                    targetCard.style.border = "2px solid transparent";
+                    targetCard.style.boxShadow = "0 4px 10px rgba(0,0,0,0.05)";
+                }, 2000);
+            }
+        }
+
+        // --- SUBMIT ATTEMPT (WITH SKIP LOGIC) ---
+        function attemptSubmit() {
+            let skippedButtonsHtml = ''; 
+            let skippedCount = 0;
+
+            for (let i = 0; i < filteredQuestions.length; i++) {
+                const q = filteredQuestions[i];
+                if (q["উত্তর"]) {
+                    let isAnswered = false;
+                    if (isMCQ(q)) { 
+                        if(document.querySelector(`input[name="ans-${i}"]:checked`)) isAnswered = true;
+                    } else { 
+                        if(document.getElementById(`ans-${i}`).value.trim() !== "") isAnswered = true;
+                    }
+                    
+                    if (!isAnswered) {
+                        skippedCount++;
+                        skippedButtonsHtml += `<span class="skip-btn" onclick="goToQuestion(${i})">${engToBanglaNumber(i + 1)}</span>`;
+                    }
+                }
+            }
+
+            if (skippedCount > 0) {
+                Swal.fire({
+                    title: 'সতর্কতা!',
+                    html: `আপনি <b>${engToBanglaNumber(skippedCount)}টি</b> প্রশ্নের উত্তর দেননি।<br>
+                           <div style="margin:10px 0; font-size:13px; color:#666;">উত্তর দিতে চাইলে নিচের নম্বরে ক্লিক করুন:</div>
+                           <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-bottom:15px;">
+                               ${skippedButtonsHtml}
+                           </div>
+                           আপনি কি এগুলো <b>ফাঁকা রেখেই</b> সাবমিট করতে চান?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d63031',
+                    cancelButtonColor: '#6c5ce7',
+                    confirmButtonText: 'হ্যাঁ, সাবমিট করুন',
+                    cancelButtonText: 'না, উত্তর দিব'
+                }).then((result) => { 
+                    if (result.isConfirmed) { submitExam(); }
+                });
+            } else {
+                Swal.fire({
+                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে না।", 
+                    icon: 'success', showCancelButton: true, confirmButtonColor: '#00b894', cancelButtonColor: '#d63031',
+                    confirmButtonText: 'হ্যাঁ, জমা দিন', cancelButtonText: 'বাতিল'
+                }).then((result) => { if (result.isConfirmed) submitExam(); });
+            }
+        }
+
+        function engToBanglaNumber(num) {
+            const banglaDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return num.toString().split('').map(d => banglaDigits[d] || d).join('');
+        }
+
+        // --- DATA SANITIZER ---
+        function cleanData(obj) {
+            if (obj === undefined) return null;
+            if (obj === null) return null;
+            if (obj instanceof Date) return obj; 
+            if (typeof obj !== 'object') return obj;
+            if (Array.isArray(obj)) return obj.map(cleanData);
+            const newObj = {};
+            for (const key in obj) {
+                const val = obj[key];
+                newObj[key] = (val === undefined) ? null : cleanData(val);
+            }
+            return newObj;
+        }
+
+        // --- SUBMIT LOGIC (FIXED MARKING) ---
+        async function submitExam() {
+            isSubmitting = true; clearInterval(timerInterval);
+            document.getElementById('motivationOverlay').style.display = 'flex';
+            
+            let score = 0, correct = 0, wrong = 0, chapterAnalysis = {}, userAnswers = {};
+            const timeTaken = Math.floor((new Date() - startTime) / 1000);
+
+            filteredQuestions.forEach((q, index) => {
+                const correctAns = q["উত্তর"];
+                if(!correctAns) {
+                    let val = document.getElementById(`ans-${index}`)?.value;
+                    userAnswers[index] = val || null;
+                    return; 
+                }
+
+                const ch = q["Chapter"] || q["অধ্যায়"] || "General";
+                const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
+
+                if(!chapterAnalysis[ch]) chapterAnalysis[ch] = { correct: 0, total: 0, subject: sub };
+                chapterAnalysis[ch].total++;
+
+                let selectedVal = null;
+                if (isMCQ(q)) {
+                    const el = document.querySelector(`input[name="ans-${index}"]:checked`);
+                    selectedVal = el ? el.value : null; 
+                } else {
+                    const el = document.getElementById(`ans-${index}`);
+                    selectedVal = el ? el.value : null;
+                }
+                userAnswers[index] = selectedVal; 
+
+                if (selectedVal) {
+                    // উত্তর দিয়েছে
+                    if (String(selectedVal).trim().toUpperCase() === String(correctAns).trim().toUpperCase()) {
+                        score += 1; // সঠিক হলে ১ মার্ক
+                        correct++; 
+                        chapterAnalysis[ch].correct++;
+                    } else {
+                        score -= 0.25; // ভুল করলে ০.২৫ কাটা (মোট ১.২৫ লস)
+                        wrong++;
+                    }
+                } else {
+                    // উত্তর দেয়নি (ফাঁকা রেখেছে)
+                    // কোনো নেগেটিভ মার্ক নেই, শুধু ১ মার্ক পাবে না।
+                    // তাই স্কোর থেকে কিছু বিয়োগ হবে না (score অপরিবর্তিত থাকবে)
+                }
+            });
+
+            // AUTH WAIT
+            let isPracticeMode = false;
+            let userEmail = "guest", userName = "Guest";
+
+            try {
+                const user = await new Promise(resolve => {
+                    const unsubscribe = firebase.auth().onAuthStateChanged(u => { unsubscribe(); resolve(u); });
+                });
+
+                if (user) {
+                    userEmail = user.email; userName = user.displayName || "Student";
+                    const checkSnapshot = await db.collection("exam_results")
+                        .where("email", "==", user.email).where("examId", "==", tabId).limit(1).get();
+                    if (!checkSnapshot.empty || examConfig.type === 'practice') isPracticeMode = true; 
+                } else {
+                    isPracticeMode = true; 
+                }
+
+                // 1. Prepare raw data
+                const rawData = {
+                    examName: examConfig.name, examId: tabId, score, correct, wrong, timeTaken,
+                    student: userName, email: userEmail,
+                    analysis: chapterAnalysis, userAnswers, isPractice: isPracticeMode
+                };
+
+                // 2. Clean data 
+                const cleanedData = cleanData(rawData);
+
+                // 3. Add timestamp 
+                const finalRecord = {
+                    ...cleanedData,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+                };
+
+                const docRef = await db.collection("exam_results").add(finalRecord);
+                filteredQuestions.forEach((_, index) => localStorage.removeItem(`save_${tabId}_ans_${index}`));
+                window.location.href = `result.html?id=${docRef.id}`;
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('motivationOverlay').style.display = 'none';
+                Swal.fire('Error', 'রেজাল্ট সেভ করা যায়নি: ' + err.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
