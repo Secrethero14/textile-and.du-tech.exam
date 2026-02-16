@@ -171,14 +171,22 @@
         
         .modal-overlay { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
         .modal-content { background:white; padding:25px; border-radius:15px; width:100%; max-width:450px; text-align:center; position: relative; max-height: 90vh; overflow-y: auto; }
-        .pack-option { padding: 15px; border-radius: 10px; background: #fff; border: 1px solid #ddd; cursor: pointer; margin-bottom: 10px; text-align: left; transition: 0.2s; display: block; }
-        .pack-option:hover { background: #f8f9fa; }
-        .pack-option.selected-pack { border: 2px solid var(--primary); background: #f3f0ff; }
-        .pack-option input { margin-right: 10px; }
         
         /* Payment text styles */
         .payment-text-box { background: #f3f0ff; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left; border-left: 5px solid var(--primary); }
-        .payment-number { font-size: 18px; font-weight: bold; color: var(--primary); letter-spacing: 1px; margin: 5px 0; display: block; }
+        .payment-number-container { display: flex; align-items: center; gap: 10px; margin: 10px 0; background: white; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; width: max-content; }
+        .payment-number { font-size: 18px; font-weight: bold; color: var(--primary); letter-spacing: 1px; }
+        .btn-copy { background: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; color: #555; transition: 0.2s; font-weight: bold; }
+        .btn-copy:hover { background: #dcdde1; }
+        
+        .contact-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .btn-contact { text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; color: white; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-whatsapp { background: #25D366; }
+        .btn-whatsapp:hover { background: #128C7E; }
+        .btn-telegram { background: #0088cc; }
+        .btn-telegram:hover { background: #005f8e; }
+        .btn-facebook { background: #1877F2; }
+        .btn-facebook:hover { background: #165eab; }
         
         input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
@@ -220,7 +228,7 @@
         <div class="login-card">
             <i class="fas fa-times close-login-card" onclick="handleGuestWithWarning()" title="Close & Guest Mode"></i>
             <i class="fas fa-graduation-cap app-logo" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile Exam Portal</h2>
+            <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile and Du Tech Exam Preparation</h2>
             <p style="color:#666; margin-bottom:30px;">লগইন করুন</p>
             <button class="btn-login btn-email" onclick="showLoginModal()">
                 <i class="fas fa-envelope"></i> Email Login / Register
@@ -273,7 +281,7 @@
     <div id="dashboard-view">
         <div class="top-nav">
             <a href="index.html" class="home-link">
-                <i class="fas fa-graduation-cap"></i> Textile Prep
+                <i class="fas fa-graduation-cap"></i> Textile and DU Tech Exam 
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
@@ -307,8 +315,7 @@
                 </div>
                 <div class="promo-actions">
                     <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
-                    <button onclick="verifyPaymentStatus()" class="btn-pay btn-verify">Verify Status</button>
-                </div>
+                    </div>
             </div>
 
             <div class="nav-header">
@@ -359,18 +366,26 @@
             
             <div class="payment-text-box">
                 <p style="margin:0; font-weight:bold; color:#555;">Textile and DU Tech Exam Batch - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
-                <span class="payment-number">01873-275283</span>
-                <small style="color:#777;">(bKash / Nagad )</small>
-                <p style="margin:5px 0 0 0; font-size:13px; color:#d63031;">*টাকা পাঠানোর পর নিচের তথ্যগুলো পূরণ করুন।</p>
+                <div class="payment-number-container">
+                    <span id="paymentNum" class="payment-number">01873275283</span>
+                    <button class="btn-copy" onclick="copyNumber()"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <small style="color:#777;">(bKash / Nagad)</small>
             </div>
 
-            <input type="hidden" id="selectedPackage" value="TextileFull">
-
-            <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px;">
-                <p style="font-size:14px; margin-bottom:5px; text-align:left;">ভেরিফিকেশন তথ্য দিন:</p>
-                <input type="text" id="senderNum" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
-                <input type="text" id="studentName" placeholder="আপনার নাম">
-                <button onclick="submitPaymentRequest()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Verify Payment</button>
+            <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align: left;">
+                <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
+                
+                <div class="contact-buttons">
+                    <a href="https://wa.me/8801925251621" target="_blank" class="btn-contact btn-whatsapp">
+                        <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
+                    </a>
+                    <a href="https://t.me/@Admissionhelper007" target="_blank" class="btn-contact btn-telegram"> <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
+                    </a>
+                    <a href="https://www.facebook.com/habibs.care.edu/" target="_blank" class="btn-contact btn-facebook">
+                        <i class="fab fa-facebook-messenger"></i> Facebook Page -এ মেসেজ দিন
+                    </a>
+                </div>
             </div>
             
             <button onclick="document.getElementById('paymentModal').style.display='none'" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
@@ -673,33 +688,20 @@
         function navigateBack() { navigationStack = []; renderView(); }
         function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
         
-        async function submitPaymentRequest() {
-            const pack = document.getElementById('selectedPackage').value;
-            const sender = document.getElementById('senderNum').value;
-            const student = document.getElementById('studentName').value;
-            if(!sender || !student) return Swal.fire('Error', 'অনুগ্রহ করে নম্বর এবং নাম দিন', 'error');
-            
-            await db.collection("payment_requests").add({
-                email: auth.currentUser.email, name: student, phone: sender, package: pack, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        function copyNumber() {
+            const number = document.getElementById('paymentNum').innerText;
+            navigator.clipboard.writeText(number).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'নাম্বার কপি হয়েছে!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             });
-            Swal.fire('Success', 'রিকোয়েস্ট পাঠানো হয়েছে! অ্যাডমিন এপ্রুভ করলে কোর্স আনলক হবে।', 'success'); 
-            document.getElementById('paymentModal').style.display = 'none';
         }
+
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
-        async function verifyPaymentStatus() {
-             const user = auth.currentUser;
-             if(!user) return;
-             Swal.fire({title: 'Checking...', didOpen: ()=>Swal.showLoading()});
-             const snap = await db.collection("payment_requests").where("email", "==", user.email).get();
-             if(snap.empty) { Swal.fire('Not Found', 'কোনো পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি।', 'info'); }
-             else {
-                 const data = snap.docs[0].data();
-                 const statusMsg = data.status === 'approved' ? 'আপনার কোর্সটি চালু হয়েছে!' : 'আপনার পেমেন্টটি পেন্ডিং আছে।';
-                 Swal.fire('Status: ' + data.status.toUpperCase(), statusMsg, data.status==='approved'?'success':'info').then(()=>{
-                     if(data.status==='approved') location.reload();
-                 });
-             }
-        }
+        
     </script>
 </body>
 </html>
