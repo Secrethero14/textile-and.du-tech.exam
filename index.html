@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Target HSTU and CoU| Home</title>
+    <title>Textile and DU Tech Exam | Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -175,8 +175,11 @@
         .pack-option:hover { background: #f8f9fa; }
         .pack-option.selected-pack { border: 2px solid var(--primary); background: #f3f0ff; }
         .pack-option input { margin-right: 10px; }
-        .method-btn { flex:1; border:1px solid #ddd; padding:10px; border-radius:10px; cursor:pointer; background: white; font-weight: bold; }
-        .method-btn.active { border-color: var(--primary); background: #f3f0ff; color: var(--primary); }
+        
+        /* Payment text styles */
+        .payment-text-box { background: #f3f0ff; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left; border-left: 5px solid var(--primary); }
+        .payment-number { font-size: 18px; font-weight: bold; color: var(--primary); letter-spacing: 1px; margin: 5px 0; display: block; }
+        
         input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
         .support-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
@@ -217,8 +220,8 @@
         <div class="login-card">
             <i class="fas fa-times close-login-card" onclick="handleGuestWithWarning()" title="Close & Guest Mode"></i>
             <i class="fas fa-graduation-cap app-logo" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2 style="color:#2d3436; margin:0 0 5px 0;">Exam Portal</h2>
-            <p style="color:#666; margin-bottom:30px;">পরীক্ষা দিতে লগইন করুন</p>
+            <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile Exam Portal</h2>
+            <p style="color:#666; margin-bottom:30px;">লগইন করুন</p>
             <button class="btn-login btn-email" onclick="showLoginModal()">
                 <i class="fas fa-envelope"></i> Email Login / Register
             </button>
@@ -270,7 +273,7 @@
     <div id="dashboard-view">
         <div class="top-nav">
             <a href="index.html" class="home-link">
-                <i class="fas fa-graduation-cap"></i> Exam Portal
+                <i class="fas fa-graduation-cap"></i> Textile Prep
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
@@ -282,7 +285,7 @@
                 </div>
                 <div style="flex:1;">
                     <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
-                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">৩০ দিনের ফ্রি কোর্সের ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
+                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
                 </div>
                 <a href="https://t.me/GST_Preparation" target="_blank" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
                     <i class="fab fa-telegram-plane"></i> Join
@@ -293,14 +296,14 @@
                 <div style="font-size:20px;"><i class="fas fa-gift"></i></div>
                 <div>
                     <h3 style="margin:0; font-size:14px;"> ATTENTION! 🔥</h3>
-                    <p style="margin:3px 0 0 0; font-size:12px;">HSTU + CoU কোর্স দুটি মডেল টেস্ট নিলে <b>"৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি কোর্স"</b> সম্পূর্ণ ফ্রি!</p>
+                    <p style="margin:3px 0 0 0; font-size:12px;"> Textile and DU Tech Exam Batch <b>" support upto DCU exam"</b>Enroll Now!</p>
                 </div>
             </div>
 
             <div id="promoBanner" class="promo-banner">
                 <div class="promo-content">
-                    <h2> "সব পেইড এক্সাম আনলক করুন!"</h2>
-                    <p>HSTU (39tk), CoU (39tk) অথবা দুইটা কোর্স একসাথে (কম্বো) মাত্র ৪৯ টাকায়। সাথে ৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি </p>
+                    <h2> "Textile and DU Tech Exam Batch!"</h2>
+                    <p>সম্পূর্ণ কোর্স ১০০ টাকা (Textile + DU Tech Exam Batch)।</p>
                 </div>
                 <div class="promo-actions">
                     <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
@@ -310,7 +313,7 @@
 
             <div class="nav-header">
                 <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
-                <h3 id="currentPathTitle" style="margin:0;">ভার্সিটি অনুযায়ী এক্সাম দিন</h3>
+                <h3 id="currentPathTitle" style="margin:0;">Textile and DU Tech Exam Batch</h3>
             </div>
 
             <div id="loader" style="text-align: center; padding: 50px;">
@@ -324,7 +327,7 @@
                 <div class="footer-col">
                     <h4><i class="fab fa-telegram-plane"></i> টেলিগ্রাম কমিউনিটি</h4>
                     <ul class="footer-links">
-                        <li><a href="https://t.me/GST_Preparation" target="_blank">গুচ্ছ ফ্রি প্রস্তুতি (Join Now)</a></li>
+                        <li><a href="https://t.me/GST_Preparation" target="_blank">ফ্রি প্রস্তুতি (Join Now)</a></li>
                         <li><a href="https://t.me/careforcandidates" target="_blank">টেক্সটাইল ইঞ্জিঃ তথ্য ও গাইডলাইন</a></li>
                         <li><a href="https://t.me/Study_on_Telegram" target="_blank">Admission & Academic News</a></li>
                     </ul>
@@ -332,7 +335,7 @@
                 <div class="footer-col">
                     <h4><i class="fab fa-youtube"></i> ফ্রি ভিডিও ক্লাস</h4>
                     <ul class="footer-links">
-                        <li><a href="https://www.youtube.com/@olosbd" target="_blank">গুচ্ছ ফ্রি প্রস্তুতি ক্লাস</a></li>
+                        <li><a href="https://www.youtube.com/@olosbd" target="_blank">ফ্রি প্রস্তুতি ক্লাস</a></li>
                         <li><a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank">টেক্সটাইল ও ঢাবি প্রযুক্তি ইউনিট</a></li>
                     </ul>
                 </div>
@@ -345,42 +348,31 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Habib's Care × Study On Telegram. All Rights Reserved.</p>
+                <p>&copy; 2026 Habib's Care. All Rights Reserved.</p>
             </div>
         </footer>
     </div>
 
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-top:0;">এক্সাম ব্যাচ বাছাই করুন</h3>
-            <label class="pack-option" onclick="selectPack(this, 39)">
-                <input type="radio" name="coursePack" value="HSTU"> <b>HSTU (A+B Unit)</b> - ৩৯ টাকা
-            </label>
-            <label class="pack-option" onclick="selectPack(this, 39)">
-                <input type="radio" name="coursePack" value="CoU"> <b>CoU (A Unit)</b> - ৩৯ টাকা
-            </label>
-            <label class="pack-option" onclick="selectPack(this, 49)">
-                <input type="radio" name="coursePack" value="COMBO"> <b>HSTU + CoU (Combo,সাথে ৩০ দিনের ফ্রি গুচ্ছ প্রস্তুতি)</b> - ৪৯ টাকা 🔥
-            </label>
-            <div id="paymentSteps" style="display:none; text-align:left; background:#fff; margin-top:15px;">
-                <p style="font-size:14px;">১. মেথড বেছে নিয়ে <b><span id="displayPrice">0</span> টাকা</b> Send Money করুন:</p>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <div class="method-btn" onclick="selectMethod('bKash', '01873275283', this)">bKash</div>
-                    <div class="method-btn" onclick="selectMethod('Nagad', '01873275283', this)">Nagad</div>
-                    <div class="method-btn" onclick="selectMethod('Rocket', '01925251621', this)">Rocket</div>
-                </div>
-                <div id="methodDetails" style="display:none; background:#f9f9f9; padding:15px; border-radius:10px;">
-                    <div style="display:flex; justify-content:space-between; background:white; padding:10px; border:1px solid #ddd; border-radius:5px; margin-bottom:10px;">
-                        <span id="targetNum" style="font-weight:bold; color:#333;">নম্বর লোড হচ্ছে...</span>
-                        <button onclick="copyNumber()" style="border:none; background:none; color:var(--primary); cursor:pointer; font-weight:bold;">Copy</button>
-                    </div>
-                    <a id="appLink" href="#" style="display:block; text-align:center; background:var(--primary); color:white; padding:10px; border-radius:5px; text-decoration:none; margin-bottom:15px; font-weight:bold;">Open App</a>
-                    <p style="font-size:14px; margin-bottom:5px;">২. ভেরিফিকেশন তথ্য দিন:</p>
-                    <input type="text" id="senderNum" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
-                    <input type="text" id="studentName" placeholder="আপনার নাম ">
-                    <button onclick="submitPaymentRequest()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Verify Payment</button>
-                </div>
+            <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
+            
+            <div class="payment-text-box">
+                <p style="margin:0; font-weight:bold; color:#555;">Textile and DU Tech Exam Batch - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
+                <span class="payment-number">01873-275283</span>
+                <small style="color:#777;">(bKash / Nagad )</small>
+                <p style="margin:5px 0 0 0; font-size:13px; color:#d63031;">*টাকা পাঠানোর পর নিচের তথ্যগুলো পূরণ করুন।</p>
             </div>
+
+            <input type="hidden" id="selectedPackage" value="TextileFull">
+
+            <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px;">
+                <p style="font-size:14px; margin-bottom:5px; text-align:left;">ভেরিফিকেশন তথ্য দিন:</p>
+                <input type="text" id="senderNum" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
+                <input type="text" id="studentName" placeholder="আপনার নাম">
+                <button onclick="submitPaymentRequest()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Verify Payment</button>
+            </div>
+            
             <button onclick="document.getElementById('paymentModal').style.display='none'" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
         </div>
     </div>
@@ -450,7 +442,6 @@
                 updateNavBar(user);
                 checkEnrollment(user.email);
             } else if (isGuest) {
-                // Keep the logic here, but handleGuest now triggers UI changes directly too
                 sysLoader.style.display = 'none';
                 loginView.style.display = 'none';
                 dashboardView.style.display = 'block';
@@ -464,23 +455,14 @@
             }
         });
 
-        // --- UPDATED GOOGLE LOGIN (FIXED) ---
         function handleGoogleLogin() {
-            // Using signInWithPopup as requested to avoid redirect loops
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
-                .then((result) => {
-                    console.log("Logged in:", result.user);
-                    // onAuthStateChanged will handle the redirect to dashboard
-                })
+                .then((result) => { console.log("Logged in:", result.user); })
                 .catch((error) => {
                     console.error("Login Error:", error);
                     document.getElementById('system-loader').style.display = 'none';
-                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-                        alert("আপনার ব্রাউজার পপ-আপ ব্লক করেছে।\nদয়া করে 'Always Show' বা 'Allow' অপশনটি সিলেক্ট করে আবার চেষ্টা করুন।");
-                    } else {
-                        alert("লগইন সমস্যা: " + error.message);
-                    }
+                    alert("লগইন সমস্যা: " + error.message);
                 });
         }
 
@@ -490,10 +472,8 @@
             }
         }
 
-        // --- UPDATED GUEST MODE (FIXED) ---
         function handleGuest() { 
             isGuest = true; 
-            // Removed location.reload() to prevent state reset and loop
             document.getElementById('login-view').style.display = 'none';
             const dashboardView = document.getElementById('dashboard-view');
             dashboardView.style.display = 'block';
@@ -584,9 +564,6 @@
                         setTimeout(() => {
                             toggleAuthMode();
                             document.getElementById('regName').focus();
-                            const newMsgDiv = document.getElementById('authMsg');
-                            newMsgDiv.className = 'auth-message info';
-                            newMsgDiv.innerText = "আপনার অ্যাকাউন্ট নেই। দয়া করে নাম লিখে রেজিস্ট্রেশন করুন।";
                         }, 1200);
                     }
                     return; 
@@ -594,17 +571,10 @@
                 if(error.code === 'auth/email-already-in-use') {
                     msgDiv.className = 'auth-message info';
                     msgDiv.innerHTML = '<i class="fas fa-info-circle"></i> এই ইমেইল আগেই আছে। লগইন মোডে নেওয়া হচ্ছে...';
-                    setTimeout(() => {
-                        toggleAuthMode();
-                        const newMsgDiv = document.getElementById('authMsg');
-                        newMsgDiv.className = 'auth-message info';
-                        newMsgDiv.innerText = "অ্যাকাউন্ট আগেই খোলা আছে। দয়া করে লগইন করুন।";
-                    }, 1200);
+                    setTimeout(() => { toggleAuthMode(); }, 1200);
                     return;
                 }
-                if(error.code === 'auth/wrong-password') msgDiv.innerText = "পাসওয়ার্ড ভুল হয়েছে।";
-                else if(error.code === 'auth/weak-password') msgDiv.innerText = "পাসওয়ার্ড দুর্বল (কমপক্ষে ৬ সংখ্যা)।";
-                else msgDiv.innerText = "সমস্যা: " + error.message;
+                msgDiv.innerText = "সমস্যা: " + error.message;
             }
         }
 
@@ -631,9 +601,9 @@
                 const promoBanner = document.getElementById('promoBanner');
                 const bonusBanner = document.getElementById('bonusBanner');
                 const successBanner = document.getElementById('successBanner');
+                
                 if (!snap.empty) {
-                    const payments = snap.docs.map(doc => doc.data());
-                    userEnrollment = payments.some(p => p.package === 'COMBO') ? 'COMBO' : payments[0].package;
+                    userEnrollment = 'TextileFull'; // Default to full access if approved
                     promoBanner.style.display = 'none'; bonusBanner.style.display = 'none'; successBanner.style.display = 'flex';
                 } else {
                     promoBanner.style.display = 'flex'; bonusBanner.style.display = 'flex'; successBanner.style.display = 'none';
@@ -659,9 +629,8 @@
 
             if (navigationStack.length === 0) {
                 backBtn.style.display = 'none';
-                pathTitle.innerText = "ভার্সিটি অনুযায়ী এক্সাম দিন";
+                pathTitle.innerText = "Textile and DU Tech Exam Batch";
                 
-                // 'General' ক্যাটাগরি ফিল্টার করে বাদ দেওয়া হয়েছে
                 const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                 
                 categories.forEach(cat => {
@@ -683,8 +652,7 @@
                     const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
                     let unlocked = !isPaid;
                     if(userEnrollment) {
-                        const pack = userEnrollment.toLowerCase();
-                        if(pack === 'combo' || currentCat.toLowerCase().includes(pack)) unlocked = true;
+                        unlocked = true; // Unlock all if enrolled in Textile package
                     }
                     const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
@@ -704,28 +672,18 @@
 
         function navigateBack() { navigationStack = []; renderView(); }
         function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
-        function selectPack(el, p) { 
-            document.querySelectorAll('.pack-option').forEach(e => e.classList.remove('selected-pack'));
-            el.classList.add('selected-pack'); el.querySelector('input').checked = true;
-            document.getElementById('displayPrice').innerText = p; document.getElementById('paymentSteps').style.display = 'block';
-        }
-        function selectMethod(m, n, el) {
-            document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('targetNum').innerText = n;
-            document.getElementById('methodDetails').style.display = 'block';
-            document.getElementById('appLink').innerText = `Open ${m} App`;
-        }
-        function copyNumber() { navigator.clipboard.writeText(document.getElementById('targetNum').innerText); Swal.fire('Copied!', '', 'success'); }
+        
         async function submitPaymentRequest() {
-            const pack = document.querySelector('input[name="coursePack"]:checked')?.value;
+            const pack = document.getElementById('selectedPackage').value;
             const sender = document.getElementById('senderNum').value;
             const student = document.getElementById('studentName').value;
-            if(!pack || !sender) return Swal.fire('Error', 'Fill all fields', 'error');
+            if(!sender || !student) return Swal.fire('Error', 'অনুগ্রহ করে নম্বর এবং নাম দিন', 'error');
+            
             await db.collection("payment_requests").add({
                 email: auth.currentUser.email, name: student, phone: sender, package: pack, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-            Swal.fire('Success', 'Request Sent!', 'success'); document.getElementById('paymentModal').style.display = 'none';
+            Swal.fire('Success', 'রিকোয়েস্ট পাঠানো হয়েছে! অ্যাডমিন এপ্রুভ করলে কোর্স আনলক হবে।', 'success'); 
+            document.getElementById('paymentModal').style.display = 'none';
         }
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
         async function verifyPaymentStatus() {
@@ -733,10 +691,11 @@
              if(!user) return;
              Swal.fire({title: 'Checking...', didOpen: ()=>Swal.showLoading()});
              const snap = await db.collection("payment_requests").where("email", "==", user.email).get();
-             if(snap.empty) { Swal.fire('Not Found', 'No pending requests', 'info'); }
+             if(snap.empty) { Swal.fire('Not Found', 'কোনো পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি।', 'info'); }
              else {
                  const data = snap.docs[0].data();
-                 Swal.fire('Status: ' + data.status.toUpperCase(), '', data.status==='approved'?'success':'info').then(()=>{
+                 const statusMsg = data.status === 'approved' ? 'আপনার কোর্সটি চালু হয়েছে!' : 'আপনার পেমেন্টটি পেন্ডিং আছে।';
+                 Swal.fire('Status: ' + data.status.toUpperCase(), statusMsg, data.status==='approved'?'success':'info').then(()=>{
                      if(data.status==='approved') location.reload();
                  });
              }
