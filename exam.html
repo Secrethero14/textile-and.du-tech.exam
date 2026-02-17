@@ -389,13 +389,12 @@
             }, 1000);
         }
 
-        // --- SCROLL TO QUESTION FUNCTION ---
         window.goToQuestion = function(index) {
-            Swal.close(); // Close modal
+            Swal.close(); 
             const targetCard = document.getElementById(`card-${index}`);
             if (targetCard) {
                 targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
-                targetCard.style.border = "3px solid #ff7675"; // Highlight
+                targetCard.style.border = "3px solid #ff7675"; 
                 targetCard.style.boxShadow = "0 0 15px rgba(255, 118, 117, 0.5)";
                 setTimeout(() => {
                     targetCard.style.border = "2px solid transparent";
@@ -404,7 +403,6 @@
             }
         }
 
-        // --- SUBMIT ATTEMPT (WITH SKIP LOGIC) ---
         function attemptSubmit() {
             let skippedButtonsHtml = ''; 
             let skippedCount = 0;
@@ -458,7 +456,6 @@
             return num.toString().split('').map(d => banglaDigits[d] || d).join('');
         }
 
-        // --- DATA SANITIZER ---
         function cleanData(obj) {
             if (obj === undefined) return null;
             if (obj === null) return null;
@@ -473,7 +470,7 @@
             return newObj;
         }
 
-        // --- SUBMIT LOGIC (FIXED MARKING) ---
+        // --- UPDATED SUBMIT LOGIC (MAPPING ADDED) ---
         async function submitExam() {
             isSubmitting = true; clearInterval(timerInterval);
             document.getElementById('motivationOverlay').style.display = 'flex';
@@ -481,13 +478,25 @@
             let score = 0, correct = 0, wrong = 0, chapterAnalysis = {}, userAnswers = {};
             const timeTaken = Math.floor((new Date() - startTime) / 1000);
 
+            // --- ANSWER KEY MAPPING ---
+            // শীটের 1, 2, 3, 4 কে A, B, C, D তে রূপান্তর করার ম্যাপ
+            const numberToLetter = {
+                '1': 'A', '2': 'B', '3': 'C', '4': 'D',
+                '01': 'A', '02': 'B', '03': 'C', '04': 'D',
+                '১': 'A', '২': 'B', '৩': 'C', '৪': 'D' // বাংলা সংখ্যার জন্যও ব্যাকআপ
+            };
+
             filteredQuestions.forEach((q, index) => {
-                const correctAns = q["উত্তর"];
-                if(!correctAns) {
+                let correctAnsRaw = q["উত্তর"];
+                if(!correctAnsRaw) {
                     let val = document.getElementById(`ans-${index}`)?.value;
                     userAnswers[index] = val || null;
                     return; 
                 }
+
+                // ১. শীটের উত্তর ক্লিন করা এবং কনভার্ট করা
+                let correctAnsStr = String(correctAnsRaw).trim();
+                let finalCorrectAnswer = numberToLetter[correctAnsStr] || correctAnsStr.toUpperCase();
 
                 const ch = q["Chapter"] || q["অধ্যায়"] || "General";
                 const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
@@ -507,18 +516,14 @@
 
                 if (selectedVal) {
                     // উত্তর দিয়েছে
-                    if (String(selectedVal).trim().toUpperCase() === String(correctAns).trim().toUpperCase()) {
-                        score += 1; // সঠিক হলে ১ মার্ক
+                    if (String(selectedVal).trim().toUpperCase() === finalCorrectAnswer) {
+                        score += 1; 
                         correct++; 
                         chapterAnalysis[ch].correct++;
                     } else {
-                        score -= 0.25; // ভুল করলে ০.২৫ কাটা (মোট ১.২৫ লস)
+                        score -= 0.25; 
                         wrong++;
                     }
-                } else {
-                    // উত্তর দেয়নি (ফাঁকা রেখেছে)
-                    // কোনো নেগেটিভ মার্ক নেই, শুধু ১ মার্ক পাবে না।
-                    // তাই স্কোর থেকে কিছু বিয়োগ হবে না (score অপরিবর্তিত থাকবে)
                 }
             });
 
@@ -540,21 +545,14 @@
                     isPracticeMode = true; 
                 }
 
-                // 1. Prepare raw data
                 const rawData = {
                     examName: examConfig.name, examId: tabId, score, correct, wrong, timeTaken,
                     student: userName, email: userEmail,
                     analysis: chapterAnalysis, userAnswers, isPractice: isPracticeMode
                 };
 
-                // 2. Clean data 
                 const cleanedData = cleanData(rawData);
-
-                // 3. Add timestamp 
-                const finalRecord = {
-                    ...cleanedData,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-                };
+                const finalRecord = { ...cleanedData, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
                 filteredQuestions.forEach((_, index) => localStorage.removeItem(`save_${tabId}_ans_${index}`));
@@ -568,4 +566,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
