@@ -61,6 +61,8 @@
         
         .opt-row { display: flex; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; position: relative; }
         .circle { width: 25px; height: 25px; border: 2px solid #ccc; border-radius: 50%; margin-right: 10px; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
+        
+        /* Correct/Wrong Styles */
         .opt-correct { background: #e6fffa; border-color: var(--success); color: #00624e; }
         .opt-wrong { background: #fff5f5; border-color: var(--danger); color: #c0392b; }
 
@@ -220,16 +222,28 @@
 
                 // Calculate & Render
                 let realCorrect = 0, realWrong = 0, realSkip = 0, realScore = 0;
-                let negMark = examInfo['Negative Mark'] ? Number(examInfo['Negative Mark']) : 0.25;
+                let negMark = examInfo && examInfo['Negative Mark'] ? Number(examInfo['Negative Mark']) : 0.25;
 
                 const container = document.getElementById('qList');
                 container.innerHTML = "";
+
+                // --- MAPPING LOGIC START (ADDED) ---
+                const numberToLetter = {
+                    '1': 'A', '2': 'B', '3': 'C', '4': 'D',
+                    '01': 'A', '02': 'B', '03': 'C', '04': 'D',
+                    '১': 'A', '২': 'B', '৩': 'C', '৪': 'D'
+                };
+                // --- MAPPING LOGIC END ---
 
                 qRes.forEach((q, index) => {
                     if (!q["প্রশ্ন (LaTeX সহ)"]) return;
                     
                     let myAns = userAnsMap[index];
-                    let rightAns = String(q["উত্তর"]).trim().toUpperCase();
+                    let rawRightAns = String(q["উত্তর"]).trim();
+                    
+                    // Convert Number (1,2..) to Letter (A,B..) for comparison
+                    let rightAns = numberToLetter[rawRightAns] || rawRightAns.toUpperCase();
+
                     let status = 'skip';
 
                     if (myAns) {
@@ -242,11 +256,29 @@
                         realSkip++; 
                     }
 
+                    // Render Options
                     let optionsHtml = '';
                     ['A', 'B', 'C', 'D'].forEach(opt => {
-                        let rowClass = (opt === rightAns) ? 'opt-correct' : (opt === myAns && status === 'wrong' ? 'opt-wrong' : '');
+                        // Check if this option is the Correct Answer
+                        let isCorrectAns = (opt === rightAns);
+                        // Check if this option was Selected by User
+                        let isSelected = (myAns && String(myAns).toUpperCase() === opt);
+
+                        let rowClass = '';
+                        if (isCorrectAns) {
+                            rowClass = 'opt-correct'; // Always highlight correct answer green
+                        } else if (isSelected && status === 'wrong') {
+                            rowClass = 'opt-wrong'; // Highlight selected wrong answer red
+                        }
+
                         let optText = q["অপশন "+opt] || "";
-                        optionsHtml += `<div class="opt-row ${rowClass}"><div class="circle">${opt}</div><div>${optText}</div></div>`;
+                        optionsHtml += `
+                        <div class="opt-row ${rowClass}">
+                            <div class="circle">${opt}</div>
+                            <div>${optText}</div>
+                            ${isCorrectAns ? '<i class="fas fa-check-circle" style="margin-left:auto; color:var(--success);"></i>' : ''}
+                            ${isSelected && !isCorrectAns ? '<i class="fas fa-times-circle" style="margin-left:auto; color:var(--danger);"></i>' : ''}
+                        </div>`;
                     });
 
                     container.innerHTML += `
