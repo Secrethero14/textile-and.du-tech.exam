@@ -61,23 +61,12 @@
         .quote-text { font-size: 20px; color: var(--primary); font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* SKIPPED BUTTON STYLES */
         .skip-btn {
-            background-color: #ffeaa7;
-            border: 1px solid #fdcb6e;
-            color: #d63031;
-            padding: 5px 10px;
-            margin: 3px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            display: inline-block;
-            transition: 0.2s;
+            background-color: #ffeaa7; border: 1px solid #fdcb6e; color: #d63031;
+            padding: 5px 10px; margin: 3px; border-radius: 5px; cursor: pointer;
+            font-weight: bold; display: inline-block; transition: 0.2s;
         }
-        .skip-btn:hover {
-            background-color: #d63031;
-            color: white;
-        }
+        .skip-btn:hover { background-color: #d63031; color: white; }
     </style>
 </head>
 <body>
@@ -133,7 +122,7 @@
     <div class="container" id="loaderContainer">
         <div class="loader-container" id="loader">
             <div class="spinner"></div>
-            <p>তোমার ইন্টারনেট স্পিড নির্ভর করে,প্রশ্নপত্র লোড হচ্ছে...</p>
+            <p>তোমার ইন্টারনেট স্পিড নির্ভর করে, প্রশ্নপত্র লোড হচ্ছে...</p>
         </div>
     </div>
 
@@ -159,9 +148,6 @@
         let timerInterval, startTime, selectedSubjects = [];
         let allFetchedQuestions = [], isSubmitting = false;
 
-        const quotes = ["ধৈর্য ধরুন...", "সফলতা আসবেই...", "ভুল থেকেই শেখা যায়...", "চেষ্টা চালিয়ে যাও!"];
-
-        // --- HELPER: Consistent MCQ Check ---
         function isMCQ(q) {
             if(q["অপশন A"]) return true; 
             if(q["উত্তর"] && String(q["উত্তর"]).trim() !== "" && String(q["উত্তর"]).length === 1) return true; 
@@ -192,7 +178,10 @@
             const exam = data.find(e => e['Tab ID'] === tabId);
             if(exam) {
                 examConfig = {
-                    time: Number(exam['Total Time']), neg: Number(exam['Negative Mark']), name: exam['Exam Name'],
+                    time: Number(exam['Total Time']), 
+                    neg: exam['Negative Mark'] !== undefined && exam['Negative Mark'] !== "" ? Number(exam['Negative Mark']) : 0.25, 
+                    totalMarks: exam['Total Marks'] ? Number(exam['Total Marks']) : null, 
+                    name: exam['Exam Name'],
                     type: exam['Type'] ? String(exam['Type']).toLowerCase().trim() : 'exam', 
                     config: exam['Config'] ? JSON.parse(exam['Config']) : null,
                     optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
@@ -205,6 +194,10 @@
         async function loadQuestions() {
             const res = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`);
             let rawQuestions = await res.json();
+            
+            // ✅ THE BUG FIX: Assign the original correct index before any filtering or shuffling
+            rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
+            
             rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
             allFetchedQuestions = rawQuestions;
@@ -298,7 +291,6 @@
             renderQuestions(); restoreAnswers(); startTimer(examConfig.time);
         }
 
-        // --- RENDER LOGIC ---
         function renderQuestions() {
             const container = document.getElementById('questionContainer');
             container.innerHTML = "";
@@ -308,21 +300,21 @@
             if(filteredQuestions.length === 0) return container.innerHTML = "<p>প্রশ্ন পাওয়া যায়নি।</p>";
 
             filteredQuestions.forEach((q, index) => {
+                let qIdx = q.originalIndex; // ✅ USING ORIGINAL INDEX FOR LOGIC
+                
                 const card = document.createElement('div');
                 card.className = 'q-card'; card.id = `card-${index}`;
                 const qText = q["প্রশ্ন (LaTeX সহ)"];
                 const sub = q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px;">${q["Subject"]}</span>` : "";
 
                 if (!isMCQ(q)) { 
-                    // Text Input (Name, Batch, etc.)
-                    card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><input type="text" class="extra-input" id="ans-${index}" placeholder="উত্তর দিন..." onblur="saveTextInput(${index})">`;
+                    card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><input type="text" class="extra-input" id="ans-${qIdx}" placeholder="উত্তর দিন..." onblur="saveTextInput(${qIdx})">`;
                 } else { 
-                    // MCQ
                     if(q["অপশন A"]) { 
                         let optionsHtml = '';
                         ['A', 'B', 'C', 'D'].forEach(opt => {
                             if(q[`অপশন ${opt}`]) {
-                                optionsHtml += `<label class="opt-label" id="lbl-${index}-${opt}"><input type="radio" name="ans-${index}" value="${opt}" onclick="lockAnswer(${index}, '${opt}')"> ${q[`অপশন ${opt}`]}</label>`;
+                                optionsHtml += `<label class="opt-label" id="lbl-${qIdx}-${opt}"><input type="radio" name="ans-${qIdx}" value="${opt}" onclick="lockAnswer(${qIdx}, '${opt}')"> ${q[`অপশন ${opt}`]}</label>`;
                             }
                         });
                         card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div>${optionsHtml}`;
@@ -341,36 +333,40 @@
 
         function updateProgressBar() {
             let answered = 0;
-            for(let i=0; i<filteredQuestions.length; i++) if(localStorage.getItem(`save_${tabId}_ans_${i}`)) answered++;
+            for(let i=0; i<filteredQuestions.length; i++) {
+                let qIdx = filteredQuestions[i].originalIndex;
+                if(localStorage.getItem(`save_${tabId}_ans_${qIdx}`)) answered++;
+            }
             const pct = Math.round((answered / filteredQuestions.length) * 100);
             document.getElementById('progressBar').style.width = pct + "%";
             document.getElementById('progressText').innerText = pct + "%";
         }
 
-        function lockAnswer(index, val) {
-            localStorage.setItem(`save_${tabId}_ans_${index}`, val);
-            document.getElementsByName(`ans-${index}`).forEach(r => r.disabled = true);
+        function lockAnswer(qIdx, val) {
+            localStorage.setItem(`save_${tabId}_ans_${qIdx}`, val);
+            document.getElementsByName(`ans-${qIdx}`).forEach(r => r.disabled = true);
             ['A', 'B', 'C', 'D'].forEach(opt => {
-                const label = document.getElementById(`lbl-${index}-${opt}`);
+                const label = document.getElementById(`lbl-${qIdx}-${opt}`);
                 if(label) label.classList.add(opt === val ? 'selected-locked' : 'disabled');
             });
             updateProgressBar();
         }
 
-        function saveTextInput(index) {
-            const val = document.getElementById(`ans-${index}`).value;
-            if(val.trim()) { localStorage.setItem(`save_${tabId}_ans_${index}`, val); updateProgressBar(); }
+        function saveTextInput(qIdx) {
+            const val = document.getElementById(`ans-${qIdx}`).value;
+            if(val.trim()) { localStorage.setItem(`save_${tabId}_ans_${qIdx}`, val); updateProgressBar(); }
         }
 
         function restoreAnswers() {
-            filteredQuestions.forEach((q, index) => {
-                const saved = localStorage.getItem(`save_${tabId}_ans_${index}`);
+            filteredQuestions.forEach((q) => {
+                let qIdx = q.originalIndex;
+                const saved = localStorage.getItem(`save_${tabId}_ans_${qIdx}`);
                 if (saved) {
                     if (isMCQ(q)) {
-                        const r = document.querySelector(`input[name="ans-${index}"][value="${saved}"]`);
-                        if(r) { r.checked = true; lockAnswer(index, saved); }
+                        const r = document.querySelector(`input[name="ans-${qIdx}"][value="${saved}"]`);
+                        if(r) { r.checked = true; lockAnswer(qIdx, saved); }
                     } else {
-                        const inp = document.getElementById(`ans-${index}`);
+                        const inp = document.getElementById(`ans-${qIdx}`);
                         if(inp) inp.value = saved;
                     }
                 }
@@ -391,7 +387,7 @@
 
         window.goToQuestion = function(index) {
             Swal.close(); 
-            const targetCard = document.getElementById(`card-${index}`);
+            const targetCard = document.getElementById(`card-${index}`); // scroll via visual index
             if (targetCard) {
                 targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
                 targetCard.style.border = "3px solid #ff7675"; 
@@ -409,12 +405,14 @@
 
             for (let i = 0; i < filteredQuestions.length; i++) {
                 const q = filteredQuestions[i];
+                let qIdx = q.originalIndex;
+
                 if (q["উত্তর"]) {
                     let isAnswered = false;
                     if (isMCQ(q)) { 
-                        if(document.querySelector(`input[name="ans-${i}"]:checked`)) isAnswered = true;
+                        if(document.querySelector(`input[name="ans-${qIdx}"]:checked`)) isAnswered = true;
                     } else { 
-                        if(document.getElementById(`ans-${i}`).value.trim() !== "") isAnswered = true;
+                        if(document.getElementById(`ans-${qIdx}`).value.trim() !== "") isAnswered = true;
                     }
                     
                     if (!isAnswered) {
@@ -470,68 +468,74 @@
             return newObj;
         }
 
-        // --- UPDATED SUBMIT LOGIC (MAPPING ADDED) ---
+        // --- SUBMIT EXAM WITH ORIGINAL INDEX MAPPING & SECURITY ---
         async function submitExam() {
-            isSubmitting = true; clearInterval(timerInterval);
+            if (isSubmitting) return; 
+            isSubmitting = true; 
+            clearInterval(timerInterval);
             document.getElementById('motivationOverlay').style.display = 'flex';
             
-            let score = 0, correct = 0, wrong = 0, chapterAnalysis = {}, userAnswers = {};
-            const timeTaken = Math.floor((new Date() - startTime) / 1000);
-
-            // --- ANSWER KEY MAPPING ---
-            // শীটের 1, 2, 3, 4 কে A, B, C, D তে রূপান্তর করার ম্যাপ
-            const numberToLetter = {
-                '1': 'A', '2': 'B', '3': 'C', '4': 'D',
-                '01': 'A', '02': 'B', '03': 'C', '04': 'D',
-                '১': 'A', '২': 'B', '৩': 'C', '৪': 'D' // বাংলা সংখ্যার জন্যও ব্যাকআপ
-            };
-
-            filteredQuestions.forEach((q, index) => {
-                let correctAnsRaw = q["উত্তর"];
-                if(!correctAnsRaw) {
-                    let val = document.getElementById(`ans-${index}`)?.value;
-                    userAnswers[index] = val || null;
-                    return; 
-                }
-
-                // ১. শীটের উত্তর ক্লিন করা এবং কনভার্ট করা
-                let correctAnsStr = String(correctAnsRaw).trim();
-                let finalCorrectAnswer = numberToLetter[correctAnsStr] || correctAnsStr.toUpperCase();
-
-                const ch = q["Chapter"] || q["অধ্যায়"] || "General";
-                const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
-
-                if(!chapterAnalysis[ch]) chapterAnalysis[ch] = { correct: 0, total: 0, subject: sub };
-                chapterAnalysis[ch].total++;
-
-                let selectedVal = null;
-                if (isMCQ(q)) {
-                    const el = document.querySelector(`input[name="ans-${index}"]:checked`);
-                    selectedVal = el ? el.value : null; 
-                } else {
-                    const el = document.getElementById(`ans-${index}`);
-                    selectedVal = el ? el.value : null;
-                }
-                userAnswers[index] = selectedVal; 
-
-                if (selectedVal) {
-                    // উত্তর দিয়েছে
-                    if (String(selectedVal).trim().toUpperCase() === finalCorrectAnswer) {
-                        score += 1; 
-                        correct++; 
-                        chapterAnalysis[ch].correct++;
-                    } else {
-                        score -= 0.25; 
-                        wrong++;
-                    }
-                }
-            });
-
-            // AUTH WAIT
-            let isPracticeMode = false;
-            let userEmail = "guest", userName = "Guest";
-
             try {
+                let secureScore = 0;
+                let secureCorrect = 0;
+                let secureWrong = 0;
+                let chapterAnalysis = {};
+                let userAnswers = {};
+                
+                const timeTaken = Math.floor((new Date() - startTime) / 1000);
+
+                let totalQuestions = filteredQuestions.length;
+                let totalMarksFromSheet = examConfig.totalMarks ? examConfig.totalMarks : totalQuestions;
+                let markPerQuestion = totalMarksFromSheet / totalQuestions;
+                let negativeMark = examConfig.neg !== undefined ? examConfig.neg : 0.25;
+
+                const numberToLetter = {
+                    '1': 'A', '2': 'B', '3': 'C', '4': 'D',
+                    '01': 'A', '02': 'B', '03': 'C', '04': 'D',
+                    '১': 'A', '২': 'B', '৩': 'C', '৪': 'D'
+                };
+
+                filteredQuestions.forEach((q) => {
+                    let qIdx = q.originalIndex; // ✅ Mapping with Original Index
+                    
+                    let correctAnsRaw = q["উত্তর"];
+                    let rightAns = correctAnsRaw ? (numberToLetter[String(correctAnsRaw).trim()] || String(correctAnsRaw).trim().toUpperCase()) : null;
+                    
+                    const ch = q["Chapter"] || q["অধ্যায়"] || "General";
+                    const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
+                    if(!chapterAnalysis[ch]) chapterAnalysis[ch] = { correct: 0, total: 0, subject: sub };
+                    chapterAnalysis[ch].total++;
+
+                    let selectedVal = null;
+                    if(isMCQ(q)) {
+                        const checkedEl = document.querySelector(`input[name="ans-${qIdx}"]:checked`);
+                        selectedVal = checkedEl ? checkedEl.value : null;
+                    } else {
+                        const textEl = document.getElementById(`ans-${qIdx}`);
+                        selectedVal = textEl ? textEl.value : null;
+                    }
+                    
+                    userAnswers[qIdx] = selectedVal || null; 
+
+                    if (selectedVal && rightAns) {
+                        if (String(selectedVal).trim().toUpperCase() === rightAns) {
+                            secureScore += markPerQuestion; 
+                            secureCorrect++; 
+                            chapterAnalysis[ch].correct++;
+                        } else {
+                            secureScore -= negativeMark; 
+                            secureWrong++;
+                        }
+                    }
+                });
+
+                if (secureCorrect + secureWrong > totalQuestions) {
+                    throw new Error("Suspicious activity detected! Submission blocked.");
+                }
+
+                let isPracticeMode = false;
+                let userEmail = "guest", userName = "Guest";
+                
                 const user = await new Promise(resolve => {
                     const unsubscribe = firebase.auth().onAuthStateChanged(u => { unsubscribe(); resolve(u); });
                 });
@@ -546,24 +550,38 @@
                 }
 
                 const rawData = {
-                    examName: examConfig.name, examId: tabId, score, correct, wrong, timeTaken,
+                    examName: examConfig.name, examId: tabId, 
+                    score: secureScore, correct: secureCorrect, wrong: secureWrong, timeTaken,
+                    markPerQuestion: markPerQuestion, negativeMark: negativeMark,       
                     student: userName, email: userEmail,
                     analysis: chapterAnalysis, userAnswers, isPractice: isPracticeMode
                 };
 
-                const cleanedData = cleanData(rawData);
-                const finalRecord = { ...cleanedData, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+                const finalRecord = { ...cleanData(rawData), timestamp: firebase.firestore.FieldValue.serverTimestamp() };
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
-                filteredQuestions.forEach((_, index) => localStorage.removeItem(`save_${tabId}_ans_${index}`));
+                
+                filteredQuestions.forEach((q) => localStorage.removeItem(`save_${tabId}_ans_${q.originalIndex}`));
                 window.location.href = `result.html?id=${docRef.id}`;
 
             } catch (err) {
                 console.error(err);
+                isSubmitting = false; 
                 document.getElementById('motivationOverlay').style.display = 'none';
                 Swal.fire('Error', 'রেজাল্ট সেভ করা যায়নি: ' + err.message, 'error');
             }
         }
     </script>
+    
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault()); 
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false; 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
+        };
+    </script>
 </body>
-</html> 
+    </html>
