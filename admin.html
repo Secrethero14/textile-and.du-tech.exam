@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | Exam Results</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #2c3e50; --secondary: #34495e; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; --bg: #f4f6f7; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        
+        .header { background: var(--primary); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 24px; }
+        
+        .control-panel { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 15px; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; }
+        .input-box { flex: 1; min-width: 250px; padding: 12px; border: 2px solid #bdc3c7; border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: var(--accent); }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-load { background: var(--accent); }
+        .btn-load:hover { background: #2980b9; }
+        .btn-export { background: var(--success); }
+        .btn-export:hover { background: #219150; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .stats-bar { display: flex; gap: 20px; margin-bottom: 20px; font-weight: bold; font-size: 16px; color: var(--secondary); }
+
+        .table-container { background: white; border-radius: 10px; padding: 15px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ecf0f1; white-space: nowrap; }
+        th { background: var(--secondary); color: white; font-weight: 600; position: sticky; top: 0; z-index: 10;}
+        tr:hover { background-color: #f1f5f8; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge-live { background: #e8f8f5; color: var(--success); }
+        .badge-practice { background: #fdf2e9; color: #e67e22; }
+        
+        .ans-box { display: inline-block; width: 25px; height: 25px; line-height: 25px; border-radius: 4px; background: #ecf0f1; font-weight: bold; font-size: 13px; }
+        .ans-skip { background: #fff0f5; color: #e74c3c; }
+
+        #loader { display: none; text-align: center; padding: 30px; font-size: 18px; color: var(--accent); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-user-shield"></i> Admin Dashboard | Results & Merit List</h1>
+        <p style="margin:5px 0 0 0; font-size:14px; color:#bdc3c7;">Search by Tab ID to view student answers and download reports.</p>
+    </div>
+
+    <div class="control-panel">
+        <input type="text" id="examIdInput" class="input-box" placeholder="Enter Exam Tab ID (e.g., hstuA_1, Phy_1)...">
+        <button class="btn btn-load" id="loadBtn" onclick="loadResults()"><i class="fas fa-search"></i> Load Data</button>
+        <button class="btn btn-export" id="exportBtn" onclick="exportTableToCSV('exam_report.csv')" disabled><i class="fas fa-file-excel"></i> Download CSV</button>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display: none;">
+        <span><i class="fas fa-users"></i> Total Submissions: <span id="totalCount">0</span></span>
+        <span><i class="fas fa-file-signature"></i> Live Exam: <span id="liveCount">0</span></span>
+    </div>
+
+    <div id="loader"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>ডাটাবেস থেকে তথ্য খোঁজা হচ্ছে...</div>
+
+    <div class="table-container" id="tableWrapper" style="display: none;">
+        <table id="resultTable">
+            <thead id="tableHead">
+                </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- FETCH DATA ---
+        async function loadResults() {
+            const examId = document.getElementById('examIdInput').value.trim();
+            if(!examId) return alert("দয়া করে একটি Exam ID লিখুন (যেমন: hstuA_1)");
+
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('tableWrapper').style.display = 'none';
+            document.getElementById('statsBar').style.display = 'none';
+            document.getElementById('exportBtn').disabled = true;
+
+            try {
+                const snapshot = await db.collection("exam_results").where("examId", "==", examId).get();
+                
+                if(snapshot.empty) {
+                    document.getElementById('loader').style.display = 'none';
+                    return alert("এই ID তে কোনো এক্সামের ডাটা পাওয়া যায়নি!");
+                }
+
+                let results = [];
+                let maxQuestions = 0;
+                let liveCount = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    results.push(data);
+                    if(!data.isPractice) liveCount++;
+                    
+                    // সর্বোচ্চ কয়টি প্রশ্নের উত্তর আছে তা চেক করা (কলাম বানানোর জন্য)
+                    if(data.userAnswers) {
+                        const keys = Object.keys(data.userAnswers).map(Number);
+                        if(keys.length > 0) {
+                            const maxKey = Math.max(...keys);
+                            if((maxKey + 1) > maxQuestions) maxQuestions = maxKey + 1;
+                        }
+                    }
+                });
+
+                // মেরিট লিস্ট অনুযায়ী সাজানো (Score বেশি, Time কম)
+                results.sort((a, b) => {
+                    const scoreA = parseFloat(a.score) || 0;
+                    const scoreB = parseFloat(b.score) || 0;
+                    if (scoreB !== scoreA) return scoreB - scoreA;
+                    
+                    const timeA = parseFloat(a.timeTaken) || 0;
+                    const timeB = parseFloat(b.timeTaken) || 0;
+                    return timeA - timeB;
+                });
+
+                // পরিসংখ্যান আপডেট
+                document.getElementById('totalCount').innerText = results.length;
+                document.getElementById('liveCount').innerText = liveCount;
+
+                renderTable(results, maxQuestions);
+
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('tableWrapper').style.display = 'block';
+                document.getElementById('statsBar').style.display = 'flex';
+                document.getElementById('exportBtn').disabled = false;
+
+            } catch(e) {
+                console.error(e);
+                document.getElementById('loader').style.display = 'none';
+                alert("এরর: ডাটা লোড করা যাচ্ছে না!");
+            }
+        }
+
+        // --- RENDER TABLE ---
+        function renderTable(dataList, totalQ) {
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+            
+            // 1. Generate Headers
+            let headHtml = `<tr>
+                <th>Rank</th>
+                <th style="text-align:left;">Student Name</th>
+                <th style="text-align:left;">Email</th>
+                <th>Mode</th>
+                <th>Score</th>
+                <th>Right</th>
+                <th>Wrong</th>
+                <th>Time</th>`;
+            
+            for(let i=0; i<totalQ; i++) {
+                headHtml += `<th>Q${i+1}</th>`;
+            }
+            headHtml += `</tr>`;
+            thead.innerHTML = headHtml;
+
+            // 2. Generate Rows
+            let bodyHtml = "";
+            let rank = 1;
+
+            dataList.forEach(data => {
+                const modeBadge = data.isPractice ? `<span class="badge badge-practice">Practice</span>` : `<span class="badge badge-live">Live</span>`;
+                const timeStr = `${Math.floor((data.timeTaken||0)/60)}m ${(data.timeTaken||0)%60}s`;
+                const currentRank = data.isPractice ? "-" : rank++; // Practice exam er kono rank nai
+
+                let rowHtml = `<tr>
+                    <td><strong>${currentRank}</strong></td>
+                    <td style="text-align:left; font-weight:bold;">${data.student || "Unknown"}</td>
+                    <td style="text-align:left; font-size:13px;">${data.email || "No Email"}</td>
+                    <td>${modeBadge}</td>
+                    <td style="color:var(--success); font-weight:bold; font-size:16px;">${parseFloat(data.score||0).toFixed(2)}</td>
+                    <td>${data.correct || 0}</td>
+                    <td>${data.wrong || 0}</td>
+                    <td>${timeStr}</td>`;
+
+                // Questions Loop
+                for(let i=0; i<totalQ; i++) {
+                    let ans = (data.userAnswers && data.userAnswers[i]) ? data.userAnswers[i] : null;
+                    if(ans) {
+                        rowHtml += `<td><span class="ans-box">${ans}</span></td>`;
+                    } else {
+                        rowHtml += `<td><span class="ans-box ans-skip">-</span></td>`; // স্কিপ করলে - দেখাবে
+                    }
+                }
+                
+                rowHtml += `</tr>`;
+                bodyHtml += rowHtml;
+            });
+
+            tbody.innerHTML = bodyHtml;
+        }
+
+        // --- EXPORT TO CSV (EXCEL) ---
+        function exportTableToCSV(filename) {
+            const table = document.getElementById("resultTable");
+            let csv = [];
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = [], cols = table.rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            const csvFile = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv.join("\n")], { type: "text/csv;charset=utf-8;" }); // UTF-8 BOM for Excel Bangla support
+            
+            const downloadLink = document.createElement("a");
+            downloadLink.download = document.getElementById('examIdInput').value + "_" + filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>
