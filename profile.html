@@ -11,15 +11,16 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --primary: #6c5ce7; --bg: #f8f9fd; --card: #ffffff; --text: #2d3436; --success: #00b894; --danger: #ff7675; }
+        :root { --primary: #6c5ce7; --bg: #f8f9fd; --card: #ffffff; --text: #2d3436; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; }
         body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-top: 70px; padding-bottom: 50px; }
 
         .top-nav {
             position: fixed; top: 0; left: 0; width: 100%; height: 60px;
             background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; align-items: center; padding: 0 20px; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000;
         }
         .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
 
@@ -28,14 +29,29 @@
         /* USER HEADER */
         .profile-header {
             background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            padding: 30px; border-radius: 15px; color: white;
-            display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin-bottom: 25px;
+            padding: 25px; border-radius: 15px; color: white;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin-bottom: 25px;
         }
-        .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.3); object-fit: cover; background: white; }
+        .profile-info { display: flex; align-items: center; gap: 15px; }
+        .profile-pic { width: 75px; height: 75px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); object-fit: cover; background: white; }
+        
+        .user-details p { margin: 2px 0; font-size: 13px; opacity: 0.9; }
+        
+        .btn-update { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 14px; }
+        .btn-update:hover { background: white; color: var(--primary); }
 
-        .summary-badge {
-            display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 8px;
-        }
+        /* STATS GRID */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: var(--card); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.04); border-bottom: 3px solid var(--primary); }
+        .stat-box.success { border-bottom-color: var(--success); }
+        .stat-box.danger { border-bottom-color: var(--danger); }
+        .stat-num { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+        .stat-label { font-size: 13px; color: #636e72; font-weight: 600; }
+
+        /* ACCURACY BAR */
+        .accuracy-card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); margin-bottom: 30px; text-align: center; }
+        .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; overflow: hidden; margin: 15px 0 10px 0; }
+        .progress-bar { height: 100%; background: var(--success); border-radius: 10px; transition: width 1s ease-in-out; }
 
         /* HISTORY SECTION */
         .history-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
@@ -59,6 +75,24 @@
         .btn-retake:hover { background: #5a4fcf; }
 
         #loader { text-align: center; padding: 40px; color: var(--primary); }
+
+        /* MODAL STYLES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #444; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; box-sizing: border-box; }
+        .form-group input:focus { border-color: var(--primary); }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-cancel { background: #eee; color: #333; }
+
+        @media(max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; align-items: flex-start; }
+            .btn-update { width: 100%; justify-content: center; }
+        }
     </style>
 </head>
 <body>
@@ -69,18 +103,71 @@
 
     <div class="container">
         <div class="profile-header">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="userPic" class="profile-pic">
-            <div>
-                <h2 id="userName" style="margin:0;">Loading...</h2>
-                <p id="userEmail" style="margin:2px 0 0 0; opacity:0.9;">Student</p>
-                <div class="summary-badge" id="totalExamsBadge"><i class="fas fa-file-alt"></i> মোট এক্সাম: 0</div>
+            <div class="profile-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="userPic" class="profile-pic">
+                <div class="user-details">
+                    <h2 id="userName" style="margin:0 0 5px 0;">Loading...</h2>
+                    <p id="userEmail"><i class="fas fa-envelope"></i> Student</p>
+                    <p id="userCollege" style="display:none;"><i class="fas fa-university"></i> <span></span></p>
+                    <p id="userBatch" style="display:none;"><i class="fas fa-graduation-cap"></i> Batch: <span></span></p>
+                    <p id="userPhone" style="display:none;"><i class="fas fa-phone"></i> <span></span></p>
+                </div>
             </div>
+            <button onclick="openProfileModal()" class="btn-update"><i class="fas fa-user-edit"></i> আপডেট প্রোফাইল</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-num" id="statExams">0</div>
+                <div class="stat-label">মোট এক্সাম</div>
+            </div>
+            <div class="stat-box success">
+                <div class="stat-num" id="statCorrect" style="color:var(--success)">0</div>
+                <div class="stat-label">মোট সঠিক উত্তর</div>
+            </div>
+            <div class="stat-box danger">
+                <div class="stat-num" id="statWrong" style="color:var(--danger)">0</div>
+                <div class="stat-label">মোট ভুল উত্তর</div>
+            </div>
+        </div>
+
+        <div class="accuracy-card">
+            <h3 style="margin:0; color:#444;">তোমার একুরেসি (Accuracy)</h3>
+            <div class="progress-container">
+                <div class="progress-bar" id="accuracyBar" style="width: 0%;"></div>
+            </div>
+            <div style="font-weight:bold; color:var(--primary); font-size:18px;"><span id="accuracyText">0</span>%</div>
+            <p style="font-size:13px; color:#666; margin:5px 0 0 0;">তুমি যতগুলো উত্তর দাগিয়েছো, তার মধ্যে কতগুলো সঠিক হয়েছে তার হিসাব।</p>
         </div>
 
         <div class="history-section">
             <div class="section-title"><i class="fas fa-history"></i> আমার এক্সাম হিস্ট্রি</div>
             <div id="loader"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small style="margin-top:10px; display:inline-block; color:#666;">ডাটা লোড হচ্ছে...</small></div>
             <div id="historyList"></div>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary);"><i class="fas fa-user-edit"></i> প্রোফাইল আপডেট</h3>
+            
+            <div class="form-group">
+                <label>College Name (কলেজের নাম)</label>
+                <input type="text" id="inpCollege" placeholder="e.g. Dhaka College">
+            </div>
+            <div class="form-group">
+                <label>HSC Batch (এইচএসসি ব্যাচ)</label>
+                <input type="text" id="inpBatch" placeholder="e.g. 2026">
+            </div>
+            <div class="form-group">
+                <label>Phone Number (মোবাইল নম্বর)</label>
+                <input type="tel" id="inpPhone" placeholder="01XXX-XXXXXX">
+            </div>
+            
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeProfileModal()">বাতিল</button>
+                <button class="btn-save" onclick="saveProfileData()" id="saveBtn">সেভ করুন</button>
+            </div>
         </div>
     </div>
 
@@ -92,95 +179,164 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- AUTH CHECK ---
+        let currentUserEmail = null;
+
         auth.onAuthStateChanged(user => {
             if (user) {
+                currentUserEmail = user.email;
                 document.getElementById('userName').innerText = user.displayName || "প্রিয় ছাত্র";
-                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('userEmail').innerHTML = `<i class="fas fa-envelope"></i> ${user.email}`;
                 if(user.photoURL) document.getElementById('userPic').src = user.photoURL;
+                
+                loadUserProfile(user.email);
                 fetchStudentData(user.email); 
             } else {
                 window.location.href = "index.html";
             }
         });
 
-        // --- HELPER: Parse Firebase Date accurately ---
+        // --- LOAD USER PROFILE DATA ---
+        async function loadUserProfile(email) {
+            try {
+                const doc = await db.collection("users").doc(email).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if(data.college) {
+                        const el = document.getElementById('userCollege');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.college;
+                        document.getElementById('inpCollege').value = data.college;
+                    }
+                    if(data.batch) {
+                        const el = document.getElementById('userBatch');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.batch;
+                        document.getElementById('inpBatch').value = data.batch;
+                    }
+                    if(data.phone) {
+                        const el = document.getElementById('userPhone');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.phone;
+                        document.getElementById('inpPhone').value = data.phone;
+                    }
+                }
+            } catch (e) { console.error("Profile load error:", e); }
+        }
+
+        // --- MODAL CONTROLS ---
+        function openProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
+        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // --- SAVE PROFILE DATA ---
+        async function saveProfileData() {
+            const college = document.getElementById('inpCollege').value.trim();
+            const batch = document.getElementById('inpBatch').value.trim();
+            const phone = document.getElementById('inpPhone').value.trim();
+            const saveBtn = document.getElementById('saveBtn');
+
+            if(!currentUserEmail) return;
+
+            saveBtn.innerText = "সেভ হচ্ছে...";
+            saveBtn.disabled = true;
+
+            try {
+                await db.collection("users").doc(currentUserEmail).set({
+                    college: college,
+                    batch: batch,
+                    phone: phone,
+                    email: currentUserEmail,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                Swal.fire({ icon: 'success', title: 'সফল!', text: 'প্রোফাইল আপডেট হয়েছে।', timer: 1500, showConfirmButton: false });
+                closeProfileModal();
+                loadUserProfile(currentUserEmail); // রিলোড ছাড়াই আপডেট দেখাবে
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'সেভ করতে সমস্যা হয়েছে!', 'error');
+            } finally {
+                saveBtn.innerText = "সেভ করুন";
+                saveBtn.disabled = false;
+            }
+        }
+
+        // --- PARSE DATE ---
         function parseDate(data) {
             const raw = data.timestamp || data.date || data.time || data.created_at;
             if (!raw) return null;
-
-            if (typeof raw.toDate === 'function') return raw.toDate(); // Firebase Timestamp
-            if (raw.seconds) return new Date(raw.seconds * 1000); // Unix Seconds
-            
+            if (typeof raw.toDate === 'function') return raw.toDate(); 
+            if (raw.seconds) return new Date(raw.seconds * 1000); 
             const date = new Date(raw);
             return isNaN(date.getTime()) ? null : date;
         }
 
-        // --- FETCH & RENDER DATA ---
+        // --- FETCH EXAM HISTORY & CALCULATE STATS ---
         async function fetchStudentData(email) {
             try {
-                // ডাটাবেস থেকে শুধু এই ইউজারের রেজাল্টগুলো আনা হচ্ছে
                 const snapshot = await db.collection("exam_results").where("email", "==", email).get();
-                
                 document.getElementById('loader').style.display = 'none';
                 
                 if (snapshot.empty) {
-                    document.getElementById('historyList').innerHTML = `
-                        <div style='text-align:center; padding: 30px; color:#888'>
-                            <i class="fas fa-box-open fa-3x" style="color:#ddd; margin-bottom:10px;"></i>
-                            <p>আপনি এখনো কোনো এক্সাম দেননি।</p>
-                        </div>`;
+                    document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
                     return;
                 }
 
                 let exams = [];
+                let overallCorrect = 0;
+                let overallWrong = 0;
+
                 snapshot.forEach(doc => {
-                    exams.push({ id: doc.id, ...doc.data() });
+                    const data = doc.data();
+                    exams.push({ id: doc.id, ...data });
+                    
+                    if(!data.isPractice) { 
+                        overallCorrect += Number(data.correct || 0);
+                        overallWrong += Number(data.wrong || 0);
+                    }
                 });
 
-                // তারিখ অনুযায়ী সাজানো (সবচেয়ে নতুন এক্সাম আগে দেখাবে)
                 exams.sort((a, b) => {
                     const dateA = parseDate(a) || new Date(0);
                     const dateB = parseDate(b) || new Date(0);
                     return dateB - dateA;
                 });
 
-                // মোট এক্সাম কাউন্ট আপডেট
-                document.getElementById('totalExamsBadge').innerHTML = `<i class="fas fa-file-alt"></i> মোট এক্সাম: ${exams.length}`;
+                // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong, Accuracy)
+                document.getElementById('statExams').innerText = exams.length;
+                document.getElementById('statCorrect').innerText = overallCorrect;
+                document.getElementById('statWrong').innerText = overallWrong;
 
-                // লিস্ট রেন্ডার করা
+                let totalAttempted = overallCorrect + overallWrong;
+                let accuracyPct = totalAttempted > 0 ? Math.round((overallCorrect / totalAttempted) * 100) : 0;
+                
+                document.getElementById('accuracyBar').style.width = accuracyPct + "%";
+                document.getElementById('accuracyText').innerText = accuracyPct;
+
                 const listContainer = document.getElementById('historyList');
-                listContainer.innerHTML = ""; // ক্লিয়ার পুরনো ডাটা
-
-                exams.forEach(exam => {
-                    renderHistoryItem(exam, listContainer);
-                });
+                listContainer.innerHTML = ""; 
+                exams.forEach(exam => renderHistoryItem(exam, listContainer));
 
             } catch (e) {
                 console.error(e);
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করুন।</p>";
+                document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে।</p>";
             }
         }
 
-        // --- RENDER SINGLE HISTORY ITEM ---
+        // --- RENDER HISTORY ITEM ---
         function renderHistoryItem(data, container) {
-            // তারিখ ফরম্যাটিং
             const dateObj = parseDate(data);
             const dateStr = dateObj ? dateObj.toLocaleDateString("en-US", { 
                 day: 'numeric', month: 'short', year: 'numeric', 
                 hour: 'numeric', minute: '2-digit', hour12: true 
             }) : '<span style="color:#999; font-style:italic;">Unknown Date</span>';
             
-            // স্কোর ফরম্যাটিং
             const scoreNum = parseFloat(data.score || 0);
             const scoreClass = scoreNum < 0 ? 'negative' : '';
             const scoreStr = scoreNum.toFixed(2);
 
-            // প্র্যাকটিস ব্যাজ
             const badgeHtml = data.isPractice ? '<span style="background:#dfe6e9; color:#636e72; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:8px;">Practice</span>' : '';
-
-            // লিংকিং
             const retakeLink = `exam.html?id=${data.examId}`;
             const resultLink = `result.html?id=${data.id}`;
 
@@ -194,7 +350,7 @@
                         </div>
                     </div>
                     <div class="btn-group">
-                        <a href="${resultLink}" class="btn-action btn-view"><i class="fas fa-file-invoice"></i> রেজাল্ট দেখুন</a>
+                        <a href="${resultLink}" class="btn-action btn-view"><i class="fas fa-file-invoice"></i> রেজাল্ট</a>
                         <a href="${retakeLink}" class="btn-action btn-retake"><i class="fas fa-redo"></i> আবার দিন</a>
                     </div>
                 </div>
