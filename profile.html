@@ -76,7 +76,9 @@
 
         #loader { text-align: center; padding: 40px; color: var(--primary); }
 
-        /* MODAL STYLES */
+        /* MODAL STYLES (Fixed Bug: z-index for SweetAlert) */
+        .swal2-container { z-index: 9999 !important; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .form-group { margin-bottom: 15px; }
@@ -147,9 +149,13 @@
         </div>
     </div>
 
-    <div id="profileModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--primary);"><i class="fas fa-user-edit"></i> প্রোফাইল আপডেট</h3>
+    <div id="profileModal" class="modal-overlay" onclick="closeProfileModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0; color:var(--primary);"><i class="fas fa-user-edit"></i> প্রোফাইল আপডেট</h3>
+                <button onclick="closeProfileModal()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#888; padding: 0;">&times;</button>
+            </div>
             
             <div class="form-group">
                 <label>College Name (কলেজের নাম)</label>
@@ -227,7 +233,7 @@
         function openProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
         function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
 
-        // --- SAVE PROFILE DATA ---
+        // --- SAVE PROFILE DATA (Fixed Bug: Close logic and SweetAlert depth) ---
         async function saveProfileData() {
             const college = document.getElementById('inpCollege').value.trim();
             const batch = document.getElementById('inpBatch').value.trim();
@@ -236,10 +242,12 @@
 
             if(!currentUserEmail) return;
 
+            // Show loading state
             saveBtn.innerText = "সেভ হচ্ছে...";
             saveBtn.disabled = true;
 
             try {
+                // Save to database
                 await db.collection("users").doc(currentUserEmail).set({
                     college: college,
                     batch: batch,
@@ -248,14 +256,26 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                Swal.fire({ icon: 'success', title: 'সফল!', text: 'প্রোফাইল আপডেট হয়েছে।', timer: 1500, showConfirmButton: false });
+                // Close modal immediately after successful save
                 closeProfileModal();
-                loadUserProfile(currentUserEmail); // রিলোড ছাড়াই আপডেট দেখাবে
+
+                // Show success message ON TOP
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'সফল!', 
+                    text: 'প্রোফাইল আপডেট হয়েছে।', 
+                    timer: 1500, 
+                    showConfirmButton: false 
+                });
+                
+                // Update UI without refreshing
+                loadUserProfile(currentUserEmail); 
 
             } catch (error) {
                 console.error(error);
                 Swal.fire('Error', 'সেভ করতে সমস্যা হয়েছে!', 'error');
             } finally {
+                // Reset button state
                 saveBtn.innerText = "সেভ করুন";
                 saveBtn.disabled = false;
             }
