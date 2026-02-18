@@ -32,17 +32,11 @@
         .score-circle h1 { margin: 0; font-size: 35px; color: var(--primary); }
         .feedback-msg { font-size: 17px; font-weight: 700; color: #4e54c8; margin-bottom: 10px; font-style: italic; }
 
-        /* Meta Info Row for Total Q, Marks, Neg */
         .meta-info-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; font-size: 14px; background: #f1f2f6; padding: 8px; border-radius: 30px; display: inline-flex; }
         .meta-item { color: #636e72; font-weight: 600; }
         .meta-item b { color: #2d3436; }
 
-        .stats-container { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-            margin-top: 20px; 
-        }
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .stat-box { background: #f8f9fa; padding: 15px; border-radius: 12px; border-bottom: 4px solid #ddd; font-weight: bold; font-size: 16px; }
         .stat-box.s-correct { border-color: var(--success); color: var(--success); }
         .stat-box.s-wrong { border-color: var(--danger); color: var(--danger); }
@@ -56,7 +50,6 @@
         .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Questions Styles */
         .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; }
         .q-card-full.show { display: block; }
         .status-correct { border-left-color: var(--success); }
@@ -66,8 +59,8 @@
         .opt-row { display: flex; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; position: relative; }
         .circle { width: 25px; height: 25px; border: 2px solid #ccc; border-radius: 50%; margin-right: 10px; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; }
         
-        .opt-correct { background: #e6fffa; border-color: var(--success); color: #00624e; }
-        .opt-wrong { background: #fff5f5; border-color: var(--danger); color: #c0392b; }
+        .opt-correct { background: #e6fffa; border-color: var(--success); color: #00624e; font-weight: bold; }
+        .opt-wrong { background: #fff5f5; border-color: var(--danger); color: #c0392b; font-weight: bold; }
 
         .explanation-box { margin-top: 15px; padding: 12px; background: #f0f3f6; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary); }
         
@@ -93,8 +86,8 @@
             <br>
             
             <div class="meta-info-row">
-                <span class="meta-item">প্রশ্ন: <b id="totalQ">0</b></span>
-                <span class="meta-item">মার্কস: <b id="totalM">0</b></span>
+                <span class="meta-item">মোট প্রশ্ন: <b id="totalQ">0</b></span>
+                <span class="meta-item">মোট মার্কস: <b id="totalM">0</b></span>
                 <span class="meta-item">নেগেটিভ: <b id="negM">0.25</b></span>
             </div>
 
@@ -124,7 +117,7 @@
 
         <div id="loader" style="text-align:center; padding:20px;">
             <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br>
-            <span style="color:#666; margin-top:10px; display:block;">তোমার ইন্টারনেট স্পিড নির্ভর করে,প্রশ্নগুলো লোড হচ্ছে...</span>
+            <span style="color:#666; margin-top:10px; display:block;">তোমার ইন্টারনেট স্পিড নির্ভর করে, প্রশ্নগুলো লোড হচ্ছে...</span>
         </div>
         
         <div id="errorBox">
@@ -167,7 +160,6 @@
     </div>
 
     <script>
-        // CONFIG
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
 
@@ -181,7 +173,6 @@
         window.onload = async function() {
             if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
             try {
-                // Fetch Result from Firestore
                 const doc = await db.collection("exam_results").doc(docId).get();
                 if(doc.exists) {
                     resultData = doc.data();
@@ -195,28 +186,30 @@
             }
         };
 
-        // --- NEW UPDATED RENDER FUNCTION ---
+        // এই ফাংশনটি এখন সরাসরি শিটের অরিজিনাল ডাটাবেস ইনডেক্স অনুযায়ী কাজ করবে
         async function loadDataAndRender() {
             try {
                 if(!resultData || !resultData.examId) throw new Error("রেজাল্ট ডাটাতে Exam ID নেই!");
 
                 const tabId = resultData.examId;
                 
-                // শিট থেকে ডাটা আনা
                 const [qRes, indexRes] = await Promise.all([
                     fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`).then(r => r.json()),
                     fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json())
                 ]);
 
-                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ভুল ডাটা এসেছে।");
+                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
 
+                // শিট থেকে আসা প্রশ্নের লিস্ট থেকে খালি/ব্ল্যাঙ্ক প্রশ্নগুলো ছেঁকে বাদ দেওয়া হচ্ছে 
+                // (যেহেতু এক্সাম পেজেও এই ফিল্টার করা হয়েছিল)
+                const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+
+                // Firebase থেকে আসা উত্তরের ডাটা
                 const userAnsMap = resultData.userAnswers || {};
                 const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
                 
-                // --- EXAM & MARKING INFO ---
                 document.getElementById('examName').innerText = resultData.examName || "Exam Result";
                 
-                // ব্যাজ সেট করা
                 const typeBadge = document.getElementById('examTypeBadge');
                 if(resultData.isPractice) {
                     typeBadge.innerText = "Practice Mode";
@@ -226,116 +219,118 @@
                     typeBadge.style.background = "#e6fffa"; typeBadge.style.color = "#00b894";
                 }
 
-                // সময় সেট করা
                 const m = Math.floor((resultData.timeTaken || 0) / 60);
                 const s = (resultData.timeTaken || 0) % 60;
                 document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
 
-                // --- ডাইনামিক ক্যালকুলেশন লজিক ---
+                // এক্সাম পেজের ক্যালকুলেশনের সাথে সরাসরি লিঙ্ক করা হলো
+                let markPerQuestion = resultData.markPerQuestion || 1;
+                let negativeMarkFromSheet = resultData.negativeMark || 0.25;
                 
-                // ১. শিট থেকে Total Marks এবং Negative Mark নেওয়া
-                let totalQuestions = qRes.length;
-                let totalMarksFromSheet = examInfo['Total Marks'] ? Number(examInfo['Total Marks']) : totalQuestions;
-                
-                // যদি শিটে Negative Mark না থাকে, তবে ডিফল্ট ০.২৫ কাটা হবে
-                let negativeMarkFromSheet = examInfo['Negative Mark'] !== undefined && examInfo['Negative Mark'] !== "" ? Number(examInfo['Negative Mark']) : 0.25;
+                // শুধুমাত্র পরীক্ষার্থী যে প্রশ্নগুলো ফেস করেছে (UserAnswers এর length অনুযায়ী), সেগুলোর ওপর ভিত্তি করে মার্কস হিসাব
+                let totalAttemptedQuestions = Object.keys(userAnsMap).length;
 
-                // ২. প্রতি প্রশ্নের মান বের করা (সূত্র: মোট নম্বর ÷ মোট প্রশ্ন)
-                let markPerQuestion = totalMarksFromSheet / totalQuestions;
-                
-                // UI তে দেখানো
-                document.getElementById('totalQ').innerText = totalQuestions; 
-                document.getElementById('totalM').innerText = totalMarksFromSheet; 
+                document.getElementById('totalQ').innerText = totalAttemptedQuestions > 0 ? totalAttemptedQuestions : rawQuestions.length; 
+                document.getElementById('totalM').innerText = (totalAttemptedQuestions > 0 ? totalAttemptedQuestions : rawQuestions.length) * markPerQuestion; 
                 document.getElementById('negM').innerText = negativeMarkFromSheet; 
 
-                let realCorrect = 0, realWrong = 0, realSkip = 0, realScore = 0;
                 const container = document.getElementById('qList');
                 container.innerHTML = "";
 
-                // নাম্বার টু লেটার ম্যাপিং
                 const numberToLetter = {
                     '1': 'A', '2': 'B', '3': 'C', '4': 'D',
                     '01': 'A', '02': 'B', '03': 'C', '04': 'D',
                     '১': 'A', '২': 'B', '৩': 'C', '৪': 'D'
                 };
 
-                qRes.forEach((q, index) => {
-                    if (!q["প্রশ্ন (LaTeX সহ)"]) return;
-                    
-                    let myAns = userAnsMap[index];
-                    let rawRightAns = String(q["উত্তর"]).trim();
-                    // সঠিক উত্তর কনভার্ট করা (যাতে 1 বা A দুটোই কাজ করে)
-                    let rightAns = numberToLetter[rawRightAns] || rawRightAns.toUpperCase();
+                let qCounter = 1;
+
+                // অরিজিনাল ইনডেক্সের ওপর ভিত্তি করে রেন্ডারিং লুপ
+                rawQuestions.forEach((q, originalIndex) => {
+                    // যদি পরীক্ষার্থীর ডাটাবেসে এই নির্দিষ্ট প্রশ্নের অরিজিনাল ইনডেক্সটি না থাকে, তবে সেটি রেন্ডার হবে না
+                    // (এটি অপশনাল সাবজেক্টগুলোর জন্য অত্যন্ত জরুরি)
+                    if (!(originalIndex in userAnsMap)) return;
+
+                    let myAns = userAnsMap[originalIndex];
+                    let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : null;
+                    let rightAns = rawRightAns ? (numberToLetter[rawRightAns] || rawRightAns.toUpperCase()) : null;
                     let status = 'skip';
 
                     if (myAns) {
-                        // স্টুডেন্ট উত্তর দিয়েছে
-                        if (String(myAns).trim().toUpperCase() === rightAns) { 
-                            // সঠিক হয়েছে
+                        if (rightAns && String(myAns).trim().toUpperCase() === rightAns) { 
                             status = 'correct'; 
-                            realCorrect++; 
-                            realScore += markPerQuestion; // প্রশ্নের মান যোগ হবে
                         } else { 
-                            // ভুল হয়েছে
                             status = 'wrong'; 
-                            realWrong++; 
-                            realScore -= negativeMarkFromSheet; // শিটের নেগেটিভ মার্ক মাইনাস হবে
                         }
-                    } else { 
-                        // স্কিপ করেছে
-                        realSkip++; 
                     }
 
-                    // অপশন রেন্ডারিং
                     let optionsHtml = '';
-                    ['A', 'B', 'C', 'D'].forEach(opt => {
-                        let isCorrectAns = (opt === rightAns);
-                        let isSelected = (myAns && String(myAns).toUpperCase() === opt);
-                        
-                        let rowClass = '';
-                        if (isCorrectAns) rowClass = 'opt-correct'; // সঠিক উত্তর সবসময় সবুজ
-                        else if (isSelected && status === 'wrong') rowClass = 'opt-wrong'; // ভুল উত্তর দিলে লাল
+                    let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
 
-                        let optText = q["অপশন "+opt] || "";
-                        optionsHtml += `
-                        <div class="opt-row ${rowClass}">
-                            <div class="circle">${opt}</div>
-                            <div>${optText}</div>
-                            ${isCorrectAns ? '<i class="fas fa-check-circle" style="margin-left:auto; color:var(--success);"></i>' : ''}
-                            ${isSelected && !isCorrectAns ? '<i class="fas fa-times-circle" style="margin-left:auto; color:var(--danger);"></i>' : ''}
-                        </div>`;
-                    });
+                    if (isMCQ) {
+                        ['A', 'B', 'C', 'D'].forEach(opt => {
+                            if (!q[`অপশন ${opt}`]) return;
 
-                    // কার্ড তৈরি
+                            let isCorrectAns = (opt === rightAns);
+                            let isSelected = (myAns && String(myAns).toUpperCase() === opt);
+                            
+                            let rowClass = '';
+                            if (isCorrectAns) rowClass = 'opt-correct';
+                            else if (isSelected && status === 'wrong') rowClass = 'opt-wrong';
+
+                            let optText = q[`অপশন ${opt}`] || "";
+                            optionsHtml += `
+                            <div class="opt-row ${rowClass}">
+                                <div class="circle">${opt}</div>
+                                <div>${optText}</div>
+                                ${isCorrectAns ? '<i class="fas fa-check-circle" style="margin-left:auto; color:var(--success);"></i>' : ''}
+                                ${isSelected && !isCorrectAns ? '<i class="fas fa-times-circle" style="margin-left:auto; color:var(--danger);"></i>' : ''}
+                            </div>`;
+                        });
+                    } else {
+                        // Written/Text Question Logic
+                        optionsHtml = `
+                            <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                                <strong style="color:#666;">আপনার উত্তর:</strong> ${myAns ? `<span style="color:${status === 'correct' ? 'green' : 'red'};">${myAns}</span>` : '<span style="color:#999; font-style:italic;">উত্তর দেননি</span>'}
+                            </div>
+                            <div style="padding:10px; background:#e6fffa; border:1px solid var(--success); border-radius:8px; color:#00624e;">
+                                <strong>সঠিক উত্তর:</strong> ${rawRightAns || "নির্ধারিত নেই"}
+                            </div>
+                        `;
+                    }
+
                     container.innerHTML += `
                         <div class="q-card-full status-${status} show" data-status="${status}">
-                            <div style="font-weight:700; margin-bottom:12px;">
-                                Q${index+1}: ${q["প্রশ্ন (LaTeX সহ)"]} 
-                                <span style="font-size:12px; color:#666; float:right; background:#eee; padding:2px 6px; border-radius:4px;">
+                            <div style="font-weight:700; margin-bottom:12px; font-size:16px;">
+                                ${qCounter}. ${q["প্রশ্ন (LaTeX সহ)"]}
+                                ${q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px; font-weight:normal;">${q["Subject"]}</span>` : ""}
+                                <span style="font-size:12px; color:#666; float:right; background:#f1f2f6; padding:2px 6px; border-radius:4px;">
                                     মান: ${markPerQuestion.toFixed(2)}
                                 </span>
                             </div>
                             <div>${optionsHtml}</div>
-                            <div class="explanation-box"><strong>💡 ব্যাখ্যা:</strong><br>${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা নেই"}</div>
+                            <div class="explanation-box">
+                                <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
+                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
+                            </div>
                         </div>`;
+                    qCounter++;
                 });
 
-                // ফাইনাল স্কোর আপডেট
-                document.getElementById('scoreDisplay').innerText = realScore.toFixed(2);
-                document.getElementById('correct').innerText = realCorrect;
-                document.getElementById('wrong').innerText = realWrong;
-                document.getElementById('skip').innerText = realSkip;
+                // Firebase থেকে সরাসরি রেজাল্ট ফেচ করে বসানো হলো (আর ফ্রন্টএন্ডে ক্যালকুলেশনের দরকার নেই)
+                document.getElementById('scoreDisplay').innerText = resultData.score.toFixed(2);
+                document.getElementById('correct').innerText = resultData.correct;
+                document.getElementById('wrong').innerText = resultData.wrong;
+                
+                // Skip calculation: Total attempted questions - (Correct + Wrong)
+                let skipCount = totalAttemptedQuestions - (resultData.correct + resultData.wrong);
+                document.getElementById('skip').innerText = skipCount > 0 ? skipCount : 0;
+                
                 document.getElementById('loader').style.display = 'none';
 
-                // ফিডব্যাক মেসেজ
-                if(examInfo) {
-                    setFeedbackMessage(examInfo['Feedback'], (realScore / totalMarksFromSheet) * 100);
-                }
+                if(examInfo) setFeedbackMessage(examInfo['Feedback'], (resultData.score / (totalAttemptedQuestions * markPerQuestion)) * 100);
+                if(resultData.score > 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                 
-                // কনফেটি (শুধু পজিটিভ স্কোরে)
-                if(realScore > 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                
-                // LaTeX রেন্ডার
                 if (typeof renderMathInElement === 'function') {
                     renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
                 }
@@ -348,7 +343,6 @@
             }
         }
 
-        // --- UTILS & HELPERS ---
         function showError(msg) {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('errorBox').style.display = 'block';
@@ -368,13 +362,11 @@
         function setFeedbackMessage(feedbackStr, scorePercent) {
             const container = document.getElementById('feedbackContainer');
             try {
-                if(!feedbackStr) { container.innerText = "পড়ো , পড়ো এবং পড়ো!"; return; }
+                if(!feedbackStr) { container.innerText = "পরবর্তীতে আরও ভালো করার চেষ্টা করুন!"; return; }
                 const rules = JSON.parse(feedbackStr);
                 const sortedKeys = Object.keys(rules).map(Number).sort((a,b) => b-a);
                 
-                // Default default fallback
                 container.innerText = "ধন্যবাদ!";
-                
                 for(let key of sortedKeys) {
                     if(scorePercent >= key) { 
                         container.innerText = "“" + rules[key] + "”"; 
@@ -386,10 +378,13 @@
 
         function prepareChapterTable() {
             const analysis = resultData.analysis;
-            if(!analysis) return;
+            if(!analysis) {
+                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো চ্যাপ্টার ডাটা পাওয়া যায়নি।</p>";
+                 return;
+            }
             let html = `<table><thead><tr><th>অধ্যায়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
             for (const [chapter, data] of Object.entries(analysis)) {
-                let p = Math.round((data.correct / data.total) * 100);
+                let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
                 let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
                 html += `<tr><td><strong>${chapter}</strong></td><td>${data.correct}/${data.total}</td><td style="color:${color}; font-weight:bold;">${p}%</td></tr>`;
             }
@@ -397,7 +392,6 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        // --- LEADERBOARD LOGIC ---
         async function openLeaderboard() {
             const modal = document.getElementById('lbModal');
             const lbDiv = document.getElementById('lbContent');
@@ -413,7 +407,7 @@
                         <i class="fas fa-dumbbell" style="font-size:50px; color:#e17055; margin-bottom:15px;"></i>
                         <h3 style="color:#2d3436; margin-bottom:10px;">এটি প্র্যাকটিস এক্সাম</h3>
                         <p style="font-size:16px; color:#636e72; line-height:1.6; font-weight:500;">
-                            "প্র্যাকটিস মোডে কোন মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখো, একশোয় একশো পাওয়ার চেষ্টা করো এবং বারবার এক্সাম দাও।"
+                            প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখুন, শতভাগ নম্বর পাওয়ার চেষ্টা করুন।
                         </p>
                     </div>`;
                 return;
@@ -444,11 +438,11 @@
                 const myRank = participants.findIndex(p => p.id === docId) + 1;
 
                 if(myRank > 0) {
-                    lbTitle.innerText = "🏆তোমার মেরিট পজিশন";
+                    lbTitle.innerText = "🏆 আপনার মেরিট পজিশন";
                     lbDiv.innerHTML = `
                         <div style="text-align: center; padding: 20px;">
                             <i class="fas fa-trophy" style="font-size: 60px; color: #fdcb6e; margin-bottom: 20px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));"></i>
-                            <h2 style="margin: 0; color: var(--primary);">পড়ো , পড়ো এবং পড়ো! 🎉</h2>
+                            <h2 style="margin: 0; color: var(--primary);">অভিনন্দন! 🎉</h2>
                             <div style="margin: 20px 0; font-size: 18px; line-height: 1.6; color: #2d3436;">
                                 আপনি এ পর্যন্ত অংশগ্রহণকারী<br>
                                 <span style="font-size: 28px; font-weight: 800; color: var(--primary);">${totalParticipants}</span> 
@@ -474,4 +468,4 @@
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
     </script>
 </body>
-                                                      </html>
+</html>
