@@ -195,13 +195,13 @@
             const res = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`);
             let rawQuestions = await res.json();
             
-            // ✅ THE BUG FIX: Assign the original correct index before any filtering or shuffling
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
             
             rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
             allFetchedQuestions = rawQuestions;
-            allQuestions = groupAndShuffle(rawQuestions); 
+            // শাফল (Shuffle) বন্ধ করা হয়েছে। গুগল শিটের সিরিয়াল অনুযায়ী প্রশ্ন আসবে।
+            allQuestions = groupQuestions(rawQuestions); 
 
             if (examConfig.optional) {
                  document.getElementById('subjectModal').style.display = 'flex';
@@ -213,7 +213,6 @@
             else {
                 filteredQuestions = allQuestions;
                 renderQuestions();
-                restoreAnswers(); 
                 startTimer(examConfig.time);
             }
         }
@@ -231,11 +230,12 @@
                 if (sub === 'general') return true; 
                 return sub === selected;
             });
-            filteredQuestions = groupAndShuffle(finalQuestions);
-            renderQuestions(); restoreAnswers(); startTimer(examConfig.time);
+            filteredQuestions = groupQuestions(finalQuestions);
+            renderQuestions(); startTimer(examConfig.time);
         }
 
-        function groupAndShuffle(questions) {
+        // শাফল ছাড়া শুধু সাবজেক্ট অনুযায়ী গ্রুপ করার ফাংশন
+        function groupQuestions(questions) {
             let grouped = {};
             questions.forEach(q => {
                 let sub = q["Subject"] || "General";
@@ -244,17 +244,9 @@
             });
             let finalArray = [];
             for (let sub in grouped) {
-                shuffleArray(grouped[sub]);
                 finalArray = finalArray.concat(grouped[sub]);
             }
             return finalArray;
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
         }
 
         function showSelectionModal() {
@@ -288,7 +280,7 @@
             }
             filteredQuestions = allQuestions.filter(q => !q["Subject"] || tempSelection.includes(q["Subject"]) || q["Subject"] === "Extra");
             document.getElementById('selectionModal').style.display = 'none';
-            renderQuestions(); restoreAnswers(); startTimer(examConfig.time);
+            renderQuestions(); startTimer(examConfig.time);
         }
 
         function renderQuestions() {
@@ -300,7 +292,7 @@
             if(filteredQuestions.length === 0) return container.innerHTML = "<p>প্রশ্ন পাওয়া যায়নি।</p>";
 
             filteredQuestions.forEach((q, index) => {
-                let qIdx = q.originalIndex; // ✅ USING ORIGINAL INDEX FOR LOGIC
+                let qIdx = q.originalIndex; 
                 
                 const card = document.createElement('div');
                 card.className = 'q-card'; card.id = `card-${index}`;
@@ -308,7 +300,7 @@
                 const sub = q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px;">${q["Subject"]}</span>` : "";
 
                 if (!isMCQ(q)) { 
-                    card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><input type="text" class="extra-input" id="ans-${qIdx}" placeholder="উত্তর দিন..." onblur="saveTextInput(${qIdx})">`;
+                    card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div><input type="text" class="extra-input" id="ans-${qIdx}" placeholder="উত্তর দিন..." onkeyup="updateProgressBar()" onblur="updateProgressBar()">`;
                 } else { 
                     if(q["অপশন A"]) { 
                         let optionsHtml = '';
@@ -331,45 +323,30 @@
             updateProgressBar();
         }
 
+        // লোকাল স্টোরেজ ছাড়া লাইভ প্রোগ্রেস বার আপডেট
         function updateProgressBar() {
             let answered = 0;
             for(let i=0; i<filteredQuestions.length; i++) {
                 let qIdx = filteredQuestions[i].originalIndex;
-                if(localStorage.getItem(`save_${tabId}_ans_${qIdx}`)) answered++;
+                let q = filteredQuestions[i];
+                if(isMCQ(q)) {
+                    if(document.querySelector(`input[name="ans-${qIdx}"]:checked`)) answered++;
+                } else {
+                    let textInput = document.getElementById(`ans-${qIdx}`);
+                    if(textInput && textInput.value.trim() !== "") answered++;
+                }
             }
-            const pct = Math.round((answered / filteredQuestions.length) * 100);
+            const pct = filteredQuestions.length > 0 ? Math.round((answered / filteredQuestions.length) * 100) : 0;
             document.getElementById('progressBar').style.width = pct + "%";
             document.getElementById('progressText').innerText = pct + "%";
         }
 
+        // লোকাল স্টোরেজ সেভ বাদ দেওয়া হয়েছে
         function lockAnswer(qIdx, val) {
-            localStorage.setItem(`save_${tabId}_ans_${qIdx}`, val);
             document.getElementsByName(`ans-${qIdx}`).forEach(r => r.disabled = true);
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 const label = document.getElementById(`lbl-${qIdx}-${opt}`);
                 if(label) label.classList.add(opt === val ? 'selected-locked' : 'disabled');
-            });
-            updateProgressBar();
-        }
-
-        function saveTextInput(qIdx) {
-            const val = document.getElementById(`ans-${qIdx}`).value;
-            if(val.trim()) { localStorage.setItem(`save_${tabId}_ans_${qIdx}`, val); updateProgressBar(); }
-        }
-
-        function restoreAnswers() {
-            filteredQuestions.forEach((q) => {
-                let qIdx = q.originalIndex;
-                const saved = localStorage.getItem(`save_${tabId}_ans_${qIdx}`);
-                if (saved) {
-                    if (isMCQ(q)) {
-                        const r = document.querySelector(`input[name="ans-${qIdx}"][value="${saved}"]`);
-                        if(r) { r.checked = true; lockAnswer(qIdx, saved); }
-                    } else {
-                        const inp = document.getElementById(`ans-${qIdx}`);
-                        if(inp) inp.value = saved;
-                    }
-                }
             });
             updateProgressBar();
         }
@@ -387,7 +364,7 @@
 
         window.goToQuestion = function(index) {
             Swal.close(); 
-            const targetCard = document.getElementById(`card-${index}`); // scroll via visual index
+            const targetCard = document.getElementById(`card-${index}`); 
             if (targetCard) {
                 targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
                 targetCard.style.border = "3px solid #ff7675"; 
@@ -412,7 +389,8 @@
                     if (isMCQ(q)) { 
                         if(document.querySelector(`input[name="ans-${qIdx}"]:checked`)) isAnswered = true;
                     } else { 
-                        if(document.getElementById(`ans-${qIdx}`).value.trim() !== "") isAnswered = true;
+                        let textInput = document.getElementById(`ans-${qIdx}`);
+                        if(textInput && textInput.value.trim() !== "") isAnswered = true;
                     }
                     
                     if (!isAnswered) {
@@ -442,7 +420,7 @@
                 });
             } else {
                 Swal.fire({
-                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে না।", 
+                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে পণ্ডিত হবে না।", 
                     icon: 'success', showCancelButton: true, confirmButtonColor: '#00b894', cancelButtonColor: '#d63031',
                     confirmButtonText: 'হ্যাঁ, জমা দিন', cancelButtonText: 'বাতিল'
                 }).then((result) => { if (result.isConfirmed) submitExam(); });
@@ -468,7 +446,6 @@
             return newObj;
         }
 
-        // --- SUBMIT EXAM WITH ORIGINAL INDEX MAPPING & SECURITY ---
         async function submitExam() {
             if (isSubmitting) return; 
             isSubmitting = true; 
@@ -496,7 +473,7 @@
                 };
 
                 filteredQuestions.forEach((q) => {
-                    let qIdx = q.originalIndex; // ✅ Mapping with Original Index
+                    let qIdx = q.originalIndex; 
                     
                     let correctAnsRaw = q["উত্তর"];
                     let rightAns = correctAnsRaw ? (numberToLetter[String(correctAnsRaw).trim()] || String(correctAnsRaw).trim().toUpperCase()) : null;
@@ -561,7 +538,6 @@
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
                 
-                filteredQuestions.forEach((q) => localStorage.removeItem(`save_${tabId}_ans_${q.originalIndex}`));
                 window.location.href = `result.html?id=${docRef.id}`;
 
             } catch (err) {
@@ -584,4 +560,4 @@
         };
     </script>
 </body>
-    </html>
+</html>
