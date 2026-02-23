@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin | Give Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .access-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .access-card h2 {
+            color: #6c5ce7;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #6c5ce7;
+        }
+        .btn-unlock {
+            background: linear-gradient(135deg, #00b894, #55efc4);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+        }
+        .btn-unlock:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="access-card">
+        <h2><i class="fas fa-key"></i> স্টুডেন্ট অ্যাক্সেস</h2>
+        <div class="subtitle">টেক্সটাইল এবং ঢাবি প্রযুক্তি ইউনিটের সব এক্সাম এক ক্লিকে আনলক করুন</div>
+        
+        <div class="input-group">
+            <label for="studentEmail">স্টুডেন্টের ইমেইল অ্যাড্রেস:</label>
+            <input type="email" id="studentEmail" placeholder="student@gmail.com" required>
+        </div>
+
+        <button class="btn-unlock" onclick="grantFullAccess()">
+            <i class="fas fa-unlock-alt"></i> সব এক্সাম আনলক করুন
+        </button>
+    </div>
+
+    <script>
+        // --- ফায়ারবেস কনফিগারেশন ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0",
+            authDomain: "hstu---cou--exam-2026.firebaseapp.com",
+            projectId: "hstu---cou--exam-2026",
+            storageBucket: "hstu---cou--exam-2026.firebasestorage.app",
+            messagingSenderId: "1058124789396",
+            appId: "1:1058124789396:web:fc772af33deb7c18c9e681"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- অ্যাক্সেস দেওয়ার মূল ফাংশন ---
+        async function grantFullAccess() {
+            const email = document.getElementById('studentEmail').value.trim().toLowerCase();
+
+            if (!email) {
+                Swal.fire('ভুল!', 'দয়া করে স্টুডেন্টের ইমেইল দিন।', 'warning');
+                return;
+            }
+
+            // লোডিং অ্যালার্ট
+            Swal.fire({
+                title: 'অপেক্ষা করুন...',
+                text: 'ডাটাবেসে সেভ করা হচ্ছে',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // ডাটাবেসে "approved" স্ট্যাটাস দেওয়া হচ্ছে
+                await db.collection("payment_requests").add({
+                    email: email,
+                    package: "TextileFull", // আপনার ইনডেক্সের সাথে মিলিয়ে দিলাম
+                    status: "approved",
+                    method: "manual_by_admin",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                Swal.fire({
+                    title: 'সফল! 🎉',
+                    text: `${email} এর জন্য সব পেইড এক্সাম আনলক করা হয়েছে!`,
+                    icon: 'success',
+                    confirmButtonColor: '#00b894'
+                });
+
+                // ইনপুট বক্স ক্লিয়ার করা
+                document.getElementById('studentEmail').value = '';
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                Swal.fire('সমস্যা হয়েছে!', 'ইন্টারনেট কানেকশন চেক করুন অথবা আবার চেষ্টা করুন।', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
