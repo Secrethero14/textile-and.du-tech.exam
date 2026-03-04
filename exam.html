@@ -300,7 +300,6 @@
             }
         }
 
-        // কঠোর ফিল্টারিং এর নতুন কোড
         function confirmSelection() {
             let tempSelection = [...selectedSubjects].map(s => String(s).trim().toUpperCase());
             
@@ -486,6 +485,14 @@
             return newObj;
         }
 
+        // সুপার স্ক্যানার: যেকোনো ফরম্যাটের উত্তরকে A, B, C, D তে কনভার্ট করবে
+        function normalizeMCQAns(ans) {
+            if(!ans) return null;
+            let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
+            const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
+            return m[c] || c;
+        }
+
         async function submitExam() {
             if (isSubmitting) return; 
             isSubmitting = true; 
@@ -506,17 +513,11 @@
                 let markPerQuestion = totalMarksFromSheet / totalQuestions;
                 let negativeMark = examConfig.neg !== undefined ? examConfig.neg : 0.25;
 
-                const numberToLetter = {
-                    '1': 'A', '2': 'B', '3': 'C', '4': 'D',
-                    '01': 'A', '02': 'B', '03': 'C', '04': 'D',
-                    '১': 'A', '২': 'B', '৩': 'C', '৪': 'D'
-                };
-
                 filteredQuestions.forEach((q) => {
                     let qIdx = q.originalIndex; 
                     
-                    let correctAnsRaw = q["উত্তর"];
-                    let rightAns = correctAnsRaw ? (numberToLetter[String(correctAnsRaw).trim()] || String(correctAnsRaw).trim().toUpperCase()) : null;
+                    // এখানে সুপার স্ক্যানার কাজ করবে (শুধুমাত্র MCQ এর জন্য)
+                    let rightAns = isMCQ(q) ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     
                     const ch = q["Chapter"] || q["অধ্যায়"] || "General";
                     const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
