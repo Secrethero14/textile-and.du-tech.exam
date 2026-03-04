@@ -54,10 +54,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* MODALS */
-        #selectionModal, #subjectModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; }
+        #introModal, #selectionModal, #subjectModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; color: var(--text-color); }
         
         #motivationOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.95); z-index:3000; flex-direction:column; justify-content:center; align-items:center; text-align:center; }
+        body.dark-mode #motivationOverlay { background:rgba(30,30,46,0.95); }
         .quote-text { font-size: 20px; color: var(--primary); font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -74,6 +75,22 @@
     <div id="motivationOverlay">
         <div class="spinner" style="width: 60px; height: 60px; border-width: 6px;"></div>
         <div id="quoteText" class="quote-text">ফলাফল তৈরি হচ্ছে...</div>
+    </div>
+
+    <div id="introModal">
+        <div class="modal-content" style="text-align:left;">
+            <h2 id="introTitle" style="color:var(--primary); margin-top:0;"></h2>
+            <div style="background: rgba(108, 92, 231, 0.1); padding:15px; border-radius:8px; margin-bottom:15px; font-size: 15px;">
+                <p style="margin:5px 0;"><i class="fas fa-clock"></i> <b>সময়:</b> <span id="introTime"></span> মিনিট</p>
+                <p style="margin:5px 0;"><i class="fas fa-star"></i> <b>পূর্ণমান:</b> <span id="introMarks"></span></p>
+                <p style="margin:5px 0; color:#d63031;"><i class="fas fa-minus-circle"></i> <b>নেগেটিভ মার্ক:</b> <span id="introNeg"></span></p>
+            </div>
+            <div id="introFeaturesBox" style="margin-bottom:20px; display:none;">
+                <h4 style="margin:0 0 5px 0; color:var(--text-color);"><i class="fas fa-list-ul"></i> এক্সাম ফিচারস:</h4>
+                <div id="introFeatures" style="font-size:14px; line-height:1.5; color:#666;"></div>
+            </div>
+            <button class="btn-submit" style="width:100%;" onclick="proceedFromIntro()">পরবর্তী ধাপ <i class="fas fa-arrow-right"></i></button>
+        </div>
     </div>
 
     <div id="subjectModal">
@@ -98,7 +115,7 @@
     <div id="selectionModal">
         <div class="modal-content">
             <h3>বিষয় নির্বাচন</h3>
-            <div id="subjectOptions"></div>
+            <div id="subjectOptions" style="text-align: left;"></div>
             <button class="btn-submit" style="width:100%; margin-top:15px;" onclick="confirmSelection()">শুরু করুন</button>
         </div>
     </div>
@@ -185,7 +202,8 @@
                     type: exam['Type'] ? String(exam['Type']).toLowerCase().trim() : 'exam', 
                     config: exam['Config'] ? JSON.parse(exam['Config']) : null,
                     optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
-                    fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || []
+                    fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || [],
+                    features: exam['Features'] || '' // নতুন যুক্ত করা হয়েছে
                 };
                 document.getElementById('examTitle').innerText = examConfig.name;
             }
@@ -196,16 +214,32 @@
             let rawQuestions = await res.json();
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
-            
             rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
             allFetchedQuestions = rawQuestions;
-            // শাফল (Shuffle) বন্ধ করা হয়েছে। গুগল শিটের সিরিয়াল অনুযায়ী প্রশ্ন আসবে।
             allQuestions = groupQuestions(rawQuestions); 
+
+            // এক্সামের ডিটেইলস ইন্ট্রো মডালে সেট করা হচ্ছে
+            document.getElementById('introTitle').innerText = examConfig.name;
+            document.getElementById('introTime').innerText = examConfig.time;
+            document.getElementById('introMarks').innerText = examConfig.totalMarks || allQuestions.length;
+            document.getElementById('introNeg').innerText = examConfig.neg;
+            
+            if (examConfig.features && examConfig.features.trim() !== "") {
+                document.getElementById('introFeaturesBox').style.display = 'block';
+                document.getElementById('introFeatures').innerHTML = examConfig.features.replace(/\n/g, '<br>');
+            }
+
+            document.getElementById('loaderContainer').style.display = 'none';
+            document.getElementById('introModal').style.display = 'flex'; // প্রথমে ইন্ট্রো মডাল দেখাবে
+        }
+
+        // ইন্ট্রো মডাল থেকে পরবর্তী ধাপে যাওয়ার ফাংশন
+        function proceedFromIntro() {
+            document.getElementById('introModal').style.display = 'none';
 
             if (examConfig.optional) {
                  document.getElementById('subjectModal').style.display = 'flex';
-                 document.getElementById('loaderContainer').style.display = 'none';
             } 
             else if (examConfig.config && examConfig.config.mode === 'selection') {
                 showSelectionModal();
@@ -219,7 +253,7 @@
 
         function confirmSubjects() {
             const selected = document.querySelector('input[name="optSub"]:checked')?.value;
-            if (!selected) return Swal.fire('Warning', " গণিত অথবা জীববিজ্ঞান সিলেক্ট করুন!", 'warning');
+            if (!selected) return Swal.fire('সতর্কতা', "দয়া করে গণিত অথবা জীববিজ্ঞান সিলেক্ট করুন!", 'warning');
             
             document.getElementById('subjectModal').style.display = 'none';
             document.getElementById('loaderContainer').style.display = 'block';
@@ -234,7 +268,6 @@
             renderQuestions(); startTimer(examConfig.time);
         }
 
-        // শাফল ছাড়া শুধু সাবজেক্ট অনুযায়ী গ্রুপ করার ফাংশন
         function groupQuestions(questions) {
             let grouped = {};
             questions.forEach(q => {
@@ -262,7 +295,7 @@
             if(examConfig.config.groups) {
                 examConfig.config.groups.forEach((group, idx) => {
                     let html = `<div style="margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:5px;"><p style="margin:0 0 5px 0;">বাছাই করুন:</p>`;
-                    group.forEach(sub => { html += `<label style="margin-right:10px;"><input type="radio" name="grp_${idx}" value="${sub}"> ${sub}</label>`; });
+                    group.forEach(sub => { html += `<label style="margin-right:10px; display:inline-block; margin-bottom:5px;"><input type="radio" name="grp_${idx}" value="${sub}"> ${sub}</label>`; });
                     html += `</div>`;
                     container.innerHTML += html;
                 });
@@ -274,7 +307,7 @@
             if(examConfig.config.groups) {
                 for(let i=0; i<examConfig.config.groups.length; i++) {
                     const selected = document.querySelector(`input[name="grp_${i}"]:checked`);
-                    if(!selected) return Swal.fire('Error', ' বিষয় বাছাই করুন!', 'error');
+                    if(!selected) return Swal.fire('সতর্কতা', 'দয়া করে বিষয় বাছাই করুন!', 'error');
                     tempSelection.push(selected.value);
                 }
             }
@@ -323,7 +356,6 @@
             updateProgressBar();
         }
 
-        // লোকাল স্টোরেজ ছাড়া লাইভ প্রোগ্রেস বার আপডেট
         function updateProgressBar() {
             let answered = 0;
             for(let i=0; i<filteredQuestions.length; i++) {
@@ -341,7 +373,6 @@
             document.getElementById('progressText').innerText = pct + "%";
         }
 
-        // লোকাল স্টোরেজ সেভ বাদ দেওয়া হয়েছে
         function lockAnswer(qIdx, val) {
             document.getElementsByName(`ans-${qIdx}`).forEach(r => r.disabled = true);
             ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -420,7 +451,7 @@
                 });
             } else {
                 Swal.fire({
-                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে পণ্ডিত হবে না।", 
+                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে না।", 
                     icon: 'success', showCancelButton: true, confirmButtonColor: '#00b894', cancelButtonColor: '#d63031',
                     confirmButtonText: 'হ্যাঁ, জমা দিন', cancelButtonText: 'বাতিল'
                 }).then((result) => { if (result.isConfirmed) submitExam(); });
@@ -560,4 +591,4 @@
         };
     </script>
 </body>
-</html>
+                            </html>
