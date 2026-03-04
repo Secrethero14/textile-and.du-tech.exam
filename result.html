@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -78,7 +80,7 @@
         <a href="index.html" class="home-link"><i class="fas fa-home"></i> ড্যাশবোর্ড</a>
     </div>
 
-    <div class="container">
+    <div class="container" id="pdf-container">
         <div class="score-card">
             <h2 id="examName" style="margin-bottom: 10px;">Loading...</h2>
             
@@ -102,25 +104,26 @@
                 <div class="stat-box">সময়: <span id="timeTakenDisplay">00:00</span></div>
             </div>
 
-            <div class="btn-row">
+            <div class="btn-row" data-html2canvas-ignore="true">
+                <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
                 <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
                 <button onclick="openLeaderboard()" class="btn-main" style="background:var(--warning); color:#856404;"><i class="fas fa-trophy"></i> মেরিট লিস্ট</button>
             </div>
         </div>
 
-        <div class="controls-area">
+        <div class="controls-area" data-html2canvas-ignore="true">
             <button class="btn-filter active" onclick="filterQuestions('all')">সব প্রশ্ন</button>
             <button class="btn-filter" style="color:var(--danger)" onclick="filterQuestions('wrong')">শুধু ভুল</button>
             <button class="btn-filter" style="color:#856404" onclick="filterQuestions('skip')">শুধু স্কিপ</button>
             <button class="btn-filter" style="color:var(--success)" onclick="filterQuestions('correct')">সঠিকগুলো</button>
         </div>
 
-        <div id="loader" style="text-align:center; padding:20px;">
+        <div id="loader" style="text-align:center; padding:20px;" data-html2canvas-ignore="true">
             <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br>
             <span style="color:#666; margin-top:10px; display:block;">তোমার ইন্টারনেট স্পিড নির্ভর করে, প্রশ্নগুলো লোড হচ্ছে...</span>
         </div>
         
-        <div id="errorBox">
+        <div id="errorBox" data-html2canvas-ignore="true">
             <i class="fas fa-exclamation-triangle fa-2x"></i><br>
             <h4 id="errorMsg" style="margin:10px 0;">সমস্যা হয়েছে!</h4>
             <button onclick="location.reload()" style="padding:5px 15px; margin-top:10px; cursor:pointer;">Reload Page</button>
@@ -128,7 +131,7 @@
 
         <div id="qList"></div>
 
-        <div class="score-card" style="margin-top: 30px;">
+        <div class="score-card" style="margin-top: 30px;" data-html2canvas-ignore="true">
             <h3>পরবর্তী ধাপ</h3>
             <div class="btn-row">
                 <a href="profile.html" class="btn-main" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe);">
@@ -186,7 +189,6 @@
             }
         };
 
-        // এই ফাংশনটি এখন সরাসরি শিটের অরিজিনাল ডাটাবেস ইনডেক্স অনুযায়ী কাজ করবে
         async function loadDataAndRender() {
             try {
                 if(!resultData || !resultData.examId) throw new Error("রেজাল্ট ডাটাতে Exam ID নেই!");
@@ -200,11 +202,8 @@
 
                 if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
 
-                // শিট থেকে আসা প্রশ্নের লিস্ট থেকে খালি/ব্ল্যাঙ্ক প্রশ্নগুলো ছেঁকে বাদ দেওয়া হচ্ছে 
-                // (যেহেতু এক্সাম পেজেও এই ফিল্টার করা হয়েছিল)
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
-                // Firebase থেকে আসা উত্তরের ডাটা
                 const userAnsMap = resultData.userAnswers || {};
                 const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
                 
@@ -223,11 +222,9 @@
                 const s = (resultData.timeTaken || 0) % 60;
                 document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
 
-                // এক্সাম পেজের ক্যালকুলেশনের সাথে সরাসরি লিঙ্ক করা হলো
                 let markPerQuestion = resultData.markPerQuestion || 1;
                 let negativeMarkFromSheet = resultData.negativeMark || 0.25;
                 
-                // শুধুমাত্র পরীক্ষার্থী যে প্রশ্নগুলো ফেস করেছে (UserAnswers এর length অনুযায়ী), সেগুলোর ওপর ভিত্তি করে মার্কস হিসাব
                 let totalAttemptedQuestions = Object.keys(userAnsMap).length;
 
                 document.getElementById('totalQ').innerText = totalAttemptedQuestions > 0 ? totalAttemptedQuestions : rawQuestions.length; 
@@ -245,10 +242,7 @@
 
                 let qCounter = 1;
 
-                // অরিজিনাল ইনডেক্সের ওপর ভিত্তি করে রেন্ডারিং লুপ
                 rawQuestions.forEach((q, originalIndex) => {
-                    // যদি পরীক্ষার্থীর ডাটাবেসে এই নির্দিষ্ট প্রশ্নের অরিজিনাল ইনডেক্সটি না থাকে, তবে সেটি রেন্ডার হবে না
-                    // (এটি অপশনাল সাবজেক্টগুলোর জন্য অত্যন্ত জরুরি)
                     if (!(originalIndex in userAnsMap)) return;
 
                     let myAns = userAnsMap[originalIndex];
@@ -288,7 +282,6 @@
                             </div>`;
                         });
                     } else {
-                        // Written/Text Question Logic
                         optionsHtml = `
                             <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
                                 <strong style="color:#666;">আপনার উত্তর:</strong> ${myAns ? `<span style="color:${status === 'correct' ? 'green' : 'red'};">${myAns}</span>` : '<span style="color:#999; font-style:italic;">উত্তর দেননি</span>'}
@@ -317,12 +310,10 @@
                     qCounter++;
                 });
 
-                // Firebase থেকে সরাসরি রেজাল্ট ফেচ করে বসানো হলো (আর ফ্রন্টএন্ডে ক্যালকুলেশনের দরকার নেই)
                 document.getElementById('scoreDisplay').innerText = resultData.score.toFixed(2);
                 document.getElementById('correct').innerText = resultData.correct;
                 document.getElementById('wrong').innerText = resultData.wrong;
                 
-                // Skip calculation: Total attempted questions - (Correct + Wrong)
                 let skipCount = totalAttemptedQuestions - (resultData.correct + resultData.wrong);
                 document.getElementById('skip').innerText = skipCount > 0 ? skipCount : 0;
                 
@@ -466,6 +457,39 @@
 
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
+
+        // PDF ডাউনলোডের ফাংশন
+        function downloadPDF() {
+            // "শুধু ভুল" বা "শুধু সঠিক" ফিল্টার করা থাকলে আগে সব প্রশ্ন দৃশ্যমান করে নেবে
+            filterQuestions('all'); 
+            
+            const element = document.getElementById('pdf-container');
+            const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
+            
+            // অপশনগুলো সেট করা
+            const opt = {
+                margin:       0.3,
+                filename:     `${examTitle}_Result.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // লোডিং অ্যালার্ট দেখানো
+            Swal.fire({
+                title: 'পিডিএফ তৈরি হচ্ছে...',
+                text: 'দয়া করে একটু অপেক্ষা করুন।',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // পিডিএফ জেনারেট করে সেভ করা
+            html2pdf().set(opt).from(element).save().then(() => {
+                Swal.close();
+            });
+        }
     </script>
 </body>
 </html>
