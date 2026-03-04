@@ -125,7 +125,7 @@
         
         <div id="errorBox" data-html2canvas-ignore="true">
             <i class="fas fa-exclamation-triangle fa-2x"></i><br>
-            <h4 id="errorMsg" style="margin:10px 0;">সমস্যা হয়েছে!</h4>
+            <h4 id="errorMsg" style="margin:10px 0;">সমস্যা হয়েছে!</h4>
             <button onclick="location.reload()" style="padding:5px 15px; margin-top:10px; cursor:pointer;">Reload Page</button>
         </div>
 
@@ -174,20 +174,28 @@
         let resultData = null;
 
         window.onload = async function() {
-            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
+            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
             try {
                 const doc = await db.collection("exam_results").doc(docId).get();
                 if(doc.exists) {
                     resultData = doc.data();
                     loadDataAndRender(); 
                 } else {
-                    showError("ডাটাবেসে এই রেজাল্ট পাওয়া যায়নি।");
+                    showError("ডাটাবেসে এই রেজাল্ট পাওয়া যায়নি।");
                 }
             } catch (e) { 
                 console.error(e);
                 showError("Firestore Error: " + e.message);
             }
         };
+
+        // সুপার স্ক্যানার (যেকোনো ফরম্যাটের উত্তরকে A, B, C, D তে কনভার্ট করার জন্য)
+        function normalizeMCQAns(ans) {
+            if(!ans) return null;
+            let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
+            const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
+            return m[c] || c;
+        }
 
         async function loadDataAndRender() {
             try {
@@ -200,7 +208,7 @@
                     fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json())
                 ]);
 
-                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
+                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
 
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
@@ -234,14 +242,6 @@
                 const container = document.getElementById('qList');
                 container.innerHTML = "";
 
-              // সুপার স্ক্যানার
-                function normalizeMCQAns(ans) {
-                    if(!ans) return null;
-                    let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
-                    const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
-                    return m[c] || c;
-                }
-
                 let qCounter = 1;
 
                 rawQuestions.forEach((q, originalIndex) => {
@@ -250,8 +250,10 @@
                     let myAns = userAnsMap[originalIndex];
                     let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
                     
+                    // সুপার স্ক্যানার দিয়ে সঠিক উত্তর বের করা
                     let rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
-                    let rawRightAns = rightAns; // স্ক্রিনে দেখানোর জন্য
+                    let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : "নির্ধারিত নেই"; 
+                    
                     let status = 'skip';
 
                     if (myAns) {
@@ -263,7 +265,6 @@
                     }
 
                     let optionsHtml = '';
-                    let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
 
                     if (isMCQ) {
                         ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -273,6 +274,7 @@
                             let isSelected = (myAns && String(myAns).toUpperCase() === opt);
                             
                             let rowClass = '';
+                            // সঠিক উত্তর সব সময় সবুজ/বোল্ড থাকবে, এমনকি স্কিপ করলেও
                             if (isCorrectAns) rowClass = 'opt-correct';
                             else if (isSelected && status === 'wrong') rowClass = 'opt-wrong';
 
@@ -291,7 +293,7 @@
                                 <strong style="color:#666;">আপনার উত্তর:</strong> ${myAns ? `<span style="color:${status === 'correct' ? 'green' : 'red'};">${myAns}</span>` : '<span style="color:#999; font-style:italic;">উত্তর দেননি</span>'}
                             </div>
                             <div style="padding:10px; background:#e6fffa; border:1px solid var(--success); border-radius:8px; color:#00624e;">
-                                <strong>সঠিক উত্তর:</strong> ${rawRightAns || "নির্ধারিত নেই"}
+                                <strong>সঠিক উত্তর:</strong> ${rawRightAns}
                             </div>
                         `;
                     }
@@ -308,7 +310,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
+                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -374,7 +376,7 @@
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
-                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো চ্যাপ্টার ডাটা পাওয়া যায়নি।</p>";
+                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো চ্যাপ্টার ডাটা পাওয়া যায়নি।</p>";
                  return;
             }
             let html = `<table><thead><tr><th>অধ্যায়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
@@ -402,7 +404,7 @@
                         <i class="fas fa-dumbbell" style="font-size:50px; color:#e17055; margin-bottom:15px;"></i>
                         <h3 style="color:#2d3436; margin-bottom:10px;">এটি প্র্যাকটিস এক্সাম</h3>
                         <p style="font-size:16px; color:#636e72; line-height:1.6; font-weight:500;">
-                            প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখুন, শতভাগ নম্বর পাওয়ার চেষ্টা করুন।
+                            প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখুন, শতভাগ নম্বর পাওয়ার চেষ্টা করুন।
                         </p>
                     </div>`;
                 return;
@@ -464,13 +466,11 @@
 
         // PDF ডাউনলোডের ফাংশন
         function downloadPDF() {
-            // "শুধু ভুল" বা "শুধু সঠিক" ফিল্টার করা থাকলে আগে সব প্রশ্ন দৃশ্যমান করে নেবে
             filterQuestions('all'); 
             
             const element = document.getElementById('pdf-container');
             const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
             
-            // অপশনগুলো সেট করা
             const opt = {
                 margin:       0.3,
                 filename:     `${examTitle}_Result.pdf`,
@@ -479,17 +479,15 @@
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // লোডিং অ্যালার্ট দেখানো
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: 'দয়া করে একটু অপেক্ষা করুন।',
+                text: 'দয়া করে একটু অপেক্ষা করুন।',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
 
-            // পিডিএফ জেনারেট করে সেভ করা
             html2pdf().set(opt).from(element).save().then(() => {
                 Swal.close();
             });
@@ -497,4 +495,3 @@
     </script>
 </body>
 </html>
-
