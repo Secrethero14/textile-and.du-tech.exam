@@ -189,7 +189,7 @@
             }
         };
 
-        // সুপার স্ক্যানার (যেকোনো ফরম্যাটের উত্তরকে A, B, C, D তে কনভার্ট করার জন্য)
+        // সুপার স্ক্যানার
         function normalizeMCQAns(ans) {
             if(!ans) return null;
             let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
@@ -250,7 +250,6 @@
                     let myAns = userAnsMap[originalIndex];
                     let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
                     
-                    // সুপার স্ক্যানার দিয়ে সঠিক উত্তর বের করা
                     let rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : "নির্ধারিত নেই"; 
                     
@@ -264,6 +263,16 @@
                         }
                     }
 
+                    // 🔴 নতুন স্ট্যাটাস ব্যাজ (Clear Indication)
+                    let statusBadge = '';
+                    if (status === 'correct') {
+                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
+                    } else if (status === 'wrong') {
+                        statusBadge = `<span style="background: #fff5f5; color: #d63031; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-times-circle"></i> ভুল উত্তর! (আপনার উত্তর: ${myAns})</span>`;
+                    } else {
+                        statusBadge = `<span style="background: #fff3e0; color: #e67e22; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-exclamation-circle"></i> আপনি স্কিপ করেছেন</span>`;
+                    }
+
                     let optionsHtml = '';
 
                     if (isMCQ) {
@@ -274,7 +283,6 @@
                             let isSelected = (myAns && String(myAns).toUpperCase() === opt);
                             
                             let rowClass = '';
-                            // সঠিক উত্তর সব সময় সবুজ/বোল্ড থাকবে, এমনকি স্কিপ করলেও
                             if (isCorrectAns) rowClass = 'opt-correct';
                             else if (isSelected && status === 'wrong') rowClass = 'opt-wrong';
 
@@ -300,13 +308,16 @@
 
                     container.innerHTML += `
                         <div class="q-card-full status-${status} show" data-status="${status}">
-                            <div style="font-weight:700; margin-bottom:12px; font-size:16px;">
+                            <div style="font-weight:700; margin-bottom:8px; font-size:16px;">
                                 ${qCounter}. ${q["প্রশ্ন (LaTeX সহ)"]}
                                 ${q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px; font-weight:normal;">${q["Subject"]}</span>` : ""}
                                 <span style="font-size:12px; color:#666; float:right; background:#f1f2f6; padding:2px 6px; border-radius:4px;">
                                     মান: ${markPerQuestion.toFixed(2)}
                                 </span>
                             </div>
+                            
+                            ${statusBadge}
+                            
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
