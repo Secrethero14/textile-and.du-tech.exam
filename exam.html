@@ -89,7 +89,7 @@
                 <h4 style="margin:0 0 5px 0; color:var(--text-color);"><i class="fas fa-list-ul"></i> এক্সাম ফিচারস:</h4>
                 <div id="introFeatures" style="font-size:14px; line-height:1.5; color:#666;"></div>
             </div>
-            <button class="btn-submit" style="width:100%;" onclick="proceedFromIntro()">পরবর্তী ধাপ <i class="fas fa-arrow-right"></i></button>
+            <button class="btn-submit" style="width:100%;" onclick="proceedFromIntro()">এক্সাম শুরু করি <i class="fas fa-arrow-right"></i></button>
         </div>
     </div>
 
@@ -203,7 +203,7 @@
                     config: exam['Config'] ? JSON.parse(exam['Config']) : null,
                     optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
                     fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || [],
-                    features: exam['Features'] || '' // নতুন যুক্ত করা হয়েছে
+                    features: exam['Features'] || '' 
                 };
                 document.getElementById('examTitle').innerText = examConfig.name;
             }
@@ -219,7 +219,6 @@
             allFetchedQuestions = rawQuestions;
             allQuestions = groupQuestions(rawQuestions); 
 
-            // এক্সামের ডিটেইলস ইন্ট্রো মডালে সেট করা হচ্ছে
             document.getElementById('introTitle').innerText = examConfig.name;
             document.getElementById('introTime').innerText = examConfig.time;
             document.getElementById('introMarks').innerText = examConfig.totalMarks || allQuestions.length;
@@ -231,10 +230,9 @@
             }
 
             document.getElementById('loaderContainer').style.display = 'none';
-            document.getElementById('introModal').style.display = 'flex'; // প্রথমে ইন্ট্রো মডাল দেখাবে
+            document.getElementById('introModal').style.display = 'flex'; 
         }
 
-        // ইন্ট্রো মডাল থেকে পরবর্তী ধাপে যাওয়ার ফাংশন
         function proceedFromIntro() {
             document.getElementById('introModal').style.display = 'none';
 
@@ -302,18 +300,29 @@
             }
         }
 
+        // কঠোর ফিল্টারিং এর নতুন কোড
         function confirmSelection() {
-            let tempSelection = [...selectedSubjects];
+            let tempSelection = [...selectedSubjects].map(s => String(s).trim().toUpperCase());
+            
             if(examConfig.config.groups) {
                 for(let i=0; i<examConfig.config.groups.length; i++) {
                     const selected = document.querySelector(`input[name="grp_${i}"]:checked`);
                     if(!selected) return Swal.fire('সতর্কতা', 'দয়া করে বিষয় বাছাই করুন!', 'error');
-                    tempSelection.push(selected.value);
+                    tempSelection.push(String(selected.value).trim().toUpperCase());
                 }
             }
-            filteredQuestions = allQuestions.filter(q => !q["Subject"] || tempSelection.includes(q["Subject"]) || q["Subject"] === "Extra");
+            
+            filteredQuestions = allQuestions.filter(q => {
+                let qSub = q["Subject"] ? String(q["Subject"]).trim().toUpperCase() : "";
+                
+                if (qSub === "") return false; 
+                
+                return tempSelection.includes(qSub);
+            });
+            
             document.getElementById('selectionModal').style.display = 'none';
-            renderQuestions(); startTimer(examConfig.time);
+            renderQuestions(); 
+            startTimer(examConfig.time);
         }
 
         function renderQuestions() {
@@ -591,5 +600,4 @@
         };
     </script>
 </body>
-                            </html>
-
+</html>
