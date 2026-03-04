@@ -234,11 +234,13 @@
                 const container = document.getElementById('qList');
                 container.innerHTML = "";
 
-                const numberToLetter = {
-                    '1': 'A', '2': 'B', '3': 'C', '4': 'D',
-                    '01': 'A', '02': 'B', '03': 'C', '04': 'D',
-                    '১': 'A', '২': 'B', '৩': 'C', '৪': 'D'
-                };
+              // সুপার স্ক্যানার
+                function normalizeMCQAns(ans) {
+                    if(!ans) return null;
+                    let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
+                    const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
+                    return m[c] || c;
+                }
 
                 let qCounter = 1;
 
@@ -246,8 +248,10 @@
                     if (!(originalIndex in userAnsMap)) return;
 
                     let myAns = userAnsMap[originalIndex];
-                    let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : null;
-                    let rightAns = rawRightAns ? (numberToLetter[rawRightAns] || rawRightAns.toUpperCase()) : null;
+                    let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
+                    
+                    let rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
+                    let rawRightAns = rightAns; // স্ক্রিনে দেখানোর জন্য
                     let status = 'skip';
 
                     if (myAns) {
@@ -493,3 +497,4 @@
     </script>
 </body>
 </html>
+
