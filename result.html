@@ -189,12 +189,25 @@
             }
         };
 
-        // সুপার স্ক্যানার
+        // 🔴 আল্টিমেট সুপার স্ক্যানার: যেকোনো ফরম্যাটের উত্তরকে চিনে নেবে 🔴
         function normalizeMCQAns(ans) {
-            if(!ans) return null;
-            let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
-            const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
-            return m[c] || c;
+            if (!ans) return null;
+            
+            // সব ব্র্যাকেট, ড্যাশ, ডট এবং অপ্রয়োজনীয় শব্দ (অপশন, Option, উত্তর) বাদ দেওয়া হচ্ছে
+            let c = String(ans).toUpperCase().replace(/[\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
+            
+            // যদি "A Bangladesh" বা "ক ঢাকা" এর মতো থাকে, শুধু প্রথম বর্ণ বা লেটারটা নিবে
+            let firstChar = c.charAt(0);
+            
+            // ম্যাপিং
+            const m = { 
+                '1':'A', '2':'B', '3':'C', '4':'D',
+                '১':'A', '২':'B', '৩':'C', '৪':'D',
+                'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D'
+            };
+            
+            // যদি ম্যাপে থাকে সেটা দিবে, না হলে ওই লেটারটাই দিবে
+            return m[firstChar] || firstChar;
         }
 
         async function loadDataAndRender() {
@@ -209,6 +222,9 @@
                 ]);
 
                 if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
+
+                // অরিজিনাল ইনডেক্স সেট করা (যাতে সিরিয়াল উলটপালট না হয়)
+                qRes.forEach((q, idx) => { q.originalIndex = idx; });
 
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
 
@@ -244,7 +260,8 @@
 
                 let qCounter = 1;
 
-                rawQuestions.forEach((q, originalIndex) => {
+                rawQuestions.forEach((q) => {
+                    let originalIndex = q.originalIndex;
                     if (!(originalIndex in userAnsMap)) return;
 
                     let myAns = userAnsMap[originalIndex];
@@ -263,7 +280,7 @@
                         }
                     }
 
-                    // 🔴 নতুন স্ট্যাটাস ব্যাজ (Clear Indication)
+                    // স্ট্যাটাস ব্যাজ
                     let statusBadge = '';
                     if (status === 'correct') {
                         statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
@@ -505,4 +522,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
