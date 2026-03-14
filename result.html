@@ -272,7 +272,8 @@
                     
                     let status = 'skip';
 
-                    if (myAns) {
+                    // --- বুলেটপ্রুফ সেফটি ফিল্টার: ফাঁকা স্পেস বা অদ্ভুত ডাটা আসলেও স্কিপ ধরবে ---
+                    if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
                         if (rightAns && String(myAns).trim().toUpperCase() === rightAns) { 
                             status = 'correct'; 
                         } else { 
@@ -297,7 +298,7 @@
                             if (!q[`অপশন ${opt}`]) return;
 
                             let isCorrectAns = (opt === rightAns);
-                            let isSelected = (myAns && String(myAns).toUpperCase() === opt);
+                            let isSelected = (myAns && String(myAns).trim() !== "" && String(myAns).toUpperCase() === opt);
                             
                             let rowClass = '';
                             if (isCorrectAns) rowClass = 'opt-correct';
@@ -522,4 +523,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
