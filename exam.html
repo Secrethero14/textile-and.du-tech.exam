@@ -35,13 +35,17 @@
         .q-card { background: var(--card-bg); padding: 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid transparent; }
         
         .q-text { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+        
+        /* কাস্টম বাটন ডিজাইন - রেডিও বাটন সম্পূর্ণ বাদ! */
         .opt-label { display: flex; align-items: center; padding: 12px; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .opt-label:hover { background: rgba(108, 92, 231, 0.1); border-color: var(--primary); }
-        input[type="radio"] { margin-right: 10px; accent-color: var(--primary); transform: scale(1.2); }
-
         .opt-label.disabled { opacity: 0.6; cursor: not-allowed; background: #f0f0f0; }
         .opt-label.selected-locked { background: #e6fffa; border-color: #00b894; color: #00624e; font-weight: bold; }
         
+        .custom-radio { width: 18px; height: 18px; border: 2px solid #ccc; border-radius: 50%; margin-right: 12px; position: relative; flex-shrink: 0; display: inline-block; transition: 0.2s; }
+        .opt-label.selected-locked .custom-radio { border-color: #00b894; background: #00b894; }
+        .opt-label.selected-locked .custom-radio::after { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; background: white; border-radius: 50%; }
+
         .extra-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; background: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
         
         .bottom-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; z-index: 1000; border: 1px solid #eee; }
@@ -313,9 +317,7 @@
             
             filteredQuestions = allQuestions.filter(q => {
                 let qSub = q["Subject"] ? String(q["Subject"]).trim().toUpperCase() : "";
-                
                 if (qSub === "") return false; 
-                
                 return tempSelection.includes(qSub);
             });
             
@@ -324,6 +326,7 @@
             startTimer(examConfig.time);
         }
 
+        // --- রেডিও বাটন ডিলিট করা হয়েছে ---
         function renderQuestions() {
             const container = document.getElementById('questionContainer');
             container.innerHTML = "";
@@ -345,9 +348,13 @@
                 } else { 
                     if(q["অপশন A"]) { 
                         let optionsHtml = '';
+                        // রেডিও বাটনের বদলে শুধু div ব্যবহার করা হয়েছে, যেন ব্রাউজার অটো-ফিল করতে না পারে
                         ['A', 'B', 'C', 'D'].forEach(opt => {
                             if(q[`অপশন ${opt}`]) {
-                                optionsHtml += `<label class="opt-label" id="lbl-${qIdx}-${opt}"><input type="radio" name="ans-${qIdx}" value="${opt}" onclick="lockAnswer(${qIdx}, '${opt}')"> ${q[`অপশন ${opt}`]}</label>`;
+                                optionsHtml += `
+                                <div class="opt-label" id="lbl-${qIdx}-${opt}" onclick="lockAnswer(${qIdx}, '${opt}')">
+                                    <span class="custom-radio"></span> <span style="flex-grow:1;">${q[`অপশন ${opt}`]}</span>
+                                </div>`;
                             }
                         });
                         card.innerHTML = `<div class="q-text">${index + 1}. ${qText} ${sub}</div>${optionsHtml}`;
@@ -364,7 +371,6 @@
             updateProgressBar();
         }
 
-        // --- আপডেট ১: শুধুমাত্র ভিজুয়াল ক্লাস (selected-locked) চেক করবে ---
         function updateProgressBar() {
             let answered = 0;
             for(let i=0; i<filteredQuestions.length; i++) {
@@ -387,17 +393,28 @@
             document.getElementById('progressText').innerText = pct + "%";
         }
 
+        // --- আলটিমেট সিকিউরড লক অ্যানসার ---
         function lockAnswer(qIdx, val) {
-            const selectedRadio = document.querySelector(`input[name="ans-${qIdx}"][value="${val}"]`);
-            if (selectedRadio) {
-                selectedRadio.checked = true;
-            }
-
-            document.getElementsByName(`ans-${qIdx}`).forEach(r => r.disabled = true);
-            
+            // আগে চেক করবে এই প্রশ্নে কোনো অপশন লক করা আছে কি না
+            let isAlreadyAnswered = false;
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 const label = document.getElementById(`lbl-${qIdx}-${opt}`);
-                if(label) label.classList.add(opt === val ? 'selected-locked' : 'disabled');
+                if(label && label.classList.contains('selected-locked')) isAlreadyAnswered = true;
+            });
+
+            // যদি আগেই উত্তর দিয়ে থাকে, তাহলে আর পরিবর্তন হবে না
+            if (isAlreadyAnswered) return; 
+
+            // প্রথমবার ক্লিক করলেই শুধু লক হবে
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const label = document.getElementById(`lbl-${qIdx}-${opt}`);
+                if(label) {
+                    if (opt === val) {
+                        label.classList.add('selected-locked');
+                    } else {
+                        label.classList.add('disabled');
+                    }
+                }
             });
             updateProgressBar();
         }
@@ -427,7 +444,6 @@
             }
         }
 
-        // --- আপডেট ২: স্কিপ কাউন্টিং শুধুমাত্র ভিজুয়াল ক্লাস দিয়ে চেক করবে ---
         function attemptSubmit() {
             let skippedButtonsHtml = ''; 
             let skippedCount = 0;
@@ -439,16 +455,12 @@
                 if (q["উত্তর"]) {
                     let isAnswered = false;
                     if (isMCQ(q)) { 
-                        let answeredMCQ = false;
                         ['A', 'B', 'C', 'D'].forEach(opt => {
                             const labelEl = document.getElementById(`lbl-${qIdx}-${opt}`);
                             if(labelEl && labelEl.classList.contains('selected-locked')) {
-                                answeredMCQ = true;
+                                isAnswered = true;
                             }
                         });
-                        if(answeredMCQ) { 
-                            isAnswered = true;
-                        }
                     } else { 
                         let textInput = document.getElementById(`ans-${qIdx}`);
                         if(textInput && textInput.value.trim() !== "") isAnswered = true;
@@ -514,7 +526,6 @@
             return m[c] || c;
         }
 
-        // --- আপডেট ৩: সাবমিশনের সময় ব্রাউজারের অটো রেডিও চেকিং পুরোপুরি ইগনোর করবে ---
         async function submitExam() {
             if (isSubmitting) return; 
             isSubmitting = true; 
@@ -545,7 +556,6 @@
                     if(!chapterAnalysis[ch]) chapterAnalysis[ch] = { correct: 0, total: 0, subject: sub };
                     chapterAnalysis[ch].total++;
 
-                    // আপডেটেড ডাটা সাবমিট লজিক (১০০% নির্ভুল)
                     let selectedVal = null;
                     if(isMCQ(q)) {
                         ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -554,7 +564,6 @@
                                 selectedVal = opt;
                             }
                         });
-                        // এখানে querySelector পুরোপুরি রিমুভ করা হয়েছে যাতে হিডেন সিলেকশন ডাটাবেসে না যায়
                     } else {
                         const textEl = document.getElementById(`ans-${qIdx}`);
                         selectedVal = textEl ? textEl.value : null;
