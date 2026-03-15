@@ -189,25 +189,27 @@
             }
         };
 
-        // 🔴 আল্টিমেট সুপার স্ক্যানার: যেকোনো ফরম্যাটের উত্তরকে চিনে নেবে 🔴
         function normalizeMCQAns(ans) {
             if (!ans) return null;
-            
-            // সব ব্র্যাকেট, ড্যাশ, ডট এবং অপ্রয়োজনীয় শব্দ (অপশন, Option, উত্তর) বাদ দেওয়া হচ্ছে
             let c = String(ans).toUpperCase().replace(/[\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
-            
-            // যদি "A Bangladesh" বা "ক ঢাকা" এর মতো থাকে, শুধু প্রথম বর্ণ বা লেটারটা নিবে
             let firstChar = c.charAt(0);
-            
-            // ম্যাপিং
-            const m = { 
-                '1':'A', '2':'B', '3':'C', '4':'D',
-                '১':'A', '২':'B', '৩':'C', '৪':'D',
-                'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D'
-            };
-            
-            // যদি ম্যাপে থাকে সেটা দিবে, না হলে ওই লেটারটাই দিবে
+            const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
             return m[firstChar] || firstChar;
+        }
+
+        // --- নতুন সংযোজন: এক্সাম পেজের মতো সেম অর্ডারে সাজানোর ফাংশন ---
+        function groupQuestions(questions) {
+            let grouped = {};
+            questions.forEach(q => {
+                let sub = q["Subject"] || "General";
+                if (!grouped[sub]) grouped[sub] = [];
+                grouped[sub].push(q);
+            });
+            let finalArray = [];
+            for (let sub in grouped) {
+                finalArray = finalArray.concat(grouped[sub]);
+            }
+            return finalArray;
         }
 
         async function loadDataAndRender() {
@@ -223,10 +225,13 @@
 
                 if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
 
-                // অরিজিনাল ইনডেক্স সেট করা (যাতে সিরিয়াল উলটপালট না হয়)
+                // অরিজিনাল ইনডেক্স সেট করা
                 qRes.forEach((q, idx) => { q.originalIndex = idx; });
 
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+
+                // --- ম্যাজিক এখানে: রেজাল্ট পেজকেও এক্সাম পেজের সিরিয়ালে সাজানো হচ্ছে ---
+                const displayQuestions = groupQuestions(rawQuestions);
 
                 const userAnsMap = resultData.userAnswers || {};
                 const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
@@ -260,8 +265,11 @@
 
                 let qCounter = 1;
 
-                rawQuestions.forEach((q) => {
+                // সাজানো displayQuestions দিয়ে লুপ চালানো হচ্ছে
+                displayQuestions.forEach((q) => {
                     let originalIndex = q.originalIndex;
+                    
+                    // স্টুডেন্ট যেই সাবজেক্টগুলো পরীক্ষা দেয়নি, সেগুলো রেজাল্টে স্কিপ করা হবে
                     if (!(originalIndex in userAnsMap)) return;
 
                     let myAns = userAnsMap[originalIndex];
@@ -272,7 +280,6 @@
                     
                     let status = 'skip';
 
-                    // --- বুলেটপ্রুফ সেফটি ফিল্টার: ফাঁকা স্পেস বা অদ্ভুত ডাটা আসলেও স্কিপ ধরবে ---
                     if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
                         if (rightAns && String(myAns).trim().toUpperCase() === rightAns) { 
                             status = 'correct'; 
@@ -493,7 +500,6 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // PDF ডাউনলোডের ফাংশন
         function downloadPDF() {
             filterQuestions('all'); 
             
