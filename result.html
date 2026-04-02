@@ -500,32 +500,44 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
+        // PDF ডাউনলোডের আপডেট ফাংশন
         function downloadPDF() {
+            // ১. আগে সব প্রশ্ন শো করার কমান্ড দেবে
             filterQuestions('all'); 
             
-            const element = document.getElementById('pdf-container');
-            const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
-            
-            const opt = {
-                margin:       0.3,
-                filename:     `${examTitle}_Result.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true }, 
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
+            // লোডিং অ্যালার্ট দেখানো শুরু করবে
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: 'দয়া করে একটু অপেক্ষা করুন।',
+                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                Swal.close();
-            });
+            // ২. ব্রাউজারকে প্রশ্নগুলো স্ক্রিনে রেন্ডার করার জন্য আধা সেকেন্ড (৫০০ মিলিসেকেন্ড) সময় দেবে
+            setTimeout(() => {
+                const element = document.getElementById('pdf-container');
+                const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
+                
+                const opt = {
+                    margin:       0.3,
+                    filename:     `${examTitle}_Result.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    // অনেক বড় এক্সামের ক্ষেত্রে ক্যানভাস ক্র্যাশ রোধ করতে scale 1.5 করা হলো
+                    html2canvas:  { scale: 1.5, useCORS: true, logging: false }, 
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+
+                // ৩. এবার পিডিএফ জেনারেট করে সেভ করবে
+                html2pdf().set(opt).from(element).save().then(() => {
+                    Swal.close(); // পিডিএফ সেভ হলে অ্যালার্ট বন্ধ হবে
+                }).catch(err => {
+                    console.error("PDF Error: ", err);
+                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
+                });
+                
+            }, 500); // 500ms অপেক্ষা
         }
     </script>
 </body>
