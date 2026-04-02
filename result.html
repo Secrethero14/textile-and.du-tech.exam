@@ -52,7 +52,8 @@
         .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; }
+        /* 🔴 PDF-এ প্রশ্ন যেন অর্ধেক কেটে না যায় তার ফিক্স 🔴 */
+        .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; page-break-inside: avoid; break-inside: avoid; }
         .q-card-full.show { display: block; }
         .status-correct { border-left-color: var(--success); }
         .status-wrong { border-left-color: var(--danger); }
@@ -197,7 +198,6 @@
             return m[firstChar] || firstChar;
         }
 
-        // --- নতুন সংযোজন: এক্সাম পেজের মতো সেম অর্ডারে সাজানোর ফাংশন ---
         function groupQuestions(questions) {
             let grouped = {};
             questions.forEach(q => {
@@ -225,12 +225,9 @@
 
                 if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
 
-                // অরিজিনাল ইনডেক্স সেট করা
                 qRes.forEach((q, idx) => { q.originalIndex = idx; });
 
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
-
-                // --- ম্যাজিক এখানে: রেজাল্ট পেজকেও এক্সাম পেজের সিরিয়ালে সাজানো হচ্ছে ---
                 const displayQuestions = groupQuestions(rawQuestions);
 
                 const userAnsMap = resultData.userAnswers || {};
@@ -265,11 +262,9 @@
 
                 let qCounter = 1;
 
-                // সাজানো displayQuestions দিয়ে লুপ চালানো হচ্ছে
                 displayQuestions.forEach((q) => {
                     let originalIndex = q.originalIndex;
                     
-                    // স্টুডেন্ট যেই সাবজেক্টগুলো পরীক্ষা দেয়নি, সেগুলো রেজাল্টে স্কিপ করা হবে
                     if (!(originalIndex in userAnsMap)) return;
 
                     let myAns = userAnsMap[originalIndex];
@@ -288,10 +283,9 @@
                         }
                     }
 
-                    // স্ট্যাটাস ব্যাজ
                     let statusBadge = '';
                     if (status === 'correct') {
-                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
+                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
                     } else if (status === 'wrong') {
                         statusBadge = `<span style="background: #fff5f5; color: #d63031; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-times-circle"></i> ভুল উত্তর! (আপনার উত্তর: ${myAns})</span>`;
                     } else {
@@ -500,44 +494,44 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // PDF ডাউনলোডের আপডেট ফাংশন
+        // 🔴 PDF ডাউনলোডের আপডেট ফাংশন 🔴
         function downloadPDF() {
-            // ১. আগে সব প্রশ্ন শো করার কমান্ড দেবে
             filterQuestions('all'); 
             
-            // লোডিং অ্যালার্ট দেখানো শুরু করবে
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
+                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
 
-            // ২. ব্রাউজারকে প্রশ্নগুলো স্ক্রিনে রেন্ডার করার জন্য আধা সেকেন্ড (৫০০ মিলিসেকেন্ড) সময় দেবে
+            // ব্রাউজারকে রেন্ডার করার সময় দেওয়া এবং scroll ফিক্স করা
             setTimeout(() => {
+                window.scrollTo(0, 0); // স্ক্রল একদম ওপরে নিয়ে যাবে (সাদা পেজ আসার প্রধান কারণ ফিক্স)
+                
                 const element = document.getElementById('pdf-container');
                 const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
                 
                 const opt = {
-                    margin:       0.3,
+                    margin:       [0.3, 0.3, 0.3, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    // অনেক বড় এক্সামের ক্ষেত্রে ক্যানভাস ক্র্যাশ রোধ করতে scale 1.5 করা হলো
-                    html2canvas:  { scale: 1.5, useCORS: true, logging: false }, 
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                    // বড় এক্সামের জন্য scale 1 এবং scrollY 0 করা হলো
+                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
+                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
-                // ৩. এবার পিডিএফ জেনারেট করে সেভ করবে
                 html2pdf().set(opt).from(element).save().then(() => {
-                    Swal.close(); // পিডিএফ সেভ হলে অ্যালার্ট বন্ধ হবে
+                    Swal.close(); 
                 }).catch(err => {
                     console.error("PDF Error: ", err);
-                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
+                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
                 });
                 
-            }, 500); // 500ms অপেক্ষা
+            }, 800); // 800ms অপেক্ষা
         }
     </script>
 </body>
