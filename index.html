@@ -67,21 +67,20 @@
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .input-group { position: relative; margin-bottom: 15px; text-align: left; }
-        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
         
-        /* 🔴 চোখ আইকনের জন্য স্পেশাল সিএসএস 🔴 */
-        .input-group .toggle-password {
-            left: auto;
-            right: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+        /* 🔴 অটো-ফিল গ্লিচ ফিক্স এবং আইকনের পজিশন 🔴 */
+        .input-group .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; z-index: 10; transition: 0.3s; }
+        .input-group .toggle-password { left: auto; right: 15px; cursor: pointer; z-index: 10; position: absolute; top: 50%; transform: translateY(-50%); color: #888; transition: 0.3s; }
         .input-group .toggle-password:hover { color: var(--primary); }
         
         .input-group input {
-            width: 100%; padding: 12px 15px 12px 40px;
+            width: 100%; 
+            padding: 12px 40px !important; /* Force padding so text doesn't overlap left/right icons */
             border: 2px solid #eee; border-radius: 10px;
             font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s;
+            background: transparent;
+            position: relative;
+            z-index: 1;
         }
         .input-group input:focus { border-color: var(--primary); }
         
@@ -262,16 +261,16 @@
             </div>
             <form id="authForm">
                 <div id="nameGroup" class="input-group" style="display:none;">
-                    <i class="fas fa-user"></i>
+                    <i class="fas fa-user input-icon"></i>
                     <input type="text" id="regName" placeholder="আপনার নাম লিখুন">
                 </div>
                 <div class="input-group">
-                    <i class="fas fa-envelope"></i>
+                    <i class="fas fa-envelope input-icon"></i>
                     <input type="email" id="email" name="email" placeholder="ইমেইল এড্রেস" required autocomplete="username">
                 </div>
                 <div class="input-group" style="margin-bottom:10px;">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required autocomplete="current-password" style="padding-right: 40px;">
+                    <i class="fas fa-lock input-icon" id="passLockIcon"></i>
+                    <input type="password" id="password" name="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required autocomplete="current-password">
                     <i class="fas fa-eye toggle-password" id="togglePasswordIcon" onclick="togglePasswordVisibility()"></i>
                 </div>
                 <div class="remember-me" id="rememberGroup">
@@ -304,7 +303,7 @@
                 </div>
                 <div style="flex:1;">
                     <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
-                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
+                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন。</p>
                 </div>
                 <a href="https://t.me/careforcandidates" target="_blank" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
                     <i class="fab fa-telegram-plane"></i> Join
@@ -546,6 +545,29 @@
                 toggleIcon.classList.add("fa-eye");
             }
         }
+
+        // 🔴 পাসওয়ার্ড ভ্যালিডেশন (৬ অক্ষর হলে আনলক হবে) 🔴
+        document.getElementById('password').addEventListener('input', function() {
+            const passIcon = document.getElementById('passLockIcon');
+            const authBtn = document.getElementById('authBtn');
+            
+            if(this.value.length > 0 && this.value.length < 6) {
+                this.style.borderColor = '#d63031'; // লাল বর্ডার
+                passIcon.style.color = '#d63031'; // লাল তালা
+                passIcon.className = 'fas fa-lock input-icon';
+                authBtn.disabled = true; // বাটন বন্ধ
+            } else if (this.value.length >= 6) {
+                this.style.borderColor = '#00b894'; // সবুজ বর্ডার
+                passIcon.style.color = '#00b894'; // সবুজ খোলা তালা
+                passIcon.className = 'fas fa-lock-open input-icon'; 
+                authBtn.disabled = false; // বাটন চালু
+            } else {
+                this.style.borderColor = '#eee'; // সাধারণ বর্ডার
+                passIcon.style.color = '#888';
+                passIcon.className = 'fas fa-lock input-icon';
+                authBtn.disabled = false;
+            }
+        });
 
         function handleForgotPassword() {
             const email = document.getElementById('email').value;
