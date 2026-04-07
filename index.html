@@ -68,6 +68,16 @@
         
         .input-group { position: relative; margin-bottom: 15px; text-align: left; }
         .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
+        
+        /* 🔴 চোখ আইকনের জন্য স্পেশাল সিএসএস 🔴 */
+        .input-group .toggle-password {
+            left: auto;
+            right: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .input-group .toggle-password:hover { color: var(--primary); }
+        
         .input-group input {
             width: 100%; padding: 12px 15px 12px 40px;
             border: 2px solid #eee; border-radius: 10px;
@@ -261,7 +271,8 @@
                 </div>
                 <div class="input-group" style="margin-bottom:10px;">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required autocomplete="current-password">
+                    <input type="password" id="password" name="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ সংখ্যা)" minlength="6" required autocomplete="current-password" style="padding-right: 40px;">
+                    <i class="fas fa-eye toggle-password" id="togglePasswordIcon" onclick="togglePasswordVisibility()"></i>
                 </div>
                 <div class="remember-me" id="rememberGroup">
                     <input type="checkbox" id="rememberCheck" checked>
@@ -374,7 +385,7 @@
             </div>
 
             <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align: left;">
-                <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
+                <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
                 
                 <div class="contact-buttons">
                     <a href="https://wa.me/8801925251621" target="_blank" class="btn-contact btn-whatsapp">
@@ -518,6 +529,22 @@
             document.getElementById('rememberGroup').style.display = isRegistering ? 'none' : 'flex';
             document.getElementById('authMsg').innerText = "";
             document.getElementById('authMsg').className = 'auth-message';
+        }
+
+        // 🔴 চোখ আইকনে ক্লিক করলে পাসওয়ার্ড দেখা বা লুকানোর ফাংশন 🔴
+        function togglePasswordVisibility() {
+            const passField = document.getElementById("password");
+            const toggleIcon = document.getElementById("togglePasswordIcon");
+            
+            if (passField.type === "password") {
+                passField.type = "text";
+                toggleIcon.classList.remove("fa-eye");
+                toggleIcon.classList.add("fa-eye-slash");
+            } else {
+                passField.type = "password";
+                toggleIcon.classList.remove("fa-eye-slash");
+                toggleIcon.classList.add("fa-eye");
+            }
         }
 
         function handleForgotPassword() {
@@ -693,7 +720,7 @@
             navigator.clipboard.writeText(number).then(() => {
                 Swal.fire({
                     icon: 'success',
-                    title: 'নাম্বার কপি হয়েছে!',
+                    title: 'নাম্বার কপি হয়েছে!',
                     showConfirmButton: false,
                     timer: 1500
                 });
@@ -705,4 +732,3 @@
     </script>
 </body>
 </html>
-
