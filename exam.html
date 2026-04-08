@@ -519,11 +519,18 @@
             return newObj;
         }
 
+        // 🔴 আল্টিমেট সুপার স্ক্যানার (থার্ড ব্র্যাকেট সাপোর্ট সহ) 🔴
         function normalizeMCQAns(ans) {
-            if(!ans) return null;
-            let c = String(ans).toUpperCase().replace(/[\s\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '');
-            const m = { '1':'A','2':'B','3':'C','4':'D','01':'A','02':'B','03':'C','04':'D','১':'A','২':'B','৩':'C','৪':'D','ক':'A','খ':'B','গ':'C','ঘ':'D'};
-            return m[c] || c;
+            if (!ans) return null;
+            
+            // এখানে রেগুলার এক্সপ্রেশনে \[ এবং \] যোগ করা হয়েছে
+            let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
+            
+            let firstChar = c.charAt(0);
+            
+            const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
+            
+            return m[firstChar] || firstChar;
         }
 
         async function submitExam() {
