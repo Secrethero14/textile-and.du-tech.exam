@@ -52,7 +52,6 @@
         .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* 🔴 PDF-এ প্রশ্ন যেন অর্ধেক কেটে না যায় তার ফিক্স 🔴 */
         .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; page-break-inside: avoid; break-inside: avoid; }
         .q-card-full.show { display: block; }
         .status-correct { border-left-color: var(--success); }
@@ -190,9 +189,11 @@
             }
         };
 
+        // 🔴 আল্টিমেট সুপার স্ক্যানার (থার্ড ব্র্যাকেট এবং ফার্স্ট ব্র্যাকেট সাপোর্ট সহ) 🔴
         function normalizeMCQAns(ans) {
             if (!ans) return null;
-            let c = String(ans).toUpperCase().replace(/[\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
+            // [ ] এবং ( ) উভয়ই রিমুভ করবে
+            let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
             let firstChar = c.charAt(0);
             const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
             return m[firstChar] || firstChar;
@@ -494,7 +495,6 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // 🔴 PDF ডাউনলোডের আপডেট ফাংশন 🔴
         function downloadPDF() {
             filterQuestions('all'); 
             
@@ -507,9 +507,8 @@
                 }
             });
 
-            // ব্রাউজারকে রেন্ডার করার সময় দেওয়া এবং scroll ফিক্স করা
             setTimeout(() => {
-                window.scrollTo(0, 0); // স্ক্রল একদম ওপরে নিয়ে যাবে (সাদা পেজ আসার প্রধান কারণ ফিক্স)
+                window.scrollTo(0, 0); 
                 
                 const element = document.getElementById('pdf-container');
                 const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
@@ -518,7 +517,6 @@
                     margin:       [0.3, 0.3, 0.3, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    // বড় এক্সামের জন্য scale 1 এবং scrollY 0 করা হলো
                     html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
@@ -531,7 +529,7 @@
                     Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
                 });
                 
-            }, 800); // 800ms অপেক্ষা
+            }, 800); 
         }
     </script>
 </body>
