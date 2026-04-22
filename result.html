@@ -250,7 +250,7 @@
                 document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
 
                 let markPerQuestion = resultData.markPerQuestion || 1;
-                let negativeMarkFromSheet = resultData.negativeMark || 0.25;
+                let negativeMarkFromSheet = resultData.negativeMark ?? 0.25;
                 
                 let totalAttemptedQuestions = Object.keys(userAnsMap).length;
 
