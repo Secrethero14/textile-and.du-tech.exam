@@ -147,8 +147,7 @@
     <div id="chapterModal" class="modal-overlay" onclick="closeChapterModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>অধ্যায়ভিত্তিক রিপোর্ট</h3>
-                <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+                <h3>বিষয়ভিত্তিক রিপোর্ট</h3> <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
             </div>
             <div id="chapterTableContainer">Loading...</div>
         </div>
@@ -189,10 +188,8 @@
             }
         };
 
-        // 🔴 আল্টিমেট সুপার স্ক্যানার (থার্ড ব্র্যাকেট এবং ফার্স্ট ব্র্যাকেট সাপোর্ট সহ) 🔴
         function normalizeMCQAns(ans) {
             if (!ans) return null;
-            // [ ] এবং ( ) উভয়ই রিমুভ করবে
             let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
             let firstChar = c.charAt(0);
             const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
@@ -341,7 +338,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
+                                <div style="margin-top:5px; line-height:1.8;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -404,19 +401,55 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
+        // 🔴 বিষয়ভিত্তিক (Subject-wise) এনালাইসিসের কোড 🔴
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
-                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো চ্যাপ্টার ডাটা পাওয়া যায়নি।</p>";
+                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো ডাটা পাওয়া যায়নি।</p>";
                  return;
             }
-            let html = `<table><thead><tr><th>অধ্যায়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
+
+            // ১. সাবজেক্ট অনুযায়ী ডেটা গ্রুপ করা হচ্ছে
+            let subjectAnalysis = {};
+
             for (const [chapter, data] of Object.entries(analysis)) {
-                let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
-                let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
-                html += `<tr><td><strong>${chapter}</strong></td><td>${data.correct}/${data.total}</td><td style="color:${color}; font-weight:bold;">${p}%</td></tr>`;
+                let sub = data.subject || "General";
+                
+                // যদি সাবজেক্টটি লিস্টে না থাকে, তবে নতুন করে তৈরি করবে
+                if (!subjectAnalysis[sub]) {
+                    subjectAnalysis[sub] = { correct: 0, total: 0 };
+                }
+                
+                // সাবজেক্টের আন্ডারে মার্কস এবং মোট প্রশ্ন যোগ করবে
+                subjectAnalysis[sub].correct += data.correct;
+                subjectAnalysis[sub].total += data.total;
             }
+
+            // ২. নতুন সাবজেক্ট-ওয়াইজ টেবিল তৈরি করা
+            let html = `<table style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #eee;">
+                        <th style="padding: 10px;">বিষয়</th>
+                        <th style="padding: 10px;">স্কোর</th>
+                        <th style="padding: 10px;">অবস্থা</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            for (const [subject, data] of Object.entries(subjectAnalysis)) {
+                let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+                // পারসেন্টেজের ওপর ভিত্তি করে কালার কোড
+                let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
+                
+                html += `<tr style="border-bottom: 1px solid #f5f6fa;">
+                            <td style="padding: 10px;"><strong>${subject}</strong></td>
+                            <td style="padding: 10px;">${data.correct} / ${data.total}</td>
+                            <td style="padding: 10px; color:${color}; font-weight:bold;">${p}%</td>
+                         </tr>`;
+            }
+            
             html += `</tbody></table>`;
+            
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
