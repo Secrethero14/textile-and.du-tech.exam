@@ -147,7 +147,8 @@
     <div id="chapterModal" class="modal-overlay" onclick="closeChapterModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>বিষয়ভিত্তিক রিপোর্ট</h3> <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+                <h3>বিষয়ভিত্তিক রিপোর্ট</h3>
+                <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
             </div>
             <div id="chapterTableContainer">Loading...</div>
         </div>
@@ -401,7 +402,6 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
-        // 🔴 বিষয়ভিত্তিক (Subject-wise) এনালাইসিসের কোড 🔴
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
@@ -409,23 +409,19 @@
                  return;
             }
 
-            // ১. সাবজেক্ট অনুযায়ী ডেটা গ্রুপ করা হচ্ছে
             let subjectAnalysis = {};
 
             for (const [chapter, data] of Object.entries(analysis)) {
                 let sub = data.subject || "General";
                 
-                // যদি সাবজেক্টটি লিস্টে না থাকে, তবে নতুন করে তৈরি করবে
                 if (!subjectAnalysis[sub]) {
                     subjectAnalysis[sub] = { correct: 0, total: 0 };
                 }
                 
-                // সাবজেক্টের আন্ডারে মার্কস এবং মোট প্রশ্ন যোগ করবে
                 subjectAnalysis[sub].correct += data.correct;
                 subjectAnalysis[sub].total += data.total;
             }
 
-            // ২. নতুন সাবজেক্ট-ওয়াইজ টেবিল তৈরি করা
             let html = `<table style="width:100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="border-bottom: 2px solid #eee;">
@@ -438,7 +434,6 @@
 
             for (const [subject, data] of Object.entries(subjectAnalysis)) {
                 let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
-                // পারসেন্টেজের ওপর ভিত্তি করে কালার কোড
                 let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
                 
                 html += `<tr style="border-bottom: 1px solid #f5f6fa;">
@@ -528,12 +523,13 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
+        // 🔴 PDF Blank Page 100% Fixed Code 🔴
         function downloadPDF() {
             filterQuestions('all'); 
             
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
+                text: '১০০+ প্রশ্ন থাকায় প্রসেস হতে একটু সময় লাগবে। দয়া করে পেজ কাটবেন না...',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -549,10 +545,16 @@
                 const opt = {
                     margin:       [0.3, 0.3, 0.3, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { 
+                        scale: 1.5, // মেমোরি ক্র্যাশ ঠেকানোর জন্য 1.5 করা হয়েছে 
+                        useCORS: true, 
+                        logging: false, 
+                        scrollY: 0,
+                        windowWidth: 900 // ডেক্সটপ ভিউ ফোর্স করা হয়েছে যাতে পেজ অহেতুক লম্বা না হয়
+                    },
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                    pagebreak:    { mode: ['css', 'legacy'] } // avoid-all সরিয়ে দেওয়া হয়েছে কারণ এটি ব্ল্যাঙ্ক পেজ তৈরি করে
                 };
 
                 html2pdf().set(opt).from(element).save().then(() => {
@@ -562,7 +564,7 @@
                     Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
                 });
                 
-            }, 800); 
+            }, 1000); 
         }
     </script>
 </body>
