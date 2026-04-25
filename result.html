@@ -521,53 +521,42 @@
         // 🔴 PDF Blank Page 100% Fixed Code 🔴
    // 🔴 PDF Blank Page 100% Fixed Code 🔴
         function downloadPDF() {
-            // ১. সব প্রশ্ন আগে দৃশ্যমান করে নেওয়া (ফিল্টার থাকলে সব শো করবে)
-            if(typeof filterQuestions === 'function') filterQuestions('all'); 
+            filterQuestions('all'); 
             
-            // ২. লোডিং অ্যালার্ট দেখানো
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: '১০০+ প্রশ্ন প্রসেস হতে ৩০-৪০ সেকেন্ড সময় লাগতে পারে। দয়া করে অপেক্ষা করুন...',
+                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
 
-            // ৩. প্রসেসিংয়ের জন্য ১ সেকেন্ড সময় দেওয়া
+            // ব্রাউজারকে রেন্ডার করার সময় দেওয়া এবং scroll ফিক্স করা
             setTimeout(() => {
-                window.scrollTo(0, 0); 
+                window.scrollTo(0, 0); // স্ক্রল একদম ওপরে নিয়ে যাবে (সাদা পেজ আসার প্রধান কারণ ফিক্স)
                 
                 const element = document.getElementById('pdf-container');
-                const examTitle = document.getElementById('examName')?.innerText || 'Exam_Result';
+                const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
                 
-                // ৪. পিডিএফ কনফিগারেশন (সাদা পেজ রোধ করার জন্য)
                 const opt = {
-                    margin:       [0.4, 0.3, 0.4, 0.3], // [top, left, bottom, right]
+                    margin:       [0.3, 0.3, 0.3, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
-                        scale: 1.2, // মেমোরি সেভ করতে স্কেল ১.২ রাখা হয়েছে
-                        useCORS: true, 
-                        logging: false, 
-                        scrollY: 0,
-                        windowWidth: 1000 // ডেক্সটপ ভিউ ফোর্স করা হয়েছে যাতে লেআউট না ভাঙে
-                    },
+                    // বড় এক্সামের জন্য scale 1 এবং scrollY 0 করা হলো
+                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    // ৫. সবচেয়ে গুরুত্বপূর্ণ: পেজ ব্রেক লজিক
-                    pagebreak:    { mode: ['css', 'legacy'] } 
+                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
-                // ৬. পিডিএফ জেনারেট এবং সেভ
                 html2pdf().set(opt).from(element).save().then(() => {
                     Swal.close(); 
-                    Swal.fire('সফল!', 'আপনার পিডিএফ ডাউনলোড হয়ে গেছে।', 'success');
                 }).catch(err => {
                     console.error("PDF Error: ", err);
-                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'error');
+                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
                 });
                 
-            }, 1000); 
+            }, 800); // 800ms অপেক্ষা
         }
     
     </script>
