@@ -104,10 +104,13 @@
                 <div class="stat-box">সময়: <span id="timeTakenDisplay">00:00</span></div>
             </div>
 
+            <div id="directMeritContainer" style="margin-top: 20px; padding: 15px; border-radius: 12px; background: #fff3e0; border: 1px dashed #e67e22; text-align: center; font-weight: bold; color: #d35400; transition: 0.3s;" data-html2canvas-ignore="true">
+                <i class="fas fa-spinner fa-spin"></i> মেরিট লিস্ট এবং র‍্যাঙ্ক চেক করা হচ্ছে...
+            </div>
+
             <div class="btn-row" data-html2canvas-ignore="true">
                 <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
                 <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
-                <button onclick="openLeaderboard()" class="btn-main" style="background:var(--warning); color:#856404;"><i class="fas fa-trophy"></i> মেরিট লিস্ট</button>
             </div>
         </div>
 
@@ -151,14 +154,6 @@
                 <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
             </div>
             <div id="chapterTableContainer">Loading...</div>
-        </div>
-    </div>
-
-    <div id="lbModal" class="modal-overlay" onclick="document.getElementById('lbModal').style.display='none'">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="lbTitle">🏆 মেরিট লিস্ট</h3>
-            <div id="lbContent" style="padding: 20px; font-size: 18px;">লোড হচ্ছে..সবুর করো.</div>
-            <button onclick="document.getElementById('lbModal').style.display='none'" style="margin-top:15px; padding:8px 20px; border:none; background:#eee; cursor:pointer; border-radius:5px; font-weight: bold;">বন্ধ করুন</button>
         </div>
     </div>
 
@@ -362,6 +357,9 @@
                 }
                 
                 prepareChapterTable();
+                
+                // সরাসরি মেরিট লিস্ট এবং এন্ড টাইম চেকিং কল
+                await showDirectMeritList(examInfo, tabId, docId, resultData.isPractice);
 
             } catch (err) { 
                 console.error(err);
@@ -425,7 +423,7 @@
             let html = `<table style="width:100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="border-bottom: 2px solid #eee;">
-                        <th style="padding: 10px;">বিষয়</th>
+                        <th style="padding: 10px;">বিষয়</th>
                         <th style="padding: 10px;">স্কোর</th>
                         <th style="padding: 10px;">অবস্থা</th>
                     </tr>
@@ -448,29 +446,33 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        async function openLeaderboard() {
-            const modal = document.getElementById('lbModal');
-            const lbDiv = document.getElementById('lbContent');
-            const lbTitle = document.getElementById('lbTitle');
+        // সরাসরি মেরিট লিস্ট দেখানোর নতুন ফাংশন
+        async function showDirectMeritList(examInfo, examId, docId, isPractice) {
+            const meritDiv = document.getElementById('directMeritContainer');
             
-            modal.style.display = 'flex';
-            lbDiv.innerHTML = '<div style="padding:20px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>চেক করা হচ্ছে...</div>';
-
-            if(resultData.isPractice === true) {
-                lbTitle.innerText = "Practice Mode";
-                lbDiv.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <i class="fas fa-dumbbell" style="font-size:50px; color:#e17055; margin-bottom:15px;"></i>
-                        <h3 style="color:#2d3436; margin-bottom:10px;">এটি প্র্যাকটিস এক্সাম</h3>
-                        <p style="font-size:16px; color:#636e72; line-height:1.6; font-weight:500;">
-                            প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখুন, শতভাগ নম্বর পাওয়ার চেষ্টা করুন।
-                        </p>
-                    </div>`;
+            if(isPractice === true) {
+                meritDiv.innerHTML = `<span style="color:#e17055;"><i class="fas fa-dumbbell"></i> এটি প্র্যাকটিস এক্সাম। প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।</span>`;
+                meritDiv.style.background = "#fff0e6";
+                meritDiv.style.borderColor = "#e17055";
                 return;
             }
 
+            // End Time চেকিং
+            let endTimeStr = examInfo ? examInfo['End Time'] : null;
+            if(endTimeStr) {
+                let endTime = new Date(endTimeStr).getTime();
+                let now = new Date().getTime();
+                
+                if (now < endTime) {
+                    meritDiv.innerHTML = `<i class="fas fa-clock"></i> পরীক্ষার সময় এখনো শেষ হয়নি। সময় শেষ হওয়ার পর আপনার মেরিট পজিশন এখানে দেখতে পারবেন।`;
+                    meritDiv.style.background = "#fff3e0";
+                    meritDiv.style.borderColor = "#e67e22";
+                    meritDiv.style.color = "#d35400";
+                    return;
+                }
+            }
+
             try {
-                const examId = resultData.examId;
                 const snapshot = await db.collection("exam_results").where("examId", "==", examId).get();
 
                 let participants = [];
@@ -494,29 +496,22 @@
                 const myRank = participants.findIndex(p => p.id === docId) + 1;
 
                 if(myRank > 0) {
-                    lbTitle.innerText = "🏆 আপনার মেরিট পজিশন";
-                    lbDiv.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <i class="fas fa-trophy" style="font-size: 60px; color: #fdcb6e; margin-bottom: 20px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));"></i>
-                            <h2 style="margin: 0; color: var(--primary);">অভিনন্দন! 🎉</h2>
-                            <div style="margin: 20px 0; font-size: 18px; line-height: 1.6; color: #2d3436;">
-                                আপনি এ পর্যন্ত অংশগ্রহণকারী<br>
-                                <span style="font-size: 28px; font-weight: 800; color: var(--primary);">${totalParticipants}</span> 
-                                জনের মধ্যে <br>
-                                <span style="font-size: 40px; font-weight: 800; color: var(--danger);">${myRank}</span> 
-                                তম হয়েছেন।
-                            </div>
-                            <p style="font-size: 13px; color: #888; background:#f1f2f6; padding:8px; border-radius:5px;">
-                                (বি.দ্র: পরবর্তীতে আরো অনেকে এক্সাম দিলে এই র‍্যাঙ্ক পরিবর্তন হতে পারে)
-                            </p>
-                        </div>`;
+                    meritDiv.innerHTML = `
+                        <div style="font-size: 16px; color: #2d3436; line-height: 1.6;">
+                            <i class="fas fa-trophy" style="font-size: 24px; color: #fdcb6e; vertical-align: middle; margin-right: 5px;"></i>
+                            এ পর্যন্ত অংশগ্রহণকারী <b style="font-size: 20px; color: var(--primary);">${totalParticipants}</b> জনের মধ্যে আপনার পজিশন 
+                            <b style="font-size: 22px; color: var(--danger);">${myRank}</b> তম।
+                        </div>
+                    `;
+                    meritDiv.style.background = "#f0fdf4";
+                    meritDiv.style.borderColor = "#16a34a";
                 } else {
-                    lbDiv.innerHTML = `<p style="color:red; padding:20px;">Ranking Error. Try reloading.</p>`;
+                    meritDiv.innerHTML = "র‍্যাঙ্ক নির্ণয় করা যায়নি।";
                 }
 
             } catch (error) {
                 console.error("Leaderboard Error:", error);
-                lbDiv.innerHTML = `<p style="color:red; padding:20px;">ইন্টারনেট সংযোগ চেক করুন: ${error.message}</p>`;
+                meritDiv.innerHTML = "মেরিট লিস্ট লোড করতে সমস্যা হয়েছে।";
             }
         }
 
@@ -547,14 +542,14 @@
                     filename:     `${examTitle}_Result.pdf`,
                     image:        { type: 'jpeg', quality: 1.0 },
                     html2canvas:  { 
-                        scale: 1.5, // মেমোরি ক্র্যাশ ঠেকানোর জন্য 1.5 করা হয়েছে 
+                        scale: 1.5, // মেমোরি ক্র্যাশ ঠেকানোর জন্য 1.5 করা হয়েছে 
                         useCORS: true, 
                         logging: false, 
                         scrollY: 0,
-                        windowWidth: 900 // ডেক্সটপ ভিউ ফোর্স করা হয়েছে যাতে পেজ অহেতুক লম্বা না হয়
+                        windowWidth: 900 // ডেক্সটপ ভিউ ফোর্স করা হয়েছে যাতে পেজ অহেতুক লম্বা না হয়
                     },
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'] } // avoid-all সরিয়ে দেওয়া হয়েছে কারণ এটি ব্ল্যাঙ্ক পেজ তৈরি করে
+                    pagebreak:    { mode: ['css', 'legacy'] } // avoid-all সরিয়ে দেওয়া হয়েছে কারণ এটি ব্ল্যাঙ্ক পেজ তৈরি করে
                 };
 
                 html2pdf().set(opt).from(element).save().then(() => {
