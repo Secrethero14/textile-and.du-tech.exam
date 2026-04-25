@@ -335,7 +335,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.8;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
+                                <div style="margin-top:5px; line-height:1.5;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -467,7 +467,6 @@
                     }
                 });
 
-                // যদি প্র্যাকটিস হয়, তার স্কোরের র‍্যাঙ্ক বের করার জন্য ডামি ডাটা ইনসার্ট করা হচ্ছে
                 if (isPractice) {
                     participants.push({
                         id: docId,
@@ -510,7 +509,7 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // PDF ডাউনলোডের আপডেট ফাংশন (scale: 1.2 ঠিক রাখা হয়েছে)
+        // কার্যকরী PDF ডাউনলোড ফাংশন
         function downloadPDF() {
             filterQuestions('all'); 
             
@@ -530,12 +529,12 @@
                 const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
                 
                 const opt = {
-                    margin:       [0.4, 0.3, 0.4, 0.3],
+                    margin:       [0.3, 0.3, 0.3, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 1.2, useCORS: true, logging: false, scrollY: 0, windowWidth: 1000 }, 
+                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'] }
+                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
                 html2pdf().set(opt).from(element).save().then(() => {
