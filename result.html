@@ -69,8 +69,10 @@
         .opt-correct { background: #e6fffa; border-color: var(--success); color: #00624e; font-weight: bold; }
         .opt-wrong { background: #fff5f5; border-color: var(--danger); color: #c0392b; font-weight: bold; }
 
+        /* লাইন ব্রেক সঠিকভাবে কাজ করার জন্য CSS আপডেট */
         .explanation-box { margin-top: 15px; padding: 12px; background: #f0f3f6; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary); }
-        
+        .formatted-text { line-height: 1.6; display: block; margin-top: 5px; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 80vh; overflow-y: auto; text-align: center; }
         table { width: 100%; border-collapse: collapse; }
@@ -211,6 +213,12 @@
             return finalArray;
         }
 
+        // টেক্সটের নিউলাইনগুলোকে <br> ট্যাগে কনভার্ট করার ফাংশন
+        function formatLineBreaks(text) {
+            if (!text) return "";
+            return text.replace(/\n/g, '<br>');
+        }
+
         async function loadDataAndRender() {
             try {
                 if(!resultData || !resultData.examId) throw new Error("রেজাল্ট ডাটাতে Exam ID নেই!");
@@ -260,17 +268,31 @@
                 container.innerHTML = "";
 
                 let qCounter = 1;
+                let calculatedSubjectStats = {}; // নতুন সাবজেক্ট এনালাইসিস ডাটাবেস তৈরি
 
                 displayQuestions.forEach((q) => {
                     let originalIndex = q.originalIndex;
-                    if (!(originalIndex in userAnsMap)) return;
-
+                    let sub = q["Subject"] || "অনির্ধারিত বিষয়";
+                    
+                    // সাবজেক্ট এনালাইসিসের জন্য মোট প্রশ্ন যোগ করা
+                    if (!calculatedSubjectStats[sub]) calculatedSubjectStats[sub] = { correct: 0, total: 0 };
+                    
                     let myAns = userAnsMap[originalIndex];
                     let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
-                    
                     let rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : "নির্ধারিত নেই"; 
-                    
+
+                    // সাবজেক্ট এনালাইসিসের জন্য মোট উত্তর করা প্রশ্ন এবং সঠিক উত্তর গণনা
+                    if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
+                        calculatedSubjectStats[sub].total += 1; // ইউজার যেগুলোতে উত্তর দিয়েছে সেগুলোর উপর ভিত্তি করে
+                        if (rightAns && String(myAns).trim().toUpperCase() === rightAns) { 
+                            calculatedSubjectStats[sub].correct += 1;
+                        }
+                    }
+
+                    // যদি ইউজার এই প্রশ্নের উত্তর না দিয়ে থাকে তবে সেটি স্কিপ করা হবে (রেন্ডারের জন্য)
+                    if (!(originalIndex in userAnsMap)) return;
+
                     let status = 'skip';
 
                     if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
@@ -300,7 +322,7 @@
                             if (isCorrectAns) rowClass = 'opt-correct';
                             else if (isSelected && status === 'wrong') rowClass = 'opt-wrong';
 
-                            let optText = q[`অপশন ${opt}`] || "";
+                            let optText = formatLineBreaks(q[`অপশন ${opt}`]);
                             optionsHtml += `
                             <div class="opt-row ${rowClass}">
                                 <div class="circle">${opt}</div>
@@ -315,16 +337,20 @@
                                 <strong style="color:#666;">আপনার উত্তর:</strong> ${myAns ? `<span style="color:${status === 'correct' ? 'green' : 'red'};">${myAns}</span>` : '<span style="color:#999; font-style:italic;">উত্তর দেননি</span>'}
                             </div>
                             <div style="padding:10px; background:#e6fffa; border:1px solid var(--success); border-radius:8px; color:#00624e;">
-                                <strong>সঠিক উত্তর:</strong> ${rawRightAns}
+                                <strong>সঠিক উত্তর:</strong> ${formatLineBreaks(rawRightAns)}
                             </div>
                         `;
                     }
 
+                    // লাইন ব্রেক ফিক্স করা প্রশ্ন এবং ব্যাখ্যা
+                    let questionTextWithLineBreaks = formatLineBreaks(q["প্রশ্ন (LaTeX সহ)"]);
+                    let explanationTextWithLineBreaks = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? formatLineBreaks(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "কোনো ব্যাখ্যা দেওয়া নেই।";
+
                     container.innerHTML += `
                         <div class="q-card-full status-${status} show" data-status="${status}">
                             <div style="font-weight:700; margin-bottom:8px; font-size:16px;">
-                                ${qCounter}. ${q["প্রশ্ন (LaTeX সহ)"]}
-                                ${q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px; font-weight:normal;">${q["Subject"]}</span>` : ""}
+                                ${qCounter}. <span class="formatted-text">${questionTextWithLineBreaks}</span>
+                                ${q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px; font-weight:normal; display:inline-block; margin-top:5px;">${q["Subject"]}</span>` : ""}
                                 <span style="font-size:12px; color:#666; float:right; background:#f1f2f6; padding:2px 6px; border-radius:4px;">
                                     মান: ${markPerQuestion.toFixed(2)}
                                 </span>
@@ -333,7 +359,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
+                                <div class="formatted-text">${explanationTextWithLineBreaks}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -355,8 +381,8 @@
                     renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
                 }
                 
-                // কলিং ফাংশনস
-                prepareSubjectTable();
+                // ক্যালকুলেট করা ডাটা সাবজেক্ট টেবিলে পাস করা
+                prepareSubjectTable(calculatedSubjectStats);
                 calculateAndShowMerit();
 
             } catch (err) { 
@@ -365,7 +391,6 @@
             }
         }
 
-        // মেরিট লিস্ট ক্যালকুলেশন এবং সরাসরি প্রদর্শন
         async function calculateAndShowMerit() {
             const meritBox = document.getElementById('meritPositionBox');
             const meritText = document.getElementById('meritText');
@@ -387,7 +412,6 @@
                     }
                 });
 
-                // সর্টিং: স্কোর বেশি এবং সময় কম অনুযায়ী
                 participants.sort((a, b) => {
                     if (b.score !== a.score) return b.score - a.score;
                     return a.time - b.time;
@@ -396,7 +420,6 @@
                 const totalParticipants = participants.length;
                 let myRank = participants.findIndex(p => p.id === docId) + 1;
 
-                // যদি ইউজার প্র্যাকটিস মোডে থাকে তবে তার র‍্যাঙ্ক পজিশন খুঁজি যেখানে সে থাকতে পারতো
                 if (resultData.isPractice && myRank === 0) {
                     const myScore = parseFloat(resultData.score) || 0;
                     const myTime = parseFloat(resultData.timeTaken) || 0;
@@ -404,10 +427,8 @@
                 }
 
                 if (resultData.isPractice) {
-                    // কন্ডিশন ২: রিপিট বা প্র্যাকটিস
                     meritText.innerHTML = `আপনি এই এক্সামটি আগেই দিয়েছিলেন। আপনার মেরিট পজিশন <span class="rank-highlight">${myRank}</span> তম।`;
                 } else {
-                    // কন্ডিশন ১: প্রথমবার এক্সাম
                     meritText.innerHTML = `আপনি এ পর্যন্ত <span class="rank-highlight">${totalParticipants}</span> জনের মধ্যে <span class="rank-highlight">${myRank}</span> তম হয়েছেন। আরো এক্সাম দিলে এটি পরিবর্তন হতে পারে।`;
                 }
 
@@ -417,20 +438,20 @@
             }
         }
 
-        // বিষয়ভিত্তিক এনালাইসিস টেবিল তৈরি
-        function prepareSubjectTable() {
-            const analysis = resultData.analysis;
-            if(!analysis) {
+        // সরাসরি ক্যালকুলেট করা ডাটা ব্যবহার করে সাবজেক্ট এনালাইসিস টেবিল তৈরি
+        function prepareSubjectTable(statsData) {
+            if(!statsData || Object.keys(statsData).length === 0) {
                  document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো ডাটা পাওয়া যায়নি।</p>";
                  return;
             }
             let html = `<table><thead><tr><th>বিষয়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
             
-            // ডাটাবেস থেকে সাবজেক্ট অনুযায়ী ডাটা রেন্ডার
-            for (const [subject, data] of Object.entries(analysis)) {
-                let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
-                let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
-                html += `<tr><td><strong>${subject}</strong></td><td>${data.correct}/${data.total}</td><td style="color:${color}; font-weight:bold;">${p}%</td></tr>`;
+            for (const [subject, data] of Object.entries(statsData)) {
+                if(data.total > 0) {
+                    let p = Math.round((data.correct / data.total) * 100);
+                    let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
+                    html += `<tr><td><strong>${subject}</strong></td><td>${data.correct}/${data.total}</td><td style="color:${color}; font-weight:bold;">${p}%</td></tr>`;
+                }
             }
             html += `</tbody></table>`;
             document.getElementById('chapterTableContainer').innerHTML = html;
@@ -471,7 +492,6 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // PDF ডাউনলোড লজিক (অপরিবর্তিত)
         function downloadPDF() {
             filterQuestions('all'); 
             Swal.fire({
