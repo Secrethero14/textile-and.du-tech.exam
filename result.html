@@ -52,7 +52,6 @@
         .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* PDF-এ প্রশ্ন যেন অর্ধেক কেটে না যায় তার ফিক্স */
         .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; page-break-inside: avoid; break-inside: avoid; }
         .q-card-full.show { display: block; }
         .status-correct { border-left-color: var(--success); }
@@ -357,9 +356,8 @@
                     renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
                 }
                 
+                // আপডেট কলগুলো
                 prepareChapterTable();
-
-                // ডিরেক্ট মেরিট লিস্ট শো করা
                 await showDirectMeritList(resultData.examId, docId, resultData.isPractice);
 
             } catch (err) { 
@@ -401,7 +399,7 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
-        // বিষয়ভিত্তিক এনালাইসিস ফাংশন
+        // আপডেট: বিষয়ভিত্তিক এনালাইসিস ফাংশন
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
@@ -448,7 +446,7 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        // ডিরেক্ট মেরিট পজিশন ফাংশন
+        // আপডেট: ডিরেক্ট মেরিট পজিশন ফাংশন
         async function showDirectMeritList(examId, docId, isPractice) {
             const meritDiv = document.getElementById('directMeritContainer');
             
@@ -509,7 +507,7 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // কার্যকরী PDF ডাউনলোড ফাংশন
+        // আপডেট: কার্যকরী PDF ডাউনলোড ফাংশন
         function downloadPDF() {
             filterQuestions('all'); 
             
