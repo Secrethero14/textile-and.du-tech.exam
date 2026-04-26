@@ -72,6 +72,48 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
 
         #errorBox { display: none; color: red; text-align: center; padding: 20px; background: #fff5f5; border-radius: 10px; margin-top: 20px; border: 1px solid #ff7675; }
+
+        /* PDF/Print এর জন্য বিশেষ স্টাইল */
+        @media print {
+            body { 
+                padding: 0 !important; 
+                background: #fff !important; 
+            }
+            
+            .top-nav, 
+            .btn-row, 
+            .controls-area, 
+            #loader, 
+            #errorBox, 
+            #directMeritContainer, 
+            .score-card:last-of-type {
+                display: none !important;
+            }
+            
+            .container { 
+                max-width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+            }
+            
+            .score-card { 
+                box-shadow: none !important; 
+                border: 1px solid #ddd !important; 
+                margin-bottom: 20px !important; 
+            }
+            
+            .q-card-full { 
+                box-shadow: none !important; 
+                border: 1px solid #ddd !important; 
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .opt-row {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
@@ -373,7 +415,7 @@
 
         function filterQuestions(type) {
             document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if(event) event.target.classList.add('active'); // Changed slightly to avoid errors if triggered programmatically
             const cards = document.querySelectorAll('.q-card-full');
             cards.forEach(card => {
                 if(type === 'all' || card.getAttribute('data-status') === type) card.classList.add('show');
@@ -398,7 +440,6 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
-        // বিষয়ভিত্তিক এনালাইসিস
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
@@ -445,7 +486,6 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        // সরাসরি মেরিট লিস্ট
         async function showDirectMeritList(examId, docId, isPractice) {
             const meritDiv = document.getElementById('directMeritContainer');
             
@@ -508,41 +548,21 @@
 
         // PDF ডাউনলোড ফিক্সড লজিক
         function downloadPDF() {
+            // সব প্রশ্ন দেখানোর জন্য ফিল্টার রিসেট করা
             filterQuestions('all'); 
             
             Swal.fire({
-                title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                title: 'পিডিএফ প্রস্তুত হচ্ছে...',
+                text: 'অনুগ্রহ করে প্রিন্ট ডায়ালগ থেকে "Save as PDF" নির্বাচন করুন।',
+                icon: 'info',
+                timer: 2000,
+                showConfirmButton: false
             });
 
+            // একটু সময় দিয়ে ব্রাউজারের ডিফল্ট প্রিন্ট কল করা
             setTimeout(() => {
-                window.scrollTo(0, 0); 
-                
-                const element = document.getElementById('pdf-container');
-                const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
-                
-                const opt = {
-                    margin:       [0.4, 0.3, 0.4, 0.3],
-                    filename:     `${examTitle}_Result.pdf`,
-                    image:        { type: 'jpeg', quality: 0.95 }, 
-                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0, windowWidth: 800 }, 
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'] }
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    Swal.close(); 
-                    Swal.fire('সফল!', 'আপনার পিডিএফ ডাউনলোড হয়ে গেছে।', 'success');
-                }).catch(err => {
-                    console.error("PDF Error: ", err);
-                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
-                });
-                
-            }, 1000); 
+                window.print();
+            }, 1500); 
         }
     </script>
 </body>
