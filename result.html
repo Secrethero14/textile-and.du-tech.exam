@@ -104,10 +104,13 @@
                 <div class="stat-box">সময়: <span id="timeTakenDisplay">00:00</span></div>
             </div>
 
+            <div id="directMeritContainer" style="margin-top: 20px; padding: 15px; border-radius: 12px; border: 1px dashed #ccc; text-align: center; font-size: 15px;" data-html2canvas-ignore="true">
+                <i class="fas fa-spinner fa-spin"></i> মেরিট পজিশন লোড হচ্ছে...
+            </div>
+
             <div class="btn-row" data-html2canvas-ignore="true">
                 <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
                 <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
-                <button onclick="openLeaderboard()" class="btn-main" style="background:var(--warning); color:#856404;"><i class="fas fa-trophy"></i> মেরিট লিস্ট</button>
             </div>
         </div>
 
@@ -154,14 +157,6 @@
         </div>
     </div>
 
-    <div id="lbModal" class="modal-overlay" onclick="document.getElementById('lbModal').style.display='none'">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="lbTitle">🏆 মেরিট লিস্ট</h3>
-            <div id="lbContent" style="padding: 20px; font-size: 18px;">লোড হচ্ছে..সবুর করো.</div>
-            <button onclick="document.getElementById('lbModal').style.display='none'" style="margin-top:15px; padding:8px 20px; border:none; background:#eee; cursor:pointer; border-radius:5px; font-weight: bold;">বন্ধ করুন</button>
-        </div>
-    </div>
-
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
@@ -191,7 +186,7 @@
 
         function normalizeMCQAns(ans) {
             if (!ans) return null;
-            let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
+            let c = String(ans).toUpperCase().replace(/[\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
             let firstChar = c.charAt(0);
             const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
             return m[firstChar] || firstChar;
@@ -248,7 +243,7 @@
                 document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
 
                 let markPerQuestion = resultData.markPerQuestion || 1;
-                let negativeMarkFromSheet = resultData.negativeMark ?? 0.25;
+                let negativeMarkFromSheet = resultData.negativeMark || 0.25;
                 
                 let totalAttemptedQuestions = Object.keys(userAnsMap).length;
 
@@ -339,7 +334,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.8;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
+                                <div style="margin-top:5px; line-height:1.5;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -362,6 +357,7 @@
                 }
                 
                 prepareChapterTable();
+                await showDirectMeritList(resultData.examId, docId, resultData.isPractice);
 
             } catch (err) { 
                 console.error(err);
@@ -402,6 +398,7 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
+        // বিষয়ভিত্তিক এনালাইসিস
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
@@ -425,7 +422,7 @@
             let html = `<table style="width:100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="border-bottom: 2px solid #eee;">
-                        <th style="padding: 10px;">বিষয়</th>
+                        <th style="padding: 10px;">বিষয়</th>
                         <th style="padding: 10px;">স্কোর</th>
                         <th style="padding: 10px;">অবস্থা</th>
                     </tr>
@@ -448,29 +445,11 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        async function openLeaderboard() {
-            const modal = document.getElementById('lbModal');
-            const lbDiv = document.getElementById('lbContent');
-            const lbTitle = document.getElementById('lbTitle');
+        // সরাসরি মেরিট লিস্ট
+        async function showDirectMeritList(examId, docId, isPractice) {
+            const meritDiv = document.getElementById('directMeritContainer');
             
-            modal.style.display = 'flex';
-            lbDiv.innerHTML = '<div style="padding:20px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>চেক করা হচ্ছে...</div>';
-
-            if(resultData.isPractice === true) {
-                lbTitle.innerText = "Practice Mode";
-                lbDiv.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <i class="fas fa-dumbbell" style="font-size:50px; color:#e17055; margin-bottom:15px;"></i>
-                        <h3 style="color:#2d3436; margin-bottom:10px;">এটি প্র্যাকটিস এক্সাম</h3>
-                        <p style="font-size:16px; color:#636e72; line-height:1.6; font-weight:500;">
-                            প্র্যাকটিস মোডে কোনো মেরিট লিস্ট নেই।<br> ভুলগুলো বারবার দেখুন, শতভাগ নম্বর পাওয়ার চেষ্টা করুন।
-                        </p>
-                    </div>`;
-                return;
-            }
-
             try {
-                const examId = resultData.examId;
                 const snapshot = await db.collection("exam_results").where("examId", "==", examId).get();
 
                 let participants = [];
@@ -485,51 +464,55 @@
                     }
                 });
 
+                if (isPractice) {
+                    participants.push({
+                        id: docId,
+                        score: parseFloat(resultData.score) || 0,
+                        time: parseFloat(resultData.timeTaken) || 0
+                    });
+                }
+
                 participants.sort((a, b) => {
                     if (b.score !== a.score) return b.score - a.score;
                     return a.time - b.time;
                 });
 
-                const totalParticipants = participants.length;
+                const totalParticipants = isPractice ? (participants.length - 1) : participants.length;
                 const myRank = participants.findIndex(p => p.id === docId) + 1;
 
                 if(myRank > 0) {
-                    lbTitle.innerText = "🏆 আপনার মেরিট পজিশন";
-                    lbDiv.innerHTML = `
-                        <div style="text-align: center; padding: 20px;">
-                            <i class="fas fa-trophy" style="font-size: 60px; color: #fdcb6e; margin-bottom: 20px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));"></i>
-                            <h2 style="margin: 0; color: var(--primary);">অভিনন্দন! 🎉</h2>
-                            <div style="margin: 20px 0; font-size: 18px; line-height: 1.6; color: #2d3436;">
-                                আপনি এ পর্যন্ত অংশগ্রহণকারী<br>
-                                <span style="font-size: 28px; font-weight: 800; color: var(--primary);">${totalParticipants}</span> 
-                                জনের মধ্যে <br>
-                                <span style="font-size: 40px; font-weight: 800; color: var(--danger);">${myRank}</span> 
-                                তম হয়েছেন।
-                            </div>
-                            <p style="font-size: 13px; color: #888; background:#f1f2f6; padding:8px; border-radius:5px;">
-                                (বি.দ্র: পরবর্তীতে আরো অনেকে এক্সাম দিলে এই র‍্যাঙ্ক পরিবর্তন হতে পারে)
-                            </p>
-                        </div>`;
+                    if(isPractice) {
+                        meritDiv.innerHTML = `<i class="fas fa-history" style="margin-right:5px;"></i> আপনি এই এক্সামটি আগেই দিয়েছিলেন। আপনার মেরিট পজিশন <b>${myRank}</b> তম।`;
+                        meritDiv.style.background = "#fff0e6";
+                        meritDiv.style.borderColor = "#e17055";
+                        meritDiv.style.color = "#d35400";
+                    } else {
+                        meritDiv.innerHTML = `<i class="fas fa-trophy" style="margin-right:5px; color:#fdcb6e;"></i> আপনি এ পর্যন্ত <b>${totalParticipants}</b> জনের মধ্যে <b>${myRank}</b> তম হয়েছেন। আরো এক্সাম দিলে এটি পরিবর্তন হতে পারে।`;
+                        meritDiv.style.background = "#e6fffa";
+                        meritDiv.style.borderColor = "#00b894";
+                        meritDiv.style.color = "#00624e";
+                    }
                 } else {
-                    lbDiv.innerHTML = `<p style="color:red; padding:20px;">Ranking Error. Try reloading.</p>`;
+                    meritDiv.innerHTML = "র‍্যাঙ্ক নির্ণয় করা যায়নি।";
+                    meritDiv.style.background = "#eee";
                 }
 
             } catch (error) {
                 console.error("Leaderboard Error:", error);
-                lbDiv.innerHTML = `<p style="color:red; padding:20px;">ইন্টারনেট সংযোগ চেক করুন: ${error.message}</p>`;
+                meritDiv.innerHTML = "মেরিট পজিশন লোড করতে সমস্যা হয়েছে।";
             }
         }
 
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // 🔴 PDF Blank Page 100% Fixed Code 🔴
+        // PDF ডাউনলোড ফিক্সড লজিক
         function downloadPDF() {
             filterQuestions('all'); 
             
             Swal.fire({
                 title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: '১০০+ প্রশ্ন থাকায় প্রসেস হতে একটু সময় লাগবে। দয়া করে পেজ কাটবেন না...',
+                text: 'মডেল টেস্ট বড় হওয়ায় একটু সময় লাগতে পারে, দয়া করে অপেক্ষা করুন।',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -543,22 +526,17 @@
                 const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
                 
                 const opt = {
-                    margin:       [0.3, 0.3, 0.3, 0.3],
+                    margin:       [0.4, 0.3, 0.4, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
-                    image:        { type: 'jpeg', quality: 1.0 },
-                    html2canvas:  { 
-                        scale: 1.5, // মেমোরি ক্র্যাশ ঠেকানোর জন্য 1.5 করা হয়েছে 
-                        useCORS: true, 
-                        logging: false, 
-                        scrollY: 0,
-                        windowWidth: 900 // ডেক্সটপ ভিউ ফোর্স করা হয়েছে যাতে পেজ অহেতুক লম্বা না হয়
-                    },
+                    image:        { type: 'jpeg', quality: 0.95 }, 
+                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0, windowWidth: 800 }, 
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'] } // avoid-all সরিয়ে দেওয়া হয়েছে কারণ এটি ব্ল্যাঙ্ক পেজ তৈরি করে
+                    pagebreak:    { mode: ['css', 'legacy'] }
                 };
 
                 html2pdf().set(opt).from(element).save().then(() => {
                     Swal.close(); 
+                    Swal.fire('সফল!', 'আপনার পিডিএফ ডাউনলোড হয়ে গেছে।', 'success');
                 }).catch(err => {
                     console.error("PDF Error: ", err);
                     Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
