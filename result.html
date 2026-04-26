@@ -339,9 +339,9 @@
                             
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
-    <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-    <div style="margin-top:5px; line-height:1.8;">${(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।").replace(/।\s*/g, '।<br><br>').replace(/\?\s*/g, '?<br><br>')}</div>
-</div>
+                                <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
+                                <div style="margin-top:5px; line-height:1.5;">${q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "কোনো ব্যাখ্যা দেওয়া নেই।"}</div>
+                            </div>
                         </div>`;
                     qCounter++;
                 });
