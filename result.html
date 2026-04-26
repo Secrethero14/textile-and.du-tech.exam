@@ -356,7 +356,6 @@
                     renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
                 }
                 
-                // আপডেট কলগুলো
                 prepareChapterTable();
                 await showDirectMeritList(resultData.examId, docId, resultData.isPractice);
 
@@ -399,7 +398,7 @@
             } catch(e) { container.innerText = "ধন্যবাদ!"; }
         }
 
-        // আপডেট: বিষয়ভিত্তিক এনালাইসিস ফাংশন
+        // বিষয়ভিত্তিক এনালাইসিস
         function prepareChapterTable() {
             const analysis = resultData.analysis;
             if(!analysis) {
@@ -446,7 +445,7 @@
             document.getElementById('chapterTableContainer').innerHTML = html;
         }
 
-        // আপডেট: ডিরেক্ট মেরিট পজিশন ফাংশন
+        // সরাসরি মেরিট লিস্ট
         async function showDirectMeritList(examId, docId, isPractice) {
             const meritDiv = document.getElementById('directMeritContainer');
             
@@ -507,7 +506,7 @@
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
         function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
 
-        // আপডেট: কার্যকরী PDF ডাউনলোড ফাংশন
+        // PDF ডাউনলোড ফিক্সড লজিক
         function downloadPDF() {
             filterQuestions('all'); 
             
@@ -527,22 +526,23 @@
                 const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
                 
                 const opt = {
-                    margin:       [0.3, 0.3, 0.3, 0.3],
+                    margin:       [0.4, 0.3, 0.4, 0.3],
                     filename:     `${examTitle}_Result.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0 }, 
+                    image:        { type: 'jpeg', quality: 0.95 }, 
+                    html2canvas:  { scale: 1, useCORS: true, logging: false, scrollY: 0, windowWidth: 800 }, 
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                    pagebreak:    { mode: ['css', 'legacy'] }
                 };
 
                 html2pdf().set(opt).from(element).save().then(() => {
                     Swal.close(); 
+                    Swal.fire('সফল!', 'আপনার পিডিএফ ডাউনলোড হয়ে গেছে।', 'success');
                 }).catch(err => {
                     console.error("PDF Error: ", err);
                     Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
                 });
                 
-            }, 800); 
+            }, 1000); 
         }
     </script>
 </body>
