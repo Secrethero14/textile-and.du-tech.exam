@@ -22,12 +22,12 @@
 
     <style>
         :root { --primary: #6c5ce7; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; --bg: #f8f9fd; --card: #fff; }
-        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; padding-top: 70px; padding-bottom: 50px; color:#2d3436; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; padding-top: 70px; padding-bottom: 50px; color:#2d3436; transition: 0.3s; }
         
         .top-nav { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; padding: 0 20px; z-index: 1000; }
         .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
 
-        .container { max-width: 800px; margin: 20px auto; padding: 15px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 15px; transition: 0.3s; }
         
         .score-card { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; margin-bottom: 25px; }
         .score-circle { width: 110px; height: 110px; border: 6px solid var(--primary); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 15px auto; }
@@ -52,7 +52,7 @@
         .btn-filter { padding: 8px 15px; border-radius: 20px; border: 1px solid #eee; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-filter.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; page-break-inside: avoid; break-inside: avoid; }
+        .q-card-full { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: none; page-break-inside: avoid; break-inside: avoid; transition: 0.3s; }
         .q-card-full.show { display: block; }
         .status-correct { border-left-color: var(--success); }
         .status-wrong { border-left-color: var(--danger); }
@@ -72,11 +72,18 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
 
         #errorBox { display: none; color: red; text-align: center; padding: 20px; background: #fff5f5; border-radius: 10px; margin-top: 20px; border: 1px solid #ff7675; }
+
+        /* 🔴 পিডিএফের জন্য স্পেস কমানোর জাদুকরী কোড 🔴 */
+        .pdf-mode { padding-top: 0 !important; background: white !important; }
+        .pdf-mode .container { max-width: 100% !important; margin: 0 !important; padding: 5px !important; }
+        .pdf-mode .q-card-full { padding: 10px !important; margin-bottom: 10px !important; box-shadow: none !important; border: 1px solid #ccc !important; }
+        .pdf-mode .explanation-box { padding: 8px !important; margin-top: 8px !important; line-height: 1.4 !important; }
+        .pdf-mode .opt-row { padding: 5px !important; margin-bottom: 4px !important; }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
+    <div class="top-nav" data-html2canvas-ignore="true">
         <a href="index.html" class="home-link"><i class="fas fa-home"></i> ড্যাশবোর্ড</a>
     </div>
 
@@ -170,7 +177,7 @@
         let resultData = null;
 
         window.onload = async function() {
-            if(!docId) return;
+            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
             try {
                 const doc = await db.collection("exam_results").doc(docId).get();
                 if(doc.exists) {
@@ -186,6 +193,7 @@
             }
         };
 
+        // 🔴 মেরিট পজিশন ফাংশন
         async function fetchRankData() {
             try {
                 const snapshot = await db.collection("exam_results").where("examId", "==", resultData.examId).get();
@@ -212,7 +220,6 @@
             } catch (e) { document.getElementById('rankLoading').innerText = "Rank Error."; }
         }
 
-        // 🔴 অপশন ঠিক করার জন্য হারানো ফাংশনগুলো রিস্টোর করা হলো
         function normalizeMCQAns(ans) {
             if (!ans) return null;
             let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
@@ -301,7 +308,6 @@
                         statusBadge = `<span style="background: #fff3e0; color: #e67e22; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-exclamation-circle"></i> আপনি স্কিপ করেছেন</span>`;
                     }
 
-                    // 🔴 হারানো অপশন রেন্ডারিং কোড রিস্টোর করা হলো
                     let optionsHtml = '';
                     if (isMCQ) {
                         ['A', 'B', 'C', 'D'].forEach(opt => {
@@ -333,8 +339,9 @@
                         `;
                     }
 
+                    // 🔴 ফিক্স: ডাবল ব্রেকের জায়গায় সিঙ্গেল ব্রেক দেওয়া হলো 🔴
                     let expl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? String(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "কোনো ব্যাখ্যা দেওয়া নেই।";
-                    let formattedExpl = expl.split('।').join('।<br><br>');
+                    let formattedExpl = expl.split('।').join('।<br>');
 
                     container.innerHTML += `
                         <div class="q-card-full status-${status} show" data-status="${status}">
@@ -349,7 +356,7 @@
                             <div>${optionsHtml}</div>
                             <div class="explanation-box">
                                 <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.7;">${formattedExpl}</div>
+                                <div style="margin-top:5px; line-height:1.6;">${formattedExpl}</div>
                             </div>
                         </div>`;
                     qCounter++;
@@ -384,7 +391,6 @@
             document.getElementById('errorMsg').innerText = msg;
         }
 
-        // 🔴 ফিল্টার বাটন ফাংশন রিস্টোর করা হলো
         function filterQuestions(type) {
             document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
@@ -395,7 +401,6 @@
             });
         }
 
-        // 🔴 ফিডব্যাক মেসেজ ফাংশন রিস্টোর করা হলো
         function setFeedbackMessage(feedbackStr, scorePercent) {
             const container = document.getElementById('feedbackContainer');
             try {
@@ -430,29 +435,42 @@
             document.getElementById('chapterTableContainer').innerHTML = html + `</tbody></table>`;
         }
 
-        // 🔴 PDF এলাইনমেন্ট ফিক্স (windowWidth: 800) 🔴
+        // 🔴 অপ্টিমাইজড পিডিএফ কোড (ক্র্যাশ রোধ করতে) 🔴
         function downloadPDF() {
-            filterQuestions('all'); // পিডিএফের আগে সব প্রশ্ন শো করাবে
-            Swal.fire({ title: 'পিডিএফ তৈরি হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            if(typeof filterQuestions === 'function') filterQuestions('all'); 
             
+            Swal.fire({ title: 'পিডিএফ তৈরি হচ্ছে...', text: 'অপেক্ষা করুন...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            // পিডিএফ জেনারেট হওয়ার আগে সব এক্সট্রা স্পেস গায়েব করে দিবে
+            document.body.classList.add('pdf-mode');
+
             setTimeout(() => {
                 window.scrollTo(0, 0);
                 const element = document.getElementById('pdf-container');
                 const examTitle = document.getElementById('examName').innerText || 'Result';
                 
                 const opt = {
-                    margin: [0.3, 0.3, 0.3, 0.3],
+                    margin: 0.2, // মার্জিন একদম কমিয়ে দেওয়া হলো
                     filename: `${examTitle}_Result.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
+                    image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
                         scale: 1.2, 
                         useCORS: true, 
-                        windowWidth: 800 // 🔴 আপনার কন্টেইনার ৮০০ পিক্সেলের, তাই এখানে ৮০০ দিলে পিডিএফ আর এক সাইডে যাবে না
+                        windowWidth: 800
                     },
                     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['css', 'legacy'] }
                 };
-                html2pdf().set(opt).from(element).save().then(() => Swal.close());
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // পিডিএফ হয়ে গেলে ওয়েবসাইট আবার আগের স্টাইলে ফিরে আসবে
+                    document.body.classList.remove('pdf-mode');
+                    Swal.close();
+                }).catch(err => {
+                    document.body.classList.remove('pdf-mode');
+                    console.error("PDF Error: ", err);
+                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
+                });
             }, 1000);
         }
 
