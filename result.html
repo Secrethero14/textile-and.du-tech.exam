@@ -160,6 +160,7 @@
     </div>
 
     <script>
+        
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
 
@@ -167,45 +168,32 @@
         const db = firebase.firestore();
         const urlParams = new URLSearchParams(window.location.search);
         const docId = urlParams.get('id');
-
         let resultData = null;
 
         window.onload = async function() {
-            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
+            if(!docId) return;
             try {
                 const doc = await db.collection("exam_results").doc(docId).get();
                 if(doc.exists) {
                     resultData = doc.data();
-                    loadDataAndRender(); 
-                    fetchRankData(); // 🔴 অটো মেরিট কল
-                } else {
-                    showError("ডাটাবেসে এই রেজাল্ট পাওয়া যায়নি।");
+                    await loadDataAndRender(); 
+                    fetchRankData(); // মেরিট পজিশন চেক
                 }
-            } catch (e) { 
-                console.error(e);
-                showError("Firestore Error: " + e.message);
-            }
+            } catch (e) { console.error(e); }
         };
 
-        // 🔴 মেরিট অটো-ফেচ ও কন্ডিশনাল লজিক 🔴
+        // 🔴 মেরিট পজিশন ও কন্ডিশনাল টেক্সট 🔴
         async function fetchRankData() {
             try {
                 const snapshot = await db.collection("exam_results").where("examId", "==", resultData.examId).get();
                 let participants = [];
-                
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     if (data.isPractice !== true) {
-                        participants.push({ 
-                            id: doc.id, 
-                            score: parseFloat(data.score) || 0, 
-                            time: parseFloat(data.timeTaken) || 0 
-                        });
+                        participants.push({ id: doc.id, score: parseFloat(data.score) || 0, time: parseFloat(data.timeTaken) || 0 });
                     }
                 });
-
                 participants.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
-
                 const myRank = participants.findIndex(p => p.id === docId) + 1;
                 const totalParticipants = participants.length;
                 
@@ -218,323 +206,95 @@
                 } else {
                     rankContentDiv.innerHTML = `আপনি এ পর্যন্ত <b>${totalParticipants}</b> জনের মধ্যে <br><span style="font-size: 26px; font-weight: bold; color: #ff7675;">${myRank > 0 ? myRank : '--'}</span> তম হয়েছেন।<br><span style="font-size: 13px; color: #888; font-style: italic;">(আরো এক্সাম দিলে এটি পরিবর্তন হতে পারে)</span>`;
                 }
-            } catch (e) {
-                console.error("Rank fetch error:", e);
-                document.getElementById('rankLoading').innerHTML = `<span style="color:red;">র‍্যাঙ্ক লোড করতে সমস্যা হয়েছে।</span>`;
-            }
+            } catch (e) { document.getElementById('rankLoading').innerText = "Rank Error."; }
         }
 
-        function normalizeMCQAns(ans) {
-            if (!ans) return null;
-            let c = String(ans).toUpperCase().replace(/[\-\.\)\(]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
-            let firstChar = c.charAt(0);
-            const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
-            return m[firstChar] || firstChar;
-        }
-
-        function groupQuestions(questions) {
-            let grouped = {};
-            questions.forEach(q => {
-                let sub = q["Subject"] || "General";
-                if (!grouped[sub]) grouped[sub] = [];
-                grouped[sub].push(q);
-            });
-            let finalArray = [];
-            for (let sub in grouped) {
-                finalArray = finalArray.concat(grouped[sub]);
-            }
-            return finalArray;
-        }
-
+        // 🔴 ডাটা রেন্ডারিং ও লাইন ব্রেক 🔴
         async function loadDataAndRender() {
-            try {
-                if(!resultData || !resultData.examId) throw new Error("রেজাল্ট ডাটাতে Exam ID নেই!");
+            const tabId = resultData.examId;
+            const qRes = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`).then(r => r.json());
+            const indexRes = await fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json());
+            
+            const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"]);
+            const userAnsMap = resultData.userAnswers || {};
+            
+            document.getElementById('examName').innerText = resultData.examName;
+            document.getElementById('scoreDisplay').innerText = resultData.score.toFixed(2);
+            document.getElementById('correct').innerText = resultData.correct;
+            document.getElementById('wrong').innerText = resultData.wrong;
+            document.getElementById('totalQ').innerText = rawQuestions.length;
 
-                const tabId = resultData.examId;
-                
-                const [qRes, indexRes] = await Promise.all([
-                    fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`).then(r => r.json()),
-                    fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json())
-                ]);
+            const container = document.getElementById('qList');
+            container.innerHTML = "";
+            let qCounter = 1;
 
-                if(!Array.isArray(qRes) || !Array.isArray(indexRes)) throw new Error("গুগল শিট থেকে ডাটা লোড করতে সমস্যা হয়েছে।");
+            rawQuestions.forEach((q, idx) => {
+                if (!(idx in userAnsMap)) return;
+                let myAns = userAnsMap[idx];
+                let rightAns = String(q["উত্তর"]).trim().toUpperCase();
+                let isCorrect = myAns && String(myAns).trim().toUpperCase() === rightAns;
 
-                qRes.forEach((q, idx) => { q.originalIndex = idx; });
+                // 🔴 লাইন ব্রেক ফিক্স (সহজ পদ্ধতি যা পিডিএফ ক্র্যাশ করবে না)
+                let expl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? String(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "ব্যাখ্যা নেই।";
+                let formattedExpl = expl.split('।').join('।<br><br>');
 
-                const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
-                const displayQuestions = groupQuestions(rawQuestions);
-
-                const userAnsMap = resultData.userAnswers || {};
-                const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
-                
-                document.getElementById('examName').innerText = resultData.examName || "Exam Result";
-                
-                const typeBadge = document.getElementById('examTypeBadge');
-                if(resultData.isPractice) {
-                    typeBadge.innerText = "Practice Mode";
-                    typeBadge.style.background = "#dfe6e9"; typeBadge.style.color = "#636e72";
-                } else {
-                    typeBadge.innerText = "Live Exam";
-                    typeBadge.style.background = "#e6fffa"; typeBadge.style.color = "#00b894";
-                }
-
-                const m = Math.floor((resultData.timeTaken || 0) / 60);
-                const s = (resultData.timeTaken || 0) % 60;
-                document.getElementById('timeTakenDisplay').innerText = `${m}m ${s}s`;
-
-                let markPerQuestion = resultData.markPerQuestion || 1;
-                let negativeMarkFromSheet = resultData.negativeMark || 0.25;
-                
-                let totalAttemptedQuestions = Object.keys(userAnsMap).length;
-
-                document.getElementById('totalQ').innerText = totalAttemptedQuestions > 0 ? totalAttemptedQuestions : rawQuestions.length; 
-                document.getElementById('totalM').innerText = (totalAttemptedQuestions > 0 ? totalAttemptedQuestions : rawQuestions.length) * markPerQuestion; 
-                document.getElementById('negM').innerText = negativeMarkFromSheet; 
-
-                const container = document.getElementById('qList');
-                container.innerHTML = "";
-
-                let qCounter = 1;
-
-                displayQuestions.forEach((q) => {
-                    let originalIndex = q.originalIndex;
-                    
-                    if (!(originalIndex in userAnsMap)) return;
-
-                    let myAns = userAnsMap[originalIndex];
-                    let isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
-                    
-                    let rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
-                    let rawRightAns = q["উত্তর"] ? String(q["উত্তর"]).trim() : "নির্ধারিত নেই"; 
-                    
-                    let status = 'skip';
-
-                    if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
-                        if (rightAns && String(myAns).trim().toUpperCase() === rightAns) { 
-                            status = 'correct'; 
-                        } else { 
-                            status = 'wrong'; 
-                        }
-                    }
-
-                    let statusBadge = '';
-                    if (status === 'correct') {
-                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
-                    } else if (status === 'wrong') {
-                        statusBadge = `<span style="background: #fff5f5; color: #d63031; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-times-circle"></i> ভুল উত্তর! (আপনার উত্তর: ${myAns})</span>`;
-                    } else {
-                        statusBadge = `<span style="background: #fff3e0; color: #e67e22; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-exclamation-circle"></i> আপনি স্কিপ করেছেন</span>`;
-                    }
-
-                    let optionsHtml = '';
-
-                    if (isMCQ) {
-                        ['A', 'B', 'C', 'D'].forEach(opt => {
-                            if (!q[`অপশন ${opt}`]) return;
-
-                            let isCorrectAns = (opt === rightAns);
-                            let isSelected = (myAns && String(myAns).trim() !== "" && String(myAns).toUpperCase() === opt);
-                            
-                            let rowClass = '';
-                            if (isCorrectAns) rowClass = 'opt-correct';
-                            else if (isSelected && status === 'wrong') rowClass = 'opt-wrong';
-
-                            let optText = q[`অপশন ${opt}`] || "";
-                            optionsHtml += `
-                            <div class="opt-row ${rowClass}">
-                                <div class="circle">${opt}</div>
-                                <div>${optText}</div>
-                                ${isCorrectAns ? '<i class="fas fa-check-circle" style="margin-left:auto; color:var(--success);"></i>' : ''}
-                                ${isSelected && !isCorrectAns ? '<i class="fas fa-times-circle" style="margin-left:auto; color:var(--danger);"></i>' : ''}
-                            </div>`;
-                        });
-                    } else {
-                        optionsHtml = `
-                            <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
-                                <strong style="color:#666;">আপনার উত্তর:</strong> ${myAns ? `<span style="color:${status === 'correct' ? 'green' : 'red'};">${myAns}</span>` : '<span style="color:#999; font-style:italic;">উত্তর দেননি</span>'}
-                            </div>
-                            <div style="padding:10px; background:#e6fffa; border:1px solid var(--success); border-radius:8px; color:#00624e;">
-                                <strong>সঠিক উত্তর:</strong> ${rawRightAns}
-                            </div>
-                        `;
-                    }
-
-                    // 🔴 নিরাপদ লাইন ব্রেক (ম্যাথ ও পিডিএফ ক্র্যাশ এড়াতে) 🔴
-                    let rawExpl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? String(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "কোনো ব্যাখ্যা দেওয়া নেই।";
-                    let finalExpl = rawExpl.replace(/।\s*/g, '।<br><br>');
-
-                    container.innerHTML += `
-                        <div class="q-card-full status-${status} show" data-status="${status}">
-                            <div style="font-weight:700; margin-bottom:8px; font-size:16px;">
-                                ${qCounter}. ${q["প্রশ্ন (LaTeX সহ)"]}
-                                ${q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px; font-weight:normal;">${q["Subject"]}</span>` : ""}
-                                <span style="font-size:12px; color:#666; float:right; background:#f1f2f6; padding:2px 6px; border-radius:4px;">
-                                    মান: ${markPerQuestion.toFixed(2)}
-                                </span>
-                            </div>
-                            
-                            ${statusBadge}
-                            
-                            <div>${optionsHtml}</div>
-                            <div class="explanation-box">
-                                <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
-                                <div style="margin-top:5px; line-height:1.8;">${finalExpl}</div>
-                            </div>
-                        </div>`;
-                    qCounter++;
-                });
-
-                document.getElementById('scoreDisplay').innerText = resultData.score.toFixed(2);
-                document.getElementById('correct').innerText = resultData.correct;
-                document.getElementById('wrong').innerText = resultData.wrong;
-                
-                let skipCount = totalAttemptedQuestions - (resultData.correct + resultData.wrong);
-                document.getElementById('skip').innerText = skipCount > 0 ? skipCount : 0;
-                
-                document.getElementById('loader').style.display = 'none';
-
-                if(examInfo) setFeedbackMessage(examInfo['Feedback'], (resultData.score / (totalAttemptedQuestions * markPerQuestion)) * 100);
-                if(resultData.score > 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                
-                if (typeof renderMathInElement === 'function') {
-                    renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
-                }
-                
-                prepareChapterTable();
-
-            } catch (err) { 
-                console.error(err);
-                showError(err.message);
-            }
-        }
-
-        function showError(msg) {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('errorBox').style.display = 'block';
-            document.getElementById('errorMsg').innerText = msg;
-        }
-
-        function filterQuestions(type) {
-            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            const cards = document.querySelectorAll('.q-card-full');
-            cards.forEach(card => {
-                if(type === 'all' || card.getAttribute('data-status') === type) card.classList.add('show');
-                else card.classList.remove('show');
+                container.innerHTML += `
+                    <div class="q-card-full show status-${isCorrect ? 'correct' : 'wrong'}">
+                        <div><b>${qCounter++}. ${q["প্রশ্ন (LaTeX সহ)"]}</b></div>
+                        <div class="explanation-box">
+                            <strong style="color:var(--primary);"><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong><br>
+                            <div style="line-height:1.7;">${formattedExpl}</div>
+                        </div>
+                    </div>`;
             });
+
+            prepareChapterTable();
+            renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+            document.getElementById('loader').style.display = 'none';
         }
 
-        function setFeedbackMessage(feedbackStr, scorePercent) {
-            const container = document.getElementById('feedbackContainer');
-            try {
-                if(!feedbackStr) { container.innerText = "পরবর্তীতে আরও ভালো করার চেষ্টা করুন!"; return; }
-                const rules = JSON.parse(feedbackStr);
-                const sortedKeys = Object.keys(rules).map(Number).sort((a,b) => b-a);
-                
-                container.innerText = "ধন্যবাদ!";
-                for(let key of sortedKeys) {
-                    if(scorePercent >= key) { 
-                        container.innerText = "“" + rules[key] + "”"; 
-                        break; 
-                    }
-                }
-            } catch(e) { container.innerText = "ধন্যবাদ!"; }
-        }
-
-        // 🔴 বিষয়ভিত্তিক (Subject-wise) এনালাইসিসের কোড 🔴
+        // 🔴 বিষয়ভিত্তিক এনালাইসিস 🔴
         function prepareChapterTable() {
-            const analysis = resultData.analysis;
-            if(!analysis) {
-                 document.getElementById('chapterTableContainer').innerHTML = "<p>কোনো ডাটা পাওয়া যায়নি।</p>";
-                 return;
-            }
-
+            const analysis = resultData.analysis || {};
             let subjectAnalysis = {};
-
-            for (const [chapter, data] of Object.entries(analysis)) {
+            for (const [ch, data] of Object.entries(analysis)) {
                 let sub = data.subject || "General";
-                if (!subjectAnalysis[sub]) {
-                    subjectAnalysis[sub] = { correct: 0, total: 0 };
-                }
+                if (!subjectAnalysis[sub]) subjectAnalysis[sub] = { correct: 0, total: 0 };
                 subjectAnalysis[sub].correct += data.correct;
                 subjectAnalysis[sub].total += data.total;
             }
-
-            let html = `<table style="width:100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #eee;">
-                        <th style="padding: 10px;">বিষয়</th>
-                        <th style="padding: 10px;">স্কোর</th>
-                        <th style="padding: 10px;">অবস্থা</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-            for (const [subject, data] of Object.entries(subjectAnalysis)) {
-                let p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
-                let color = p >= 80 ? '#00b894' : (p >= 50 ? '#fdcb6e' : '#ff7675');
-                
-                html += `<tr style="border-bottom: 1px solid #f5f6fa;">
-                            <td style="padding: 10px;"><strong>${subject}</strong></td>
-                            <td style="padding: 10px;">${data.correct} / ${data.total}</td>
-                            <td style="padding: 10px; color:${color}; font-weight:bold;">${p}%</td>
-                         </tr>`;
+            let html = `<table style="width:100%"><thead><tr><th>বিষয়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
+            for (const [sub, data] of Object.entries(subjectAnalysis)) {
+                let p = Math.round((data.correct / data.total) * 100);
+                html += `<tr><td>${sub}</td><td>${data.correct}/${data.total}</td><td>${p}%</td></tr>`;
             }
-            html += `</tbody></table>`;
-            
-            const modalTitle = document.querySelector('#chapterModal h3');
-            if(modalTitle) modalTitle.innerText = "বিষয়ভিত্তিক রিপোর্ট";
+            document.getElementById('chapterTableContainer').innerHTML = html + `</tbody></table>`;
+        }
 
-            document.getElementById('chapterTableContainer').innerHTML = html;
+        // 🔴 ১০০ প্রশ্নের পিডিএফ ফিক্স (ব্যালেন্সড কনফিগারেশন) 🔴
+        function downloadPDF() {
+            Swal.fire({ title: 'পিডিএফ তৈরি হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                const element = document.getElementById('pdf-container');
+                const opt = {
+                    margin: 0.3,
+                    filename: 'Result.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 1, // 🔴 লাইন ব্রেকের কারণে পেজ বড় হওয়ায় স্কেল ১ রাখা হয়েছে যাতে মেমোরি ক্র্যাশ না করে
+                        useCORS: true, 
+                        windowWidth: 1000 
+                    },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                };
+                html2pdf().set(opt).from(element).save().then(() => Swal.close());
+            }, 1000);
         }
 
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
-        function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }
-
-        // 🔴 PDF 100-Question Crash Fixed Code 🔴
-        function downloadPDF() {
-            if(typeof filterQuestions === 'function') filterQuestions('all'); 
-            
-            Swal.fire({
-                title: 'পিডিএফ তৈরি হচ্ছে...',
-                text: '১০০+ প্রশ্ন প্রসেস হতে ৩০-৪০ সেকেন্ড সময় লাগতে পারে। দয়া করে অপেক্ষা করুন...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            setTimeout(() => {
-                window.scrollTo(0, 0); 
-                
-                const element = document.getElementById('pdf-container');
-                const examTitle = document.getElementById('examName').innerText || 'Exam_Result';
-                
-                const opt = {
-                    margin:       [0.4, 0.3, 0.4, 0.3], 
-                    filename:     `${examTitle}_Result.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
-                        scale: 1.2, 
-                        useCORS: true, 
-                        logging: false, 
-                        scrollY: 0,
-                        windowWidth: 1000 
-                    },
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak:    { mode: ['css', 'legacy'] } 
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    Swal.close(); 
-                    Swal.fire('সফল!', 'আপনার পিডিএফ ডাউনলোড হয়ে গেছে।', 'success');
-                }).catch(err => {
-                    console.error("PDF Error: ", err);
-                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।', 'error');
-                });
-                
-            }, 1000); 
-        }
+        function closeChapterModal() { document.getElementById('chapterModal').style.display = 'none'; }    
     </script>
 </body>
 </html>
