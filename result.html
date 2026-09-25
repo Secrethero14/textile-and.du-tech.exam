@@ -168,7 +168,7 @@
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
+        const JSON_BASE = "https://textile-du-tech-exam.vercel.app/questions/";
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -246,8 +246,8 @@
             try {
                 const tabId = resultData.examId;
                 const [qRes, indexRes] = await Promise.all([
-                    fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`).then(r => r.json()),
-                    fetch(`${SHEET_URL}?action=getExamList`).then(r => r.json())
+                    fetch(JSON_BASE + tabId + ".json").then(r => r.json()),
+                    fetch(JSON_BASE + "exam-index.json").then(r => r.json())
                 ]);
 
                 qRes.forEach((q, idx) => { q.originalIndex = idx; });
