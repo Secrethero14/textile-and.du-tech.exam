@@ -157,7 +157,7 @@
     <script>
         // --- CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec"; 
+        const JSON_BASE = "https://textile-du-tech-exam.vercel.app/questions/";
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -194,7 +194,7 @@
         };
 
         async function loadExamConfig() {
-            const res = await fetch(SHEET_URL + "?action=getExamList");
+            const res = await fetch(JSON_BASE + "exam-index.json");
             const data = await res.json();
             const exam = data.find(e => e['Tab ID'] === tabId);
             if(exam) {
@@ -214,7 +214,7 @@
         }
 
         async function loadQuestions() {
-            const res = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`);
+            const res = await fetch(JSON_BASE + tabId + ".json");
             let rawQuestions = await res.json();
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
