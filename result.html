@@ -204,6 +204,7 @@
 
         // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (মাত্র ৩ রিড খরচ হবে!) 🔴
        // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (Web SDK Modular Import সহ) 🔴
+       // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (ফাইনাল ফিক্স) 🔴
         async function fetchRankData() {
             try {
                 if (resultData.isPractice === true) {
@@ -218,11 +219,13 @@
                 const myScore = parseFloat(resultData.score) || 0;
                 const myTime = parseFloat(resultData.timeTaken) || 0;
 
-                // 🔴 ম্যাজিক ট্রিক: ফায়ারবেস v10 এর মডুলার ফাংশনগুলো ডাইনামিক ইম্পোর্ট করা হচ্ছে
+                // 🔴 নতুন ফিক্স: মডুলার অ্যাপ ও ফায়ারস্টোর একসাথে কল করা
+                const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
                 const { getFirestore, collection, query, where, getCountFromServer } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
                 
-                // বর্তমান (compat) অ্যাপ থেকে মডুলার ফায়ারস্টোর কানেকশন তৈরি
-                const modularDb = getFirestore(firebase.app());
+                // একটি সেফ মডুলার কানেকশন তৈরি (আগের কানেকশনের সাথে কনফ্লিক্ট এড়াতে "CountApp" নামে)
+                const countApp = getApps().find(app => app.name === "CountApp") || initializeApp(firebaseConfig, "CountApp");
+                const modularDb = getFirestore(countApp);
                 const resultsRef = collection(modularDb, "exam_results");
 
                 // ১. আমার চেয়ে বেশি মার্কস পাওয়া স্টুডেন্ট সংখ্যা
@@ -271,14 +274,13 @@
                 console.error("Rank Error:", e);
                 document.getElementById('rankLoading').innerText = "র‍্যাঙ্ক চেক করতে সমস্যা হয়েছে।";
                 
-                // ইনডেক্স এররটি যেন সহজে চোখে পড়ে, তাই ক্লিয়ার করে প্রিন্ট করা হলো
+                // এবার আসল ইনডেক্স এররটি এলে কনসোলে লিংক দেখাবে
                 if(e.message && e.message.includes('requires an index')) {
                     console.warn("🚨 INDEX REQUIRED! ফায়ারবেস ইনডেক্স তৈরি করতে নিচের লিংকে ক্লিক করুন:");
                     console.warn(e.message);
                 }
             }
         }
-
         function normalizeMCQAns(ans) {
             if (!ans) return null;
             let c = String(ans).toUpperCase().replace(/[\-\.\)\(\[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
