@@ -420,7 +420,7 @@
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec";
+        const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -678,7 +678,7 @@
 
         async function loadExams() {
             try {
-                const res = await fetch(SHEET_URL + "?action=getExamList");
+                const res = await fetch(JSON_BASE + "exam-index.json");
                 allExams = await res.json();
                 renderView();
             } catch (e) { console.error(e); }
@@ -696,22 +696,25 @@
                 pathTitle.innerText = "Textile and DU Tech Exam Batch";
                 
                 const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
-                
+
+                let html = "";
                 categories.forEach(cat => {
                     const count = allExams.filter(e => e['Category'] === cat).length;
-                    container.innerHTML += `
+                    html += `
                         <div class="item-card folder-card" onclick="navigationStack.push('${cat}'); renderView()">
                             <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
                             <h3 style="margin:0;">${cat}</h3>
                             <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
                         </div>`;
                 });
+                container.innerHTML = html;
             } else {
                 backBtn.style.display = 'block';
                 const currentCat = navigationStack[0];
                 pathTitle.innerText = currentCat;
                 const filtered = allExams.filter(e => e['Category'] === currentCat);
 
+                let html = "";
                 filtered.forEach(exam => {
                     const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
                     let unlocked = !isPaid;
@@ -722,7 +725,7 @@
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
                     const btnClass = unlocked ? 'btn-start unlocked' : 'btn-start';
                     const btnText = unlocked ? 'Start Exam' : '<i class="fas fa-lock"></i> Unlock Now';
-                    container.innerHTML += `
+                    html += `
                         <div class="item-card exam-card" onclick="${action}">
                             ${badge}
                             <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
@@ -731,6 +734,7 @@
                             <button class="${btnClass}">${btnText}</button>
                         </div>`;
                 });
+                container.innerHTML = html;
             }
         }
 
