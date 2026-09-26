@@ -5,12 +5,12 @@
     <title>Exam Result | Detailed View</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <!-- 🔴 ফায়ারবেস ভার্সন আপডেট করা হয়েছে (10.8.0) Count Query এর জন্য -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+    <!-- html2pdf বাদ দেওয়া হয়েছে কারণ Native Print ব্যবহার করা হবে -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -73,17 +73,26 @@
 
         #errorBox { display: none; color: red; text-align: center; padding: 20px; background: #fff5f5; border-radius: 10px; margin-top: 20px; border: 1px solid #ff7675; }
 
-        /* 🔴 পিডিএফের জন্য স্পেস কমানোর জাদুকরী কোড 🔴 */
-        .pdf-mode { padding-top: 0 !important; background: white !important; }
-        .pdf-mode .container { max-width: 100% !important; margin: 0 !important; padding: 5px !important; }
-        .pdf-mode .q-card-full { padding: 10px !important; margin-bottom: 10px !important; box-shadow: none !important; border: 1px solid #ccc !important; }
-        .pdf-mode .explanation-box { padding: 8px !important; margin-top: 8px !important; line-height: 1.4 !important; }
-        .pdf-mode .opt-row { padding: 5px !important; margin-bottom: 4px !important; }
+        /* 🔴 Native Print-এর জন্য ম্যাজিক সিএসএস (পিডিএফ সাদা হবে না) 🔴 */
+        @media print {
+            body { padding-top: 0 !important; background: white !important; color: black !important; }
+            /* যেগুলো প্রিন্টে দরকার নেই সেগুলো গায়েব করা হলো */
+            .top-nav, .controls-area, .btn-row, #scoreDisplay+small, #meritSection, .stats-container, .modal-overlay, #errorBox, .score-card:last-child { display: none !important; }
+            
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .score-card { padding: 15px !important; box-shadow: none !important; border: 1px solid #ccc !important; margin-bottom: 15px !important; }
+            .score-circle { margin: 10px auto !important; width: 80px !important; height: 80px !important; }
+            .score-circle h1 { font-size: 24px !important; }
+            
+            /* প্রশ্নগুলো যেন ভেঙে না যায় */
+            .q-card-full { display: block !important; page-break-inside: avoid !important; break-inside: avoid !important; border: 1px solid #ddd !important; box-shadow: none !important; margin-bottom: 15px !important; padding: 15px !important; }
+            .explanation-box { background: transparent !important; border: 1px solid #eee !important; border-left: 3px solid #6c5ce7 !important; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-nav" data-html2canvas-ignore="true">
+    <div class="top-nav">
         <a href="index.html" class="home-link"><i class="fas fa-home"></i> ড্যাশবোর্ড</a>
     </div>
 
@@ -104,7 +113,7 @@
             
             <div class="score-circle"><h1 id="scoreDisplay">0</h1><small>স্কোর</small></div>
             
-            <div id="meritSection" style="background: linear-gradient(135deg, #f1f2f6, #ffffff); padding: 18px; border-radius: 15px; margin: 15px 0; border: 1px solid #dcdde1;" data-html2canvas-ignore="true">
+            <div id="meritSection" style="background: linear-gradient(135deg, #f1f2f6, #ffffff); padding: 18px; border-radius: 15px; margin: 15px 0; border: 1px solid #dcdde1;">
                 <i class="fas fa-trophy" style="color:#fdcb6e; font-size:24px; margin-bottom:10px;"></i>
                 <div id="rankLoading"><i class="fas fa-spinner fa-spin"></i> র‍্যাঙ্ক চেক করা হচ্ছে...</div>
                 <div id="rankContent" style="display:none; font-size:16px; line-height:1.6; color:#2d3436;"></div>
@@ -117,25 +126,25 @@
                 <div class="stat-box">সময়: <span id="timeTakenDisplay">00:00</span></div>
             </div>
 
-            <div class="btn-row" data-html2canvas-ignore="true">
+            <div class="btn-row">
                 <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
                 <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
             </div>
         </div>
 
-        <div class="controls-area" data-html2canvas-ignore="true">
+        <div class="controls-area">
             <button class="btn-filter active" onclick="filterQuestions('all')">সব প্রশ্ন</button>
             <button class="btn-filter" style="color:var(--danger)" onclick="filterQuestions('wrong')">শুধু ভুল</button>
             <button class="btn-filter" style="color:#856404" onclick="filterQuestions('skip')">শুধু স্কিপ</button>
             <button class="btn-filter" style="color:var(--success)" onclick="filterQuestions('correct')">সঠিকগুলো</button>
         </div>
 
-        <div id="loader" style="text-align:center; padding:20px;" data-html2canvas-ignore="true">
+        <div id="loader" style="text-align:center; padding:20px;">
             <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br>
             <span style="color:#666; margin-top:10px; display:block;">তোমার ইন্টারনেট স্পিড নির্ভর করে, প্রশ্নগুলো লোড হচ্ছে...</span>
         </div>
         
-        <div id="errorBox" data-html2canvas-ignore="true">
+        <div id="errorBox">
             <i class="fas fa-exclamation-triangle fa-2x"></i><br>
             <h4 id="errorMsg" style="margin:10px 0;">সমস্যা হয়েছে!</h4>
             <button onclick="location.reload()" style="padding:5px 15px; margin-top:10px; cursor:pointer;">Reload Page</button>
@@ -143,7 +152,7 @@
 
         <div id="qList"></div>
 
-        <div class="score-card" style="margin-top: 30px;" data-html2canvas-ignore="true">
+        <div class="score-card" style="margin-top: 30px;">
             <h3>পরবর্তী ধাপ</h3>
             <div class="btn-row">
                 <a href="profile.html" class="btn-main" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe);">
@@ -177,7 +186,7 @@
         let resultData = null;
 
         window.onload = async function() {
-            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
+            if(!docId) { showError("রেজাল্ট আইডি পাওয়া যায়নি!"); return; }
             try {
                 const doc = await db.collection("exam_results").doc(docId).get();
                 if(doc.exists) {
@@ -193,31 +202,55 @@
             }
         };
 
-        // 🔴 মেরিট পজিশন ফাংশন
+        // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (মাত্র ৩ রিড খরচ হবে!) 🔴
         async function fetchRankData() {
             try {
-                const snapshot = await db.collection("exam_results").where("examId", "==", resultData.examId).get();
-                let participants = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (data.isPractice !== true) {
-                        participants.push({ id: doc.id, score: parseFloat(data.score) || 0, time: parseFloat(data.timeTaken) || 0 });
-                    }
-                });
-                participants.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
-                const myRank = participants.findIndex(p => p.id === docId) + 1;
-                const totalParticipants = participants.length;
+                if (resultData.isPractice === true) {
+                    document.getElementById('rankLoading').style.display = 'none';
+                    const rankContentDiv = document.getElementById('rankContent');
+                    rankContentDiv.style.display = 'block';
+                    rankContentDiv.innerHTML = `আপনি এই এক্সামটি আগেই দিয়েছিলেন।<br>আপনার মেরিট পজিশন <span style="font-size: 24px; font-weight: bold; color: #ff7675;">--</span> তম।`;
+                    return;
+                }
+
+                const currentExamId = resultData.examId;
+                const myScore = parseFloat(resultData.score) || 0;
+                const myTime = parseFloat(resultData.timeTaken) || 0;
+
+                const baseQuery = db.collection("exam_results")
+                    .where("examId", "==", currentExamId)
+                    .where("isPractice", "==", false);
+
+                const higherScoreQuery = baseQuery.where("score", ">", myScore);
                 
+                const sameScoreBetterTimeQuery = baseQuery
+                    .where("score", "==", myScore)
+                    .where("timeTaken", "<", myTime);
+
+                const totalParticipantsQuery = baseQuery;
+
+                // একসাথে তিনটি Count Query রান করানো
+                const [higherScoreSnap, sameScoreBetterTimeSnap, totalSnap] = await Promise.all([
+                    higherScoreQuery.count().get(),
+                    sameScoreBetterTimeQuery.count().get(),
+                    totalParticipantsQuery.count().get()
+                ]);
+
+                const higherScoreCount = higherScoreSnap.data().count;
+                const sameScoreBetterTimeCount = sameScoreBetterTimeSnap.data().count;
+                const totalParticipants = totalSnap.data().count;
+
+                const myRank = higherScoreCount + sameScoreBetterTimeCount + 1;
+
                 document.getElementById('rankLoading').style.display = 'none';
                 const rankContentDiv = document.getElementById('rankContent');
                 rankContentDiv.style.display = 'block';
+                rankContentDiv.innerHTML = `আপনি এ পর্যন্ত <b>${totalParticipants}</b> জনের মধ্যে <br><span style="font-size: 26px; font-weight: bold; color: #ff7675;">${myRank}</span> তম হয়েছেন।<br><span style="font-size: 13px; color: #888; font-style: italic;">(আরো এক্সাম দিলে এটি পরিবর্তন হতে পারে)</span>`;
 
-                if (resultData.isPractice === true) {
-                    rankContentDiv.innerHTML = `আপনি এই এক্সামটি আগেই দিয়েছিলেন।<br>আপনার মেরিট পজিশন <span style="font-size: 24px; font-weight: bold; color: #ff7675;">${myRank > 0 ? myRank : '--'}</span> তম।`;
-                } else {
-                    rankContentDiv.innerHTML = `আপনি এ পর্যন্ত <b>${totalParticipants}</b> জনের মধ্যে <br><span style="font-size: 26px; font-weight: bold; color: #ff7675;">${myRank > 0 ? myRank : '--'}</span> তম হয়েছেন।<br><span style="font-size: 13px; color: #888; font-style: italic;">(আরো এক্সাম দিলে এটি পরিবর্তন হতে পারে)</span>`;
-                }
-            } catch (e) { document.getElementById('rankLoading').innerText = "Rank Error."; }
+            } catch (e) {
+                console.error("Rank Error:", e);
+                document.getElementById('rankLoading').innerText = "র‍্যাঙ্ক চেক করতে সমস্যা হয়েছে।";
+            }
         }
 
         function normalizeMCQAns(ans) {
@@ -301,7 +334,7 @@
 
                     let statusBadge = '';
                     if (status === 'correct') {
-                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
+                        statusBadge = `<span style="background: #e6fffa; color: #00b894; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-check-circle"></i> সঠিক উত্তর দিয়েছেন</span>`;
                     } else if (status === 'wrong') {
                         statusBadge = `<span style="background: #fff5f5; color: #d63031; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 12px;"><i class="fas fa-times-circle"></i> ভুল উত্তর! (আপনার উত্তর: ${myAns})</span>`;
                     } else {
@@ -339,8 +372,7 @@
                         `;
                     }
 
-                    // 🔴 ফিক্স: ডাবল ব্রেকের জায়গায় সিঙ্গেল ব্রেক দেওয়া হলো 🔴
-                    let expl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? String(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "কোনো ব্যাখ্যা দেওয়া নেই।";
+                    let expl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] ? String(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"]) : "কোনো ব্যাখ্যা দেওয়া নেই।";
                     let formattedExpl = expl.split('।').join('।<br>');
 
                     container.innerHTML += `
@@ -427,7 +459,7 @@
                 subjectAnalysis[sub].correct += data.correct;
                 subjectAnalysis[sub].total += data.total;
             }
-            let html = `<table style="width:100%"><thead><tr><th>বিষয়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
+            let html = `<table style="width:100%"><thead><tr><th>বিষয়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
             for (const [sub, data] of Object.entries(subjectAnalysis)) {
                 let p = Math.round((data.correct / data.total) * 100);
                 html += `<tr><td>${sub}</td><td>${data.correct}/${data.total}</td><td>${p}%</td></tr>`;
@@ -435,43 +467,15 @@
             document.getElementById('chapterTableContainer').innerHTML = html + `</tbody></table>`;
         }
 
-        // 🔴 অপ্টিমাইজড পিডিএফ কোড (ক্র্যাশ রোধ করতে) 🔴
+        // 🔴 অপ্টিমাইজড পিডিএফ কোড (Native Print) 🔴
         function downloadPDF() {
+            // প্রিন্ট করার আগে ফিল্টার ক্লিয়ার করে সব প্রশ্ন দেখানো
             if(typeof filterQuestions === 'function') filterQuestions('all'); 
             
-            Swal.fire({ title: 'পিডিএফ তৈরি হচ্ছে...', text: 'অপেক্ষা করুন...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            
-            // পিডিএফ জেনারেট হওয়ার আগে সব এক্সট্রা স্পেস গায়েব করে দিবে
-            document.body.classList.add('pdf-mode');
-
+            // একটু অপেক্ষা করে প্রিন্ট কমান্ড দেওয়া, যাতে ব্রাউজার সব কিছু ঠিকঠাক রেন্ডার করতে পারে
             setTimeout(() => {
-                window.scrollTo(0, 0);
-                const element = document.getElementById('pdf-container');
-                const examTitle = document.getElementById('examName').innerText || 'Result';
-                
-                const opt = {
-                    margin: 0.2, // মার্জিন একদম কমিয়ে দেওয়া হলো
-                    filename: `${examTitle}_Result.pdf`,
-                    image: { type: 'jpeg', quality: 0.95 },
-                    html2canvas: { 
-                        scale: 1.2, 
-                        useCORS: true, 
-                        windowWidth: 800
-                    },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: ['css', 'legacy'] }
-                };
-
-                html2pdf().set(opt).from(element).save().then(() => {
-                    // পিডিএফ হয়ে গেলে ওয়েবসাইট আবার আগের স্টাইলে ফিরে আসবে
-                    document.body.classList.remove('pdf-mode');
-                    Swal.close();
-                }).catch(err => {
-                    document.body.classList.remove('pdf-mode');
-                    console.error("PDF Error: ", err);
-                    Swal.fire('সমস্যা!', 'পিডিএফ তৈরি করতে সমস্যা হয়েছে।', 'error');
-                });
-            }, 1000);
+                window.print();
+            }, 500);
         }
 
         function openChapterModal() { document.getElementById('chapterModal').style.display = 'flex'; }
