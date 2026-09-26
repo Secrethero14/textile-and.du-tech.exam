@@ -203,6 +203,7 @@
         };
 
         // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (মাত্র ৩ রিড খরচ হবে!) 🔴
+       // 🔴 অপ্টিমাইজড মেরিট পজিশন ফাংশন (Web SDK Modular Import সহ) 🔴
         async function fetchRankData() {
             try {
                 if (resultData.isPractice === true) {
@@ -217,23 +218,42 @@
                 const myScore = parseFloat(resultData.score) || 0;
                 const myTime = parseFloat(resultData.timeTaken) || 0;
 
-                const baseQuery = db.collection("exam_results")
-                    .where("examId", "==", currentExamId)
-                    .where("isPractice", "==", false);
-
-                const higherScoreQuery = baseQuery.where("score", ">", myScore);
+                // 🔴 ম্যাজিক ট্রিক: ফায়ারবেস v10 এর মডুলার ফাংশনগুলো ডাইনামিক ইম্পোর্ট করা হচ্ছে
+                const { getFirestore, collection, query, where, getCountFromServer } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
                 
-                const sameScoreBetterTimeQuery = baseQuery
-                    .where("score", "==", myScore)
-                    .where("timeTaken", "<", myTime);
+                // বর্তমান (compat) অ্যাপ থেকে মডুলার ফায়ারস্টোর কানেকশন তৈরি
+                const modularDb = getFirestore(firebase.app());
+                const resultsRef = collection(modularDb, "exam_results");
 
-                const totalParticipantsQuery = baseQuery;
+                // ১. আমার চেয়ে বেশি মার্কস পাওয়া স্টুডেন্ট সংখ্যা
+                const higherScoreQ = query(
+                    resultsRef,
+                    where("examId", "==", currentExamId),
+                    where("isPractice", "==", false),
+                    where("score", ">", myScore)
+                );
+                
+                // ২. আমার সমান মার্কস কিন্তু কম সময় নেওয়া স্টুডেন্ট সংখ্যা
+                const sameScoreBetterTimeQ = query(
+                    resultsRef,
+                    where("examId", "==", currentExamId),
+                    where("isPractice", "==", false),
+                    where("score", "==", myScore),
+                    where("timeTaken", "<", myTime)
+                );
 
-                // একসাথে তিনটি Count Query রান করানো
+                // ৩. মোট কতজন পরীক্ষা দিয়েছে
+                const totalParticipantsQ = query(
+                    resultsRef,
+                    where("examId", "==", currentExamId),
+                    where("isPractice", "==", false)
+                );
+
+                // একসাথে তিনটি Count Query রান করানো (৩ রিড খরচ হবে)
                 const [higherScoreSnap, sameScoreBetterTimeSnap, totalSnap] = await Promise.all([
-                    higherScoreQuery.count().get(),
-                    sameScoreBetterTimeQuery.count().get(),
-                    totalParticipantsQuery.count().get()
+                    getCountFromServer(higherScoreQ),
+                    getCountFromServer(sameScoreBetterTimeQ),
+                    getCountFromServer(totalParticipantsQ)
                 ]);
 
                 const higherScoreCount = higherScoreSnap.data().count;
@@ -249,7 +269,13 @@
 
             } catch (e) {
                 console.error("Rank Error:", e);
-                document.getElementById('rankLoading').innerText = "র‍্যাঙ্ক চেক করতে সমস্যা হয়েছে।";
+                document.getElementById('rankLoading').innerText = "র‍্যাঙ্ক চেক করতে সমস্যা হয়েছে।";
+                
+                // ইনডেক্স এররটি যেন সহজে চোখে পড়ে, তাই ক্লিয়ার করে প্রিন্ট করা হলো
+                if(e.message && e.message.includes('requires an index')) {
+                    console.warn("🚨 INDEX REQUIRED! ফায়ারবেস ইনডেক্স তৈরি করতে নিচের লিংকে ক্লিক করুন:");
+                    console.warn(e.message);
+                }
             }
         }
 
