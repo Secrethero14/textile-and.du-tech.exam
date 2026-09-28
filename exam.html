@@ -157,7 +157,7 @@
     <script>
         // --- CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbx-_3KekMKoXozwtIITHzBG08BLu4cxTVU9hLV4YRfiA0bbsHnj4HDuZSgHB26A47BW4A/exec"; 
+        const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -194,7 +194,7 @@
         };
 
         async function loadExamConfig() {
-            const res = await fetch(SHEET_URL + "?action=getExamList");
+            const res = await fetch(JSON_BASE + "exam-index.json");
             const data = await res.json();
             const exam = data.find(e => e['Tab ID'] === tabId);
             if(exam) {
@@ -214,7 +214,7 @@
         }
 
         async function loadQuestions() {
-            const res = await fetch(`${SHEET_URL}?action=getQuestions&tabId=${tabId}`);
+            const res = await fetch(JSON_BASE + tabId + ".json");
             let rawQuestions = await res.json();
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
@@ -365,7 +365,7 @@
                 container.appendChild(card);
             });
 
-            // এখানে KaTeX এর কনফিগারেশন আপডেট করা হয়েছে
+            // 🔴 KaTeX কনফিগারেশন আপডেট 🔴
             if (typeof renderMathInElement === 'function') {
                 renderMathInElement(document.body, { 
                     delimiters: [
@@ -501,7 +501,7 @@
                 });
             } else {
                 Swal.fire({
-                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবেবিধা নেই।", 
+                    title: 'জমা দিতে চান?', text: "সব উত্তর দেওয়া হয়েছে। সাবমিট করার পর আর পরিবর্তন করা যাবে না।", 
                     icon: 'success', showCancelButton: true, confirmButtonColor: '#00b894', cancelButtonColor: '#d63031',
                     confirmButtonText: 'হ্যাঁ, জমা দিন', cancelButtonText: 'বাতিল'
                 }).then((result) => { if (result.isConfirmed) submitExam(); });
