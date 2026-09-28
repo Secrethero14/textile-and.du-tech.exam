@@ -435,7 +435,14 @@
                 if(resultData.score > 0) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                 
                 if (typeof renderMathInElement === 'function') {
-                    renderMathInElement(container, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}] });
+                    renderMathInElement(container, { 
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true}, 
+                            {left: '\\[', right: '\\]', display: true}, 
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false}
+                        ] 
+                    });
                 }
                 
                 prepareChapterTable();
