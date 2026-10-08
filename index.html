@@ -18,14 +18,12 @@
         :root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
         body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 50px; padding-top: 70px; }
         
-        /* --- SYSTEM LOADER --- */
         #system-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 6000; display: flex;
             justify-content: center; align-items: center; flex-direction: column;
         }
 
-        /* --- LOGIN VIEW --- */
         #login-view {
             height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 2000;
             display: none; justify-content: center; align-items: center;
@@ -52,7 +50,6 @@
         .btn-email { background: #2d3436; color: white; }
         .btn-guest { background: #b2bec3; color: white; }
 
-        /* --- AUTH MODAL --- */
         .auth-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
@@ -67,15 +64,13 @@
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .input-group { position: relative; margin-bottom: 15px; text-align: left; }
-        
-        /* 🔴 অটো-ফিল গ্লিচ ফিক্স এবং আইকনের পজিশন 🔴 */
         .input-group .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; z-index: 10; transition: 0.3s; }
         .input-group .toggle-password { left: auto; right: 15px; cursor: pointer; z-index: 10; position: absolute; top: 50%; transform: translateY(-50%); color: #888; transition: 0.3s; }
         .input-group .toggle-password:hover { color: var(--primary); }
         
         .input-group input {
             width: 100%; 
-            padding: 12px 40px !important; /* Force padding so text doesn't overlap left/right icons */
+            padding: 12px 40px !important;
             border: 2px solid #eee; border-radius: 10px;
             font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s;
             background: transparent;
@@ -99,7 +94,6 @@
         .forgot-pass { margin-top: 10px; font-size: 13px; cursor: pointer; color: #e17055; text-decoration: underline; display: inline-block; }
         .remember-me { text-align: left; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; color: #666; }
 
-        /* --- DASHBOARD STYLES --- */
         #dashboard-view { display: none; opacity: 0; transition: opacity 0.5s ease-in; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         
@@ -149,17 +143,8 @@
             align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0, 184, 148, 0.2); 
         }
         
-        #fun-loader-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 5000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; transition: opacity 0.5s;
-        }
-        .loading-text { font-size: 18px; color: var(--primary); margin-top: 20px; font-weight: bold; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
         .btn-pay { background: white; color: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 12px; white-space: nowrap; }
         .btn-pay:hover { transform: scale(1.05); }
-        .btn-verify { background: rgba(255,255,255,0.2); color: white; border: 1.5px solid white; margin-left: 0; }
         
         .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
@@ -181,7 +166,6 @@
         .modal-overlay { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
         .modal-content { background:white; padding:25px; border-radius:15px; width:100%; max-width:450px; text-align:center; position: relative; max-height: 90vh; overflow-y: auto; }
         
-        /* Payment text styles */
         .payment-text-box { background: #f3f0ff; padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left; border-left: 5px solid var(--primary); }
         .payment-number-container { display: flex; align-items: center; gap: 10px; margin: 10px 0; background: white; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; width: max-content; }
         .payment-number { font-size: 18px; font-weight: bold; color: var(--primary); letter-spacing: 1px; }
@@ -226,11 +210,6 @@
     <div id="system-loader">
         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary); margin-bottom:15px;"></i>
         <p style="color:#666; font-weight:bold;">অপেক্ষা করুন...</p>
-    </div>
-
-    <div id="fun-loader-overlay" style="display:none;">
-        <i class="fas fa-rocket fa-bounce fa-3x" style="color:var(--primary)"></i>
-        <p class="loading-text" id="fun-text">আপনার প্রোফাইল রেডি হচ্ছে...</p>
     </div>
 
     <div id="login-view">
@@ -303,7 +282,7 @@
                 </div>
                 <div style="flex:1;">
                     <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
-                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন。</p>
+                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
                 </div>
                 <a href="https://t.me/careforcandidates" target="_blank" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
                     <i class="fab fa-telegram-plane"></i> Join
@@ -325,7 +304,7 @@
                 </div>
                 <div class="promo-actions">
                     <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
-                    </div>
+                </div>
             </div>
 
             <div class="nav-header">
@@ -373,7 +352,6 @@
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
-            
             <div class="payment-text-box">
                 <p style="margin:0; font-weight:bold; color:#555;">Textile and DU Tech Exam Batch - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
                 <div class="payment-number-container">
@@ -385,7 +363,6 @@
 
             <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align: left;">
                 <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
-                
                 <div class="contact-buttons">
                     <a href="https://wa.me/8801925251621" target="_blank" class="btn-contact btn-whatsapp">
                         <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
@@ -432,27 +409,44 @@
         let isRegistering = false;
         let isGuest = false;
 
-        const funMessages = [
-            "আপনার এক্সাম তৈরি হচ্ছে...",
-            "আপনি  রেডি তো?",
-            "ব্রেইনের মেমোরি ঝালাই করা হচ্ছে...",
-            "প্রশ্নপত্র সেট করা হচ্ছে...",
-            "সাফল্যের পথে আপনাকে স্বাগতম!"
-        ];
-
-        function showFunLoader() {
-            const overlay = document.getElementById('fun-loader-overlay');
-            const txt = document.getElementById('fun-text');
-            txt.innerText = funMessages[Math.floor(Math.random() * funMessages.length)];
-            overlay.style.display = 'flex';
-            overlay.style.opacity = '1';
+        // 🔴 ফোল্ডার নেভিগেশন ও History API / Hash ফিক্স 🔴
+        function openCategory(cat) {
+            // URL hash পরিবর্তন ও history তে পুশ
+            const encodedCat = encodeURIComponent(cat);
+            if (window.location.hash !== '#' + encodedCat) {
+                history.pushState({ category: cat }, '', '#' + encodedCat);
+            }
+            navigationStack = [cat];
+            renderView();
         }
 
-        function hideFunLoader() {
-            const overlay = document.getElementById('fun-loader-overlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => { overlay.style.display = 'none'; }, 500);
+        function navigateBack() {
+            if (window.location.hash) {
+                // ব্রাউজারের হিস্ট্রি অনুযায়ী ব্যাকে যাবে
+                history.back();
+            } else {
+                navigationStack = [];
+                renderView();
+            }
         }
+
+        // ব্রাউজারের ব্যাক/ফরওয়ার্ড বাটন বা রিফ্রেশ হ্যান্ডলার
+        function syncRouteFromHash() {
+            const rawHash = window.location.hash.replace(/^#/, '');
+            if (rawHash) {
+                const cat = decodeURIComponent(rawHash);
+                navigationStack = [cat];
+            } else {
+                navigationStack = [];
+            }
+            if (allExams.length > 0) {
+                renderView();
+            }
+        }
+
+        // popstate এবং hashchange ইভেন্ট লিসেনার
+        window.addEventListener('popstate', syncRouteFromHash);
+        window.addEventListener('hashchange', syncRouteFromHash);
 
         auth.onAuthStateChanged(user => {
             const sysLoader = document.getElementById('system-loader');
@@ -530,11 +524,9 @@
             document.getElementById('authMsg').className = 'auth-message';
         }
 
-        // 🔴 চোখ আইকনে ক্লিক করলে পাসওয়ার্ড দেখা বা লুকানোর ফাংশন 🔴
         function togglePasswordVisibility() {
             const passField = document.getElementById("password");
             const toggleIcon = document.getElementById("togglePasswordIcon");
-            
             if (passField.type === "password") {
                 passField.type = "text";
                 toggleIcon.classList.remove("fa-eye");
@@ -546,23 +538,21 @@
             }
         }
 
-        // 🔴 পাসওয়ার্ড ভ্যালিডেশন (৬ অক্ষর হলে আনলক হবে) 🔴
         document.getElementById('password').addEventListener('input', function() {
             const passIcon = document.getElementById('passLockIcon');
             const authBtn = document.getElementById('authBtn');
-            
             if(this.value.length > 0 && this.value.length < 6) {
-                this.style.borderColor = '#d63031'; // লাল বর্ডার
-                passIcon.style.color = '#d63031'; // লাল তালা
+                this.style.borderColor = '#d63031';
+                passIcon.style.color = '#d63031';
                 passIcon.className = 'fas fa-lock input-icon';
-                authBtn.disabled = true; // বাটন বন্ধ
+                authBtn.disabled = true;
             } else if (this.value.length >= 6) {
-                this.style.borderColor = '#00b894'; // সবুজ বর্ডার
-                passIcon.style.color = '#00b894'; // সবুজ খোলা তালা
+                this.style.borderColor = '#00b894';
+                passIcon.style.color = '#00b894';
                 passIcon.className = 'fas fa-lock-open input-icon'; 
-                authBtn.disabled = false; // বাটন চালু
+                authBtn.disabled = false;
             } else {
-                this.style.borderColor = '#eee'; // সাধারণ বর্ডার
+                this.style.borderColor = '#eee';
                 passIcon.style.color = '#888';
                 passIcon.className = 'fas fa-lock input-icon';
                 authBtn.disabled = false;
@@ -667,7 +657,7 @@
                 const successBanner = document.getElementById('successBanner');
                 
                 if (!snap.empty) {
-                    userEnrollment = 'TextileFull'; // Default to full access if approved
+                    userEnrollment = 'TextileFull';
                     promoBanner.style.display = 'none'; bonusBanner.style.display = 'none'; successBanner.style.display = 'flex';
                 } else {
                     promoBanner.style.display = 'flex'; bonusBanner.style.display = 'flex'; successBanner.style.display = 'none';
@@ -680,7 +670,7 @@
             try {
                 const res = await fetch(JSON_BASE + "exam-index.json");
                 allExams = await res.json();
-                renderView();
+                syncRouteFromHash(); // রিফ্রেশ দিলে URL hash থেকে ফোল্ডার লোড করবে
             } catch (e) { console.error(e); }
         }
 
@@ -701,7 +691,7 @@
                 categories.forEach(cat => {
                     const count = allExams.filter(e => e['Category'] === cat).length;
                     html += `
-                        <div class="item-card folder-card" onclick="navigationStack.push('${cat}'); renderView()">
+                        <div class="item-card folder-card" onclick="openCategory('${cat}')">
                             <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
                             <h3 style="margin:0;">${cat}</h3>
                             <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
@@ -719,7 +709,7 @@
                     const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
                     let unlocked = !isPaid;
                     if(userEnrollment) {
-                        unlocked = true; // Unlock all if enrolled in Textile package
+                        unlocked = true;
                     }
                     const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
@@ -738,9 +728,6 @@
             }
         }
 
-        function navigateBack() { navigationStack = []; renderView(); }
-        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
-        
         function copyNumber() {
             const number = document.getElementById('paymentNum').innerText;
             navigator.clipboard.writeText(number).then(() => {
@@ -753,8 +740,8 @@
             });
         }
 
+        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
-        
     </script>
 </body>
 </html>
