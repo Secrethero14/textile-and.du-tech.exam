@@ -666,13 +666,13 @@
             } catch (error) { console.error(error); loadExams(); }
         }
 
-        async function loadExams() {
+     async function loadExams() {
             try {
-                const res = await fetch(JSON_BASE + "exam-index.json");
+                const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
                 allExams = await res.json();
                 syncRouteFromHash(); // রিফ্রেশ দিলে URL hash থেকে ফোল্ডার লোড করবে
             } catch (e) { console.error(e); }
-        }
+  }
 
         function renderView() {
             const container = document.getElementById('examContainer');
