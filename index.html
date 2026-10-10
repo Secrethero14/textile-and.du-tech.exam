@@ -129,14 +129,6 @@
         .promo-content p { margin: 3px 0 0 0; font-size: 12px; opacity: 0.9; }
         .promo-actions { display:flex; gap:8px; }
 
-        .bonus-banner { 
-            background: linear-gradient(135deg, #fdcb6e, #fab1a0); color: #2d3436; 
-            padding: 12px 15px; border-radius: 15px; margin-bottom: 15px; display: none; 
-            align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3); 
-            animation: slideIn 0.5s ease-out; font-size: 13px;
-        }
-        @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
         .success-banner { 
             background: linear-gradient(135deg, #00b894, #55efc4); color: white; 
             padding: 15px; border-radius: 15px; margin: 15px 0; display: none; 
@@ -150,8 +142,31 @@
         .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
         
         .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-        .item-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; cursor: pointer; position: relative; border-bottom: 4px solid transparent; }
-        .item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        /* 🔴 3-Level Folder UI Custom Styles 🔴 */
+        .item-card { 
+            background: white; padding: 25px; border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            cursor: pointer; position: relative; 
+            border-bottom: 4px solid transparent; border: 2px solid transparent; 
+        }
+        .item-card.folder-card:hover, .item-card.folder-card:active {
+            transform: translateY(-5px) scale(1.02);
+            border-color: #0984e3; 
+            background-color: #f4faff; 
+            box-shadow: 0 12px 24px rgba(9, 132, 227, 0.15);
+            border-bottom-color: #0984e3;
+        }
+        .item-card.exam-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
+        
+        .master-folder { text-align: center; padding: 40px 20px; }
+        .master-folder i { font-size: 50px; color: #0984e3; margin-bottom: 15px; }
+        /* 🔴 End of Custom Styles 🔴 */
+
         .folder-card { border-bottom-color: #f9ca24; }
         .exam-card { border-bottom-color: var(--primary); }
         .icon-box { font-size: 45px; margin-bottom: 15px; }
@@ -289,14 +304,6 @@
                 </a>
             </div>
 
-            <div id="bonusBanner" class="bonus-banner">
-                <div style="font-size:20px;"><i class="fas fa-gift"></i></div>
-                <div>
-                    <h3 style="margin:0; font-size:14px;"> ATTENTION! 🔥</h3>
-                    <p style="margin:3px 0 0 0; font-size:12px;"> Textile and DU Tech Exam Batch <b>" support upto DCU exam"</b>Enroll Now!</p>
-                </div>
-            </div>
-
             <div id="promoBanner" class="promo-banner">
                 <div class="promo-content">
                     <h2> "Textile and DU Tech Exam Batch!"</h2>
@@ -404,47 +411,32 @@
         const auth = firebase.auth();
         
         let allExams = [];
-        let navigationStack = []; 
+        let currentFolder = ""; // 🔴 ৩-লেভেল সিস্টেমের জন্য ভ্যারিয়েবল 🔴
         let userEnrollment = null;
         let isRegistering = false;
         let isGuest = false;
 
-        // 🔴 ফোল্ডার নেভিগেশন ও History API / Hash ফিক্স 🔴
-        function openCategory(cat) {
-            // URL hash পরিবর্তন ও history তে পুশ
-            const encodedCat = encodeURIComponent(cat);
-            if (window.location.hash !== '#' + encodedCat) {
-                history.pushState({ category: cat }, '', '#' + encodedCat);
-            }
-            navigationStack = [cat];
-            renderView();
+        // 🔴 ফোল্ডার নেভিগেশন ও History API / Hash 🔴
+        function openFolder(folder) {
+            window.location.hash = encodeURIComponent(folder);
         }
 
         function navigateBack() {
-            if (window.location.hash) {
-                // ব্রাউজারের হিস্ট্রি অনুযায়ী ব্যাকে যাবে
-                history.back();
+            if (currentFolder === 'Textile_Master') {
+                window.location.hash = ''; // হোমপেজে যাবে
             } else {
-                navigationStack = [];
-                renderView();
+                window.location.hash = 'Textile_Master'; // মাস্টার ফোল্ডারে যাবে
             }
         }
 
-        // ব্রাউজারের ব্যাক/ফরওয়ার্ড বাটন বা রিফ্রেশ হ্যান্ডলার
         function syncRouteFromHash() {
             const rawHash = window.location.hash.replace(/^#/, '');
-            if (rawHash) {
-                const cat = decodeURIComponent(rawHash);
-                navigationStack = [cat];
-            } else {
-                navigationStack = [];
-            }
+            currentFolder = rawHash ? decodeURIComponent(rawHash) : "";
             if (allExams.length > 0) {
                 renderView();
             }
         }
 
-        // popstate এবং hashchange ইভেন্ট লিসেনার
         window.addEventListener('popstate', syncRouteFromHash);
         window.addEventListener('hashchange', syncRouteFromHash);
 
@@ -653,27 +645,29 @@
                 const snap = await db.collection("payment_requests")
                     .where("email", "==", email).where("status", "==", "approved").get();
                 const promoBanner = document.getElementById('promoBanner');
-                const bonusBanner = document.getElementById('bonusBanner');
                 const successBanner = document.getElementById('successBanner');
                 
                 if (!snap.empty) {
                     userEnrollment = 'TextileFull';
-                    promoBanner.style.display = 'none'; bonusBanner.style.display = 'none'; successBanner.style.display = 'flex';
+                    promoBanner.style.display = 'none'; 
+                    successBanner.style.display = 'flex';
                 } else {
-                    promoBanner.style.display = 'flex'; bonusBanner.style.display = 'flex'; successBanner.style.display = 'none';
+                    promoBanner.style.display = 'flex'; 
+                    successBanner.style.display = 'none';
                 }
                 loadExams();
             } catch (error) { console.error(error); loadExams(); }
         }
 
-     async function loadExams() {
+        async function loadExams() {
             try {
                 const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
                 allExams = await res.json();
                 syncRouteFromHash(); // রিফ্রেশ দিলে URL hash থেকে ফোল্ডার লোড করবে
             } catch (e) { console.error(e); }
-  }
+        }
 
+        // 🔴 3-Level Render View Function 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
             const pathTitle = document.getElementById('currentPathTitle');
@@ -681,48 +675,63 @@
             document.getElementById('loader').style.display = 'none';
             container.innerHTML = "";
 
-            if (navigationStack.length === 0) {
+            if (!currentFolder) {
+                // লেভেল ০: হোম পেজ (শুধুমাত্র মাস্টার ফোল্ডার দেখাবে)
                 backBtn.style.display = 'none';
                 pathTitle.innerText = "Textile and DU Tech Exam Batch";
                 
+                container.innerHTML = `
+                    <div class="item-card folder-card master-folder" onclick="openFolder('Textile_Master')">
+                        <i class="fas fa-layer-group"></i>
+                        <h2 style="margin:0; color:#2d3436;">টেক্সটাইল (Textile)</h2>
+                        <p style="font-size:14px; color:#636e72; margin-top:5px;">সকল সাবজেক্টের ফোল্ডার ও এক্সাম</p>
+                    </div>`;
+            } 
+            else if (currentFolder === 'Textile_Master') {
+                // লেভেল ১: মাস্টার ফোল্ডার (সব সাবজেক্ট ফোল্ডার দেখাবে)
+                backBtn.style.display = 'block';
+                pathTitle.innerText = "Textile Categories";
+                
                 const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
-
                 let html = "";
                 categories.forEach(cat => {
                     const count = allExams.filter(e => e['Category'] === cat).length;
                     html += `
-                        <div class="item-card folder-card" onclick="openCategory('${cat}')">
+                        <div class="item-card folder-card" onclick="openFolder('${cat}')">
                             <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
                             <h3 style="margin:0;">${cat}</h3>
                             <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
                         </div>`;
                 });
                 container.innerHTML = html;
-            } else {
+            } 
+            else {
+                // লেভেল ২: সাবজেক্ট ফোল্ডার (আসল এক্সামগুলো দেখাবে)
                 backBtn.style.display = 'block';
-                const currentCat = navigationStack[0];
-                pathTitle.innerText = currentCat;
-                const filtered = allExams.filter(e => e['Category'] === currentCat);
-
+                pathTitle.innerText = currentFolder;
+                
+                const filtered = allExams.filter(e => e['Category'] === currentFolder);
                 let html = "";
                 filtered.forEach(exam => {
                     const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
                     let unlocked = !isPaid;
-                    if(userEnrollment) {
-                        unlocked = true;
-                    }
+                    if(userEnrollment) { unlocked = true; } // Enrolled student logic
+
                     const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
-                    const btnClass = unlocked ? 'btn-start unlocked' : 'btn-start';
-                    const btnText = unlocked ? 'Start Exam' : '<i class="fas fa-lock"></i> Unlock Now';
+                    
                     html += `
                         <div class="item-card exam-card" onclick="${action}">
                             ${badge}
                             <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
-                            <h3 style="margin:0;">${exam['Exam Name']}</h3>
-                            <small style="color:#666;">${exam['Total Time']} Min | Marks: ${exam['Total Marks']}</small>
-                            <button class="${btnClass}">${btnText}</button>
-                        </div>`;
+                            <h3 style="margin:0 0 10px 0;">${exam['Exam Name'] || 'Untitled Exam'}</h3>
+                            <div style="font-size:13px; color:#666; margin-bottom:5px;"><i class="far fa-clock"></i> ${exam['Total Time'] || 0} Minutes</div>
+                            <div style="font-size:13px; color:#666;"><i class="fas fa-bullseye"></i> ${exam['Total Marks'] || 0} Marks</div>
+                            <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto;">
+                                ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
+                            </button>
+                        </div>
+                    `;
                 });
                 container.innerHTML = html;
             }
