@@ -630,7 +630,8 @@
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
                 
-                window.location.href = `result.html?id=${docRef.id}`;
+                
+                window.location.replace(`result.html?id=${docRef.id}`);
 
             } catch (err) {
                 console.error(err);
