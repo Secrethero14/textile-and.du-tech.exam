@@ -108,7 +108,7 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; z-index: 1000; box-sizing: border-box;
         }
-        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
         
         .auth-buttons { display: flex; align-items: center; gap: 8px; }
         .profile-btn-highlight {
@@ -149,7 +149,7 @@
         /* 🔴 গ্রিড লেআউট 🔴 */
         .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
         
-        /* 🔴 সাব-ক্যাটাগরি ফোল্ডারের জন্য স্পেশাল ২-কলাম গ্রিড (মোবাইলে পাশাপাশি ২টি) 🔴 */
+        /* 🔴 ২-কলাম গ্রিড (মোবাইলে পাশাপাশি ২টি করে ফোল্ডার ও ভিডিও) 🔴 */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -185,7 +185,7 @@
         .item-card { 
             position: relative;
             background: white; 
-            padding: 22px; 
+            padding: 20px; 
             border-radius: 16px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
             text-align: center; 
@@ -249,6 +249,85 @@
         .btn-start { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #eee; color: #555; font-weight: bold; cursor: pointer; margin-top: 15px; pointer-events: none; }
         .btn-start.unlocked { background: var(--primary); color: white; }
         
+        /* 🔴 ভিডিও কার্ডের স্কয়ার/কমপ্যাক্ট স্টাইল 🔴 */
+        .video-card {
+            padding: 12px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .video-thumb-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #111;
+            margin-bottom: 10px;
+        }
+        .video-thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .video-card:hover .video-thumb-wrap img {
+            transform: scale(1.06);
+        }
+        .play-btn-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: #ff4757;
+            background: rgba(0, 0, 0, 0.65);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .video-card:hover .play-btn-overlay {
+            transform: translate(-50%, -50%) scale(1.15);
+            background: #ff4757;
+            color: white;
+        }
+        .video-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3436;
+            margin: 0 0 10px 0;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-align: left;
+        }
+        .btn-watch {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: auto;
+            transition: 0.2s;
+        }
+        .btn-watch:hover {
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
         .modal-overlay { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
         .modal-content { background:white; padding:25px; border-radius:15px; width:100%; max-width:450px; text-align:center; position: relative; max-height: 90vh; overflow-y: auto; }
         
@@ -389,7 +468,7 @@
     <div id="dashboard-view">
         <div class="top-nav">
             <a href="index.html" class="home-link">
-                <i class="fas fa-graduation-cap"></i> Textile and DU Tech Exam 
+                <i class="fas fa-graduation-cap"></i> Textile Engineering Admission Preparation
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
@@ -461,7 +540,7 @@
         </footer>
     </div>
 
-    <!-- 🔴 পেমেন্ট মডাল (টেলিগ্রাম লিংক ফিক্সড) 🔴 -->
+    <!-- 🔴 পেমেন্ট মডাল 🔴 -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
@@ -480,7 +559,6 @@
                     <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="btn-contact btn-whatsapp">
                         <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
                     </a>
-                    <!-- ✅ @ ছাড়া সঠিক টেলিগ্রাম লিংক ✅ -->
                     <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="btn-contact btn-telegram"> 
                         <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
                     </a>
@@ -490,21 +568,20 @@
                 </div>
             </div>
             
-            <button onclick="document.getElementById('paymentModal').style.display='none'" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
+            <button onclick="closePaymentModal()" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
         </div>
     </div>
 
-    <!-- 🔴 হেল্প উইজেট (টেলিগ্রাম লিংক ফিক্সড) 🔴 -->
+    <!-- 🔴 হেল্প উইজেট 🔴 -->
     <div id="supportWidget" class="support-container">
         <div id="socialLinks" class="social-box">
             <div class="help-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <span>সাহায্য প্রয়োজন?</span>
-    <span onclick="toggleHelp()" style="cursor: pointer; font-size: 16px; font-weight: bold; color: #888;">&times;</span>
-</div>
+                <span>সাহায্য প্রয়োজন?</span>
+                <span onclick="toggleHelp()" style="cursor: pointer; font-size: 16px; font-weight: bold; color: #888;">&times;</span>
+            </div>
             <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="s-link whatsapp">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
-            <!-- ✅ @ ছাড়া সঠিক টেলিগ্রাম লিংক ✅ -->
             <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="s-link telegram">
                 <i class="fab fa-telegram-plane"></i> Telegram
             </a>
@@ -529,6 +606,14 @@
         let userEnrollment = null;
         let isRegistering = false;
         let isGuest = false;
+
+        // 🔴 ইউটিউব ভিডিও আইডি বের করার হেল্পার 🔴
+        function getYouTubeVideoId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = String(url).match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
 
         // 🔴 ফোল্ডার নেভিগেশন ও History কন্ট্রোল 🔴
         function openMaster(mCat) {
@@ -556,8 +641,16 @@
             }
         }
 
-        // 🔴 মোবাইলের ব্যাক বাটন ও এক্সিট পপ-আপ লজিক 🔴
-                window.addEventListener('popstate', syncRouteFromHash);
+        // 🔴 মোবাইলের ব্যাক বাটন ও পেমেন্ট মডাল ক্লোজ লজিক 🔴
+        window.addEventListener('popstate', function(e) {
+            const payModal = document.getElementById('paymentModal');
+            // যদি পেমেন্ট মডাল ওপেন থাকে, ব্যাক চাপলে শুধু মডাল বন্ধ হবে (পেজ বদলাবে না)
+            if (payModal && payModal.style.display === 'flex') {
+                payModal.style.display = 'none';
+                return;
+            }
+            syncRouteFromHash();
+        });
 
         function syncRouteFromHash() {
             const rawHash = window.location.hash.replace(/^#/, '');
@@ -811,7 +904,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // 🔴 ৩-লেভেল ডাইনামিক রেন্ডারিং (মাস্টার ➡️ সাব-ফোল্ডার [মোবাইলে ২টি করে] ➡️ এক্সাম) 🔴
+        // 🔴 ফ্ল্যাক্সিবল ও ডাইনামিক রেন্ডারিং ইঞ্জিন 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
             const pathTitle = document.getElementById('currentPathTitle');
@@ -819,14 +912,13 @@
             document.getElementById('loader').style.display = 'none';
             container.innerHTML = "";
 
-            // শিটে Master Category আছে কি না তা চেক করা
             const hasMaster = allExams.some(e => e['Master Category'] && String(e['Master Category']).trim() !== "");
 
             if (hasMaster) {
                 if (!currentMaster) {
                     // লেভেল ০: হোম পেজ (মাস্টার ক্যাটাগরি ফোল্ডারগুলো দেখাবে)
                     backBtn.style.display = 'none';
-                    pathTitle.innerText = "Textile and DU Tech Exam Batch";
+                    pathTitle.innerText = "Textile Engineering Admission Preparation";
                     container.className = "exam-grid";
 
                     const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
@@ -837,47 +929,59 @@
                             <div class="item-card folder-card" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
                                 <div class="icon-box folder-icon"><i class="fas fa-layer-group"></i></div>
                                 <h3 style="margin:0;">${mCat}</h3>
-                                <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
+                                <p style="font-size:12px; color:#888; margin-top:5px;">${count} Items</p>
                             </div>`;
                     });
                     container.innerHTML = html;
                 } 
                 else if (currentMaster && !currentCategory) {
-                    // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (সাব-ফোল্ডারগুলো: মোবাইলে পাশাপাশি ২টি করে)
-                    backBtn.style.display = 'block';
-                    pathTitle.innerText = currentMaster;
-                    container.className = "category-grid"; // ✅ মোবাইলে ২-কলাম গ্রিড ✅
-
+                    // লেভেল ১: মাস্টার ফোল্ডারের ভেতর
                     const masterExams = allExams.filter(e => e['Master Category'] === currentMaster);
-                    const categories = [...new Set(masterExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                     
-                    let html = "";
-                    categories.forEach(cat => {
-                        const count = masterExams.filter(e => e['Category'] === cat).length;
-                        html += `
-                            <div class="item-card folder-card compact-folder" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">
-                                <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
-                                <h3>${cat}</h3>
-                                <p>${count} Exams</p>
-                            </div>`;
-                    });
-                    container.innerHTML = html;
+                    // সাব-ক্যাটাগরি আছে কি না পরীক্ষা করা (যদি ক্যাটাগরি ফাঁকা থাকে বা মাস্টারের সমান হয়, তবে সরাসরি আইটেম দেখাবে)
+                    const categories = [...new Set(masterExams.map(e => e['Category']))]
+                        .filter(cat => cat && String(cat).trim() !== "" && cat !== "General" && cat !== currentMaster);
+
+                    if (categories.length > 0) {
+                        // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ ফোল্ডার দেখাও
+                        backBtn.style.display = 'block';
+                        pathTitle.innerText = currentMaster;
+                        container.className = "category-grid"; // ২ কলাম গ্রিড
+
+                        let html = "";
+                        categories.forEach(cat => {
+                            const count = masterExams.filter(e => e['Category'] === cat).length;
+                            html += `
+                                <div class="item-card folder-card compact-folder" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">
+                                    <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
+                                    <h3>${cat}</h3>
+                                    <p>${count} Items</p>
+                                </div>`;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        // সাব-ক্যাটাগরি নেই (ফাঁকা) ➡️ সরাসরি ভিডিও ও এক্সাম কার্ড দেখাও!
+                        backBtn.style.display = 'block';
+                        pathTitle.innerText = currentMaster;
+                        container.className = "category-grid"; // ২ কলাম গ্রিড
+                        renderItems(masterExams, container);
+                    }
                 } 
                 else {
-                    // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সামগুলো)
+                    // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সাম/ভিডিও)
                     backBtn.style.display = 'block';
                     pathTitle.innerText = currentCategory;
-                    container.className = "exam-grid";
+                    container.className = "category-grid";
 
                     const filtered = allExams.filter(e => e['Master Category'] === currentMaster && e['Category'] === currentCategory);
-                    renderExamCards(filtered, container);
+                    renderItems(filtered, container);
                 }
             } else {
-                // ফলব্যাক (যদি এখনো শিটে Master Category না থাকে)
+                // ফলব্যাক (যদি শিটে Master Category না থাকে)
                 if (!currentCategory) {
                     backBtn.style.display = 'none';
                     pathTitle.innerText = "Textile Engineering Admission Preparation";
-                    container.className = "category-grid"; // মোবাইলে ২ কলাম
+                    container.className = "category-grid";
 
                     const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                     let html = "";
@@ -887,43 +991,64 @@
                             <div class="item-card folder-card compact-folder" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">
                                 <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
                                 <h3>${cat}</h3>
-                                <p>${count} Exams</p>
+                                <p>${count} Items</p>
                             </div>`;
                     });
                     container.innerHTML = html;
                 } else {
                     backBtn.style.display = 'block';
                     pathTitle.innerText = currentCategory;
-                    container.className = "exam-grid";
+                    container.className = "category-grid";
                     const filtered = allExams.filter(e => e['Category'] === currentCategory);
-                    renderExamCards(filtered, container);
+                    renderItems(filtered, container);
                 }
             }
         }
 
-        // এক্সাম কার্ড রেন্ডার করার ফাংশন
-        function renderExamCards(filtered, container) {
+        // 🔴 আইটেম (এক্সাম বনাম ভিডিও) কার্ড রেন্ডারার 🔴
+        function renderItems(filtered, container) {
             let html = "";
-            filtered.forEach(exam => {
-                const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
-                let unlocked = !isPaid;
-                if(userEnrollment) { unlocked = true; }
-
-                const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
-                const action = unlocked ? `location.href='exam.html?id=${encodeURIComponent(exam['Tab ID'])}'` : `openPaymentModal()`;
+            filtered.forEach(item => {
+                const isVideo = (item['Type']||'').toLowerCase() === 'video' || (item['Link'] && (item['Link'].includes('youtu.be') || item['Link'].includes('youtube.com')));
                 
-                html += `
-                    <div class="item-card exam-card" onclick="${action}">
-                        ${badge}
-                        <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
-                        <h3 style="margin:0 0 10px 0;">${exam['Exam Name'] || 'Untitled Exam'}</h3>
-                        <div style="font-size:13px; color:#666; margin-bottom:5px;"><i class="far fa-clock"></i> ${exam['Total Time'] || 0} Minutes</div>
-                        <div style="font-size:13px; color:#666;"><i class="fas fa-bullseye"></i> ${exam['Total Marks'] || 0} Marks</div>
-                        <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto;">
-                            ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
-                        </button>
-                    </div>
-                `;
+                if (isVideo) {
+                    // 🎬 ইউটিউব ভিডিও কার্ড (স্কয়ার/কমপ্যাক্ট ২-কলাম)
+                    const videoId = getYouTubeVideoId(item['Link']);
+                    const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
+                    const targetLink = item['Link'] || '#';
+
+                    html += `
+                        <div class="item-card video-card" onclick="window.open('${targetLink}', '_blank')">
+                            <div class="video-thumb-wrap">
+                                <img src="${thumbUrl}" alt="Video Thumbnail" loading="lazy">
+                                <div class="play-btn-overlay"><i class="fab fa-youtube"></i></div>
+                            </div>
+                            <h3 class="video-title">${item['Exam Name'] || 'Video Lecture'}</h3>
+                            <button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button>
+                        </div>
+                    `;
+                } else {
+                    // 📝 সাধারণ এক্সাম কার্ড
+                    const isPaid = (item['Type']||'').toLowerCase() === 'paid';
+                    let unlocked = !isPaid;
+                    if(userEnrollment) { unlocked = true; }
+
+                    const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
+                    const action = unlocked ? `location.href='exam.html?id=${encodeURIComponent(item['Tab ID'])}'` : `openPaymentModal()`;
+                    
+                    html += `
+                        <div class="item-card exam-card" onclick="${action}">
+                            ${badge}
+                            <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
+                            <h3 style="margin:0 0 10px 0; font-size:14px;">${item['Exam Name'] || 'Untitled Exam'}</h3>
+                            <div style="font-size:12px; color:#666; margin-bottom:4px;"><i class="far fa-clock"></i> ${item['Total Time'] || 0} Minutes</div>
+                            <div style="font-size:12px; color:#666;"><i class="fas fa-bullseye"></i> ${item['Total Marks'] || 0} Marks</div>
+                            <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto; padding:8px; font-size:13px; margin-top:10px;">
+                                ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
+                            </button>
+                        </div>
+                    `;
+                }
             });
             container.innerHTML = html;
         }
@@ -940,7 +1065,16 @@
             });
         }
 
-        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
+        function openPaymentModal() { 
+            document.getElementById('paymentModal').style.display = 'flex';
+            history.pushState({ modal: 'payment' }, '');
+        }
+
+        function closePaymentModal() { 
+            const payModal = document.getElementById('paymentModal');
+            if (payModal) payModal.style.display = 'none';
+        }
+
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
     </script>
 </body>
