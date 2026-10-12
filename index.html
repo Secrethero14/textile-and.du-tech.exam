@@ -17,11 +17,10 @@
     <style>
         :root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
         
-        /* 🔴 ব্যাকগ্রাউন্ডে সুঁই-সুতা ও সেলাইয়ের টেক্সটাইল ওয়াটারমার্ক 🔴 */
+        /* 🔴 ব্যাকগ্রাউন্ড একদম পরিষ্কার (সুঁই-সুতা বাদ) 🔴 */
         body { 
             font-family: 'Hind Siliguri', sans-serif; 
-            background-color: var(--bg);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%236c5ce7' fill-opacity='0.035'%3E%3Cpath d='M15 15 L45 15 M15 35 L45 35' stroke='%236c5ce7' stroke-width='1' stroke-dasharray='4,4' fill='none'/%3E%3Cpath d='M65 25 L85 45' stroke='%236c5ce7' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='66' cy='26' r='1.8' fill='%236c5ce7'/%3E%3Cpath d='M25 75 Q 40 60, 55 75 T 85 75' stroke='%236c5ce7' stroke-width='1.2' stroke-dasharray='3,3' fill='none'/%3E%3Ccircle cx='85' cy='75' r='1.5' fill='%236c5ce7'/%3E%3C/g%3E%3C/svg%3E");
+            background: var(--bg);
             margin: 0; color: var(--text); padding-bottom: 50px; padding-top: 70px; 
         }
         
@@ -148,30 +147,71 @@
         .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
         
-        .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
         
-        /* 🔴 ফোল্ডার ও কার্ডের সুন্দর পপ-আপ ও হোভার ইফেক্ট 🔴 */
+        /* 🔴 চারপাশের অ্যানিমেটেড গ্লোয়িং বর্ডার (Border Beam / Neon Glow) 🔴 */
         .item-card { 
-            background: white; padding: 25px; border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; 
+            position: relative;
+            background: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            text-align: center; 
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            cursor: pointer; position: relative; 
-            border-bottom: 4px solid transparent; border: 2px solid transparent; 
-        }
-        .item-card.folder-card:hover, .item-card.folder-card:active {
-            transform: translateY(-5px) scale(1.02);
-            border-color: #0984e3; 
-            background-color: #f4faff; 
-            box-shadow: 0 12px 24px rgba(9, 132, 227, 0.15);
-            border-bottom-color: #0984e3;
-        }
-        .item-card.exam-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            cursor: pointer; 
+            overflow: hidden;
+            z-index: 1;
         }
 
-        .folder-card { border-bottom-color: #f9ca24; }
-        .exam-card { border-bottom-color: var(--primary); }
+        /* কার্ডের পেছনে ঘূর্ণায়মান নিয়ন লাইট (ম্যাজেন্টা + সায়ান/নীল) */
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent, 
+                #00d2d3, /* সায়ান / নীল আলো */
+                #e84393, /* ম্যাজেন্টা / পিঙ্ক আলো */
+                transparent 35%
+            );
+            animation: rotateGlow 3.5s linear infinite;
+            z-index: -2;
+        }
+
+        /* কার্ডের ভেতরের সাদা ব্যাকগ্রাউন্ড লেয়ার (যাতে শুধু ২ পিক্সেল বর্ডার গ্লো করে) */
+        .item-card::after {
+            content: '';
+            position: absolute;
+            inset: 2.5px;
+            background: white;
+            border-radius: 14px;
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* কার্ডের কনটেন্টগুলো যেন বর্ডারের ওপরে স্পষ্ট থাকে */
+        .item-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* হোভার করলে কার্ডটি কিছুটা উঁচু হয়ে গ্লো করবে */
+        .item-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.2), 0 0 20px rgba(0, 210, 211, 0.25);
+        }
+        .item-card:hover::after {
+            background: #fafbff;
+        }
+
         .icon-box { font-size: 45px; margin-bottom: 15px; }
         .folder-icon { color: #f9ca24; }
         .exam-icon { color: var(--primary); }
@@ -213,7 +253,7 @@
         .telegram { background: #f0f9ff; color: #0088cc; }
         .telegram:hover { background: #0088cc; color: white; }
         
-        /* 🔴 সম্পূর্ণ নতুন এবং আধুনিক কমিউনিটি ফুটার 🔴 */
+        /* 🔴 ফুটার সেকশন 🔴 */
         .site-footer { 
             background-color: #1e272e; color: #ffffff; 
             padding: 40px 0 25px 0; margin-top: 50px; 
@@ -361,7 +401,7 @@
             <div id="examContainer" class="exam-grid"></div>
         </div>
 
-        <!-- 🔴 আপনার দেওয়া ৫টি লিংক সহ নতুন ফুটার 🔴 -->
+        <!-- 🔴 ফুটার 🔴 -->
         <footer class="site-footer">
             <div class="footer-container">
                 <div class="community-grid">
@@ -454,14 +494,53 @@
         let isRegistering = false;
         let isGuest = false;
 
-        // 🔴 ফোল্ডার নেভিগেশন ও History API / Hash 🔴
+        // 🔴 ফোল্ডার নেভিগেশন ও History Stack কন্ট্রোল 🔴
         function openFolder(folder) {
-            window.location.hash = encodeURIComponent(folder);
+            currentFolder = folder;
+            renderView();
+            history.pushState({ folder: folder }, '', '#' + encodeURIComponent(folder));
         }
 
         function navigateBack() {
-            window.location.hash = ''; // সোজা হোমপেজে ফেরত যাবে
+            if (currentFolder) {
+                currentFolder = "";
+                renderView();
+                history.pushState({ page: 'home' }, '', window.location.pathname);
+            }
         }
+
+        // হোমপেজের অবস্থা ট্র্যাকিংয়ের জন্য প্রাথমিক পুশ
+        history.replaceState({ page: 'home' }, '');
+
+        // 🔴 মোবাইলের ব্যাক বাটন চাপলে এক্সিট পপ-আপ ও এক ক্লিকে ব্যাক লজিক 🔴
+        window.addEventListener('popstate', function(e) {
+            if (currentFolder) {
+                // ফোল্ডারে থাকলে ব্যাক বাটন চাপলে সরাসরি হোমপেজে চলে আসবে
+                currentFolder = "";
+                renderView();
+                history.replaceState({ page: 'home' }, '', window.location.pathname);
+            } else {
+                // অলরেডি হোমপেজে আছে, এখন বের হতে চাইলে সুইট অ্যালার্ট দিয়ে নিশ্চিত করবে
+                Swal.fire({
+                    title: 'বের হতে চান?',
+                    text: 'আপনি কি ওয়েবসাইট থেকে বের হতে চাচ্ছেন?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d63031',
+                    cancelButtonColor: '#6c5ce7',
+                    confirmButtonText: 'হ্যাঁ, বের হব',
+                    cancelButtonText: 'থাকব',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.history.go(-1); // ইউজার বের হয়ে যাবে
+                    } else {
+                        // ইউজার থাকতে চাইলে হিস্ট্রি স্টেট আবার ধরে রাখবে
+                        history.pushState({ page: 'home' }, '');
+                    }
+                });
+            }
+        });
 
         function syncRouteFromHash() {
             const rawHash = window.location.hash.replace(/^#/, '');
@@ -470,9 +549,6 @@
                 renderView();
             }
         }
-
-        window.addEventListener('popstate', syncRouteFromHash);
-        window.addEventListener('hashchange', syncRouteFromHash);
 
         auth.onAuthStateChanged(user => {
             const sysLoader = document.getElementById('system-loader');
@@ -701,7 +777,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // 🔴 ১০০% শিট-ড্রিভেন ডাইনামিক রেন্ডারিং (ফিক্সড ফোল্ডার বাদ) 🔴
+        // 🔴 ১০০% শিট-ড্রিভেন ডাইনামিক রেন্ডারিং 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
             const pathTitle = document.getElementById('currentPathTitle');
@@ -710,7 +786,7 @@
             container.innerHTML = "";
 
             if (!currentFolder) {
-                // লেভেল ০: হোম পেজ (সরাসরি আপনার শিটের সব ক্যাটাগরি ফোল্ডার দেখাবে)
+                // লেভেল ০: হোম পেজ (সরাসরি শিটের সব ক্যাটাগরি ফোল্ডার)
                 backBtn.style.display = 'none';
                 pathTitle.innerText = "Textile and DU Tech Exam Batch";
                 
@@ -719,7 +795,7 @@
                 categories.forEach(cat => {
                     const count = allExams.filter(e => e['Category'] === cat).length;
                     html += `
-                        <div class="item-card folder-card" onclick="openFolder('${cat}')">
+                        <div class="item-card" onclick="openFolder('${cat}')">
                             <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
                             <h3 style="margin:0;">${cat}</h3>
                             <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
@@ -728,7 +804,7 @@
                 container.innerHTML = html;
             } 
             else {
-                // লেভেল ১: ক্যাটাগরি ফোল্ডারের ভেতর (আসল এক্সামগুলো দেখাবে)
+                // লেভেল ১: ক্যাটাগরি ফোল্ডারের ভেতর (আসল এক্সামগুলো)
                 backBtn.style.display = 'block';
                 pathTitle.innerText = currentFolder;
                 
@@ -743,7 +819,7 @@
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
                     
                     html += `
-                        <div class="item-card exam-card" onclick="${action}">
+                        <div class="item-card" onclick="${action}">
                             ${badge}
                             <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
                             <h3 style="margin:0 0 10px 0;">${exam['Exam Name'] || 'Untitled Exam'}</h3>
