@@ -108,9 +108,15 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 15px; z-index: 1000; box-sizing: border-box;
         }
-        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .home-link { 
+            text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; 
+            display: flex; align-items: center; gap: 8px; min-width: 0;
+        }
+        .home-link .brand-title {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;
+        }
         
-        .auth-buttons { display: flex; align-items: center; gap: 8px; }
+        .auth-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .profile-btn-highlight {
             background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white;
             text-decoration: none; padding: 8px 12px; border-radius: 8px;
@@ -157,6 +163,52 @@
         }
 
         @media (max-width: 600px) {
+            .top-nav {
+                height: 58px !important;
+                padding: 0 10px !important;
+            }
+            body {
+                padding-top: 68px !important;
+            }
+            .home-link {
+                font-size: 13px !important;
+                gap: 6px !important;
+                max-width: calc(100vw - 160px) !important;
+            }
+            .home-link .brand-title {
+                font-size: 13px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            .auth-buttons {
+                gap: 5px !important;
+            }
+            .profile-btn-highlight {
+                padding: 6px 9px !important;
+                font-size: 11px !important;
+                gap: 4px !important;
+            }
+            .btn-logout-text {
+                padding: 6px 9px !important;
+                font-size: 11px !important;
+                gap: 4px !important;
+            }
+            .nav-header {
+                gap: 10px !important;
+                margin-bottom: 15px !important;
+            }
+            .nav-header h3 {
+                font-size: 15px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+            .btn-back {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+                flex-shrink: 0 !important;
+            }
             .category-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
@@ -249,12 +301,20 @@
         .btn-start { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #eee; color: #555; font-weight: bold; cursor: pointer; margin-top: 15px; pointer-events: none; }
         .btn-start.unlocked { background: var(--primary); color: white; }
         
+        a.item-card {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+        }
+
         /* 🔴 ভিডিও কার্ডের স্কয়ার/কমপ্যাক্ট স্টাইল 🔴 */
         .video-card {
             padding: 12px !important;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
         }
         .video-thumb-wrap {
             position: relative;
@@ -269,6 +329,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
             transition: transform 0.3s;
         }
         .video-card:hover .video-thumb-wrap img {
@@ -279,9 +340,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 28px;
+            font-size: 24px;
             color: #ff4757;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.7);
             width: 44px;
             height: 44px;
             border-radius: 50%;
@@ -306,6 +367,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-align: left;
+            flex-grow: 1;
         }
         .btn-watch {
             background: linear-gradient(135deg, #ff4757, #ff6b81);
@@ -323,9 +385,35 @@
             gap: 6px;
             margin-top: auto;
             transition: 0.2s;
+            box-sizing: border-box;
         }
         .btn-watch:hover {
             box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .video-card {
+                padding: 8px !important;
+            }
+            .video-thumb-wrap {
+                margin-bottom: 6px !important;
+                border-radius: 8px !important;
+            }
+            .play-btn-overlay {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 16px !important;
+            }
+            .video-title {
+                font-size: 11px !important;
+                margin: 0 0 6px 0 !important;
+                line-height: 1.25 !important;
+            }
+            .btn-watch {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+                border-radius: 6px !important;
+            }
         }
 
         .modal-overlay { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 10px; box-sizing: border-box; }
@@ -468,7 +556,7 @@
     <div id="dashboard-view">
         <div class="top-nav">
             <a href="index.html" class="home-link">
-                <i class="fas fa-graduation-cap"></i> Textile Engineering Admission Preparation
+                <i class="fas fa-graduation-cap"></i> <span class="brand-title">Textile Engineering Admission Preparation</span>
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
@@ -610,9 +698,23 @@
         // 🔴 ইউটিউব ভিডিও আইডি বের করার হেল্পার 🔴
         function getYouTubeVideoId(url) {
             if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = String(url).match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            const cleanUrl = String(url).trim();
+            const match = cleanUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|.*[?&]v=))([\w-]{11})/);
+            return match ? match[1] : null;
+        }
+
+        // 🔴 শিটের যেকোনো ফরম্যাটের লিংক পাওয়ার হেল্পার (Link, LInk, link, url ইত্যাদি) 🔴
+        function getItemLink(item) {
+            if (!item) return '';
+            for (let k of Object.keys(item)) {
+                const norm = k.trim().toLowerCase();
+                if (norm === 'link' || norm === 'url') {
+                    if (item[k] && String(item[k]).trim()) {
+                        return String(item[k]).trim();
+                    }
+                }
+            }
+            return (item['Link'] || item['LInk'] || item['link'] || '').trim();
         }
 
         // 🔴 ফোল্ডার নেভিগেশন ও History কন্ট্রোল 🔴
@@ -900,6 +1002,10 @@
             try {
                 const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
                 allExams = await res.json();
+                allExams.forEach(e => {
+                    if (e['Master Category']) e['Master Category'] = String(e['Master Category']).trim();
+                    if (e['Category']) e['Category'] = String(e['Category']).trim();
+                });
                 syncRouteFromHash();
             } catch (e) { console.error(e); }
         }
@@ -1009,23 +1115,25 @@
         function renderItems(filtered, container) {
             let html = "";
             filtered.forEach(item => {
-                const isVideo = (item['Type']||'').toLowerCase() === 'video' || (item['Link'] && (item['Link'].includes('youtu.be') || item['Link'].includes('youtube.com')));
+                const link = getItemLink(item);
+                const itemType = (item['Type'] || '').trim().toLowerCase();
+                const isVideo = itemType === 'video' || link.includes('youtu.be') || link.includes('youtube.com');
                 
                 if (isVideo) {
-                    // 🎬 ইউটিউব ভিডিও কার্ড (স্কয়ার/কমপ্যাক্ট ২-কলাম)
-                    const videoId = getYouTubeVideoId(item['Link']);
-                    const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png';
-                    const targetLink = item['Link'] || '#';
+                    // 🎬 ইউটিউব ভিডিও কার্ড (স্কয়ার/কমপ্যাক্ট ২-কলাম, সরাসরি ক্লিকেবল ও নিয়ন ইফেক্ট)
+                    const videoId = getYouTubeVideoId(link);
+                    const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
+                    const targetLink = link || '#';
 
                     html += `
-                        <div class="item-card video-card" onclick="window.open('${targetLink}', '_blank')">
+                        <a href="${targetLink}" target="_blank" rel="noopener noreferrer" class="item-card video-card">
                             <div class="video-thumb-wrap">
-                                <img src="${thumbUrl}" alt="Video Thumbnail" loading="lazy">
-                                <div class="play-btn-overlay"><i class="fab fa-youtube"></i></div>
+                                ${videoId ? `<img src="${thumbUrl}" alt="Video Thumbnail" loading="lazy" onerror="this.onerror=null; this.src='https://img.youtube.com/vi/${videoId}/mqdefault.jpg';">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ff4757;font-size:36px;"><i class="fab fa-youtube"></i></div>`}
+                                <div class="play-btn-overlay"><i class="fas fa-play"></i></div>
                             </div>
                             <h3 class="video-title">${item['Exam Name'] || 'Video Lecture'}</h3>
-                            <button class="btn-watch"><i class="fas fa-play"></i> Watch Now</button>
-                        </div>
+                            <div class="btn-watch"><i class="fab fa-youtube"></i> Watch Now</div>
+                        </a>
                     `;
                 } else {
                     // 📝 সাধারণ এক্সাম কার্ড
