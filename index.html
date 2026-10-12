@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Textile and DU Tech Exam | Home</title>
+    <title>Textile Engineering Admission Preparation | Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -335,7 +335,7 @@
         <div class="login-card">
             <i class="fas fa-times close-login-card" onclick="handleGuestWithWarning()" title="Close & Guest Mode"></i>
             <i class="fas fa-graduation-cap app-logo" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i>
-            <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile and Du Tech Exam Preparation</h2>
+            <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile Engineering Admission Preparation</h2>
             <p style="color:#666; margin-bottom:30px;">লগইন করুন</p>
             <button class="btn-login btn-email" onclick="showLoginModal()">
                 <i class="fas fa-envelope"></i> Email Login / Register
@@ -410,8 +410,8 @@
 
             <div id="promoBanner" class="promo-banner">
                 <div class="promo-content">
-                    <h2> "Textile and DU Tech Exam Batch!"</h2>
-                    <p>সম্পূর্ণ কোর্স ১০০ টাকা (Textile + DU Tech Exam Batch)।</p>
+                    <h2> "Textile Engineering Admission Preparation!"</h2>
+                    <p>সম্পূর্ণ কোর্স ১০০ টাকা (Textile Engineering Admission Preparation)।</p>
                 </div>
                 <div class="promo-actions">
                     <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
@@ -420,7 +420,7 @@
 
             <div class="nav-header">
                 <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
-                <h3 id="currentPathTitle" style="margin:0;">Textile and DU Tech Exam Batch</h3>
+                <h3 id="currentPathTitle" style="margin:0;">Textile Engineering Admission Preparation</h3>
             </div>
 
             <div id="loader" style="text-align: center; padding: 50px;">
@@ -466,7 +466,7 @@
         <div class="modal-content">
             <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
             <div class="payment-text-box">
-                <p style="margin:0; font-weight:bold; color:#555;">Textile and DU Tech Exam Batch - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
+                <p style="margin:0; font-weight:bold; color:#555;">Textile Engineering Admission Preparation - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
                 <div class="payment-number-container">
                     <span id="paymentNum" class="payment-number">01873275283</span>
                     <button class="btn-copy" onclick="copyNumber()"><i class="fas fa-copy"></i> Copy</button>
@@ -873,7 +873,7 @@
                 // ফলব্যাক (যদি এখনো শিটে Master Category না থাকে)
                 if (!currentCategory) {
                     backBtn.style.display = 'none';
-                    pathTitle.innerText = "Textile and DU Tech Exam Batch";
+                    pathTitle.innerText = "Textile Engineering Admission Preparation";
                     container.className = "category-grid"; // মোবাইলে ২ কলাম
 
                     const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
