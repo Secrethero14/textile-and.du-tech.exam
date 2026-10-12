@@ -554,33 +554,7 @@
         }
 
         // 🔴 মোবাইলের ব্যাক বাটন ও এক্সিট পপ-আপ লজিক 🔴
-        window.addEventListener('popstate', function(e) {
-            const rawHash = window.location.hash.replace(/^#/, '');
-            if (rawHash) {
-                syncRouteFromHash();
-            } else {
-                // ইউজার একদম হোমপেজে আছে এবং বের হতে চাচ্ছে
-                syncRouteFromHash();
-                Swal.fire({
-                    title: 'বের হতে চান?',
-                    text: 'আপনি কি ওয়েবসাইট থেকে বের হতে চাচ্ছেন?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d63031',
-                    cancelButtonColor: '#6c5ce7',
-                    confirmButtonText: 'হ্যাঁ, বের হব',
-                    cancelButtonText: 'থাকব',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.history.go(-1); // সাইট থেকে বের হয়ে যাবে
-                    } else {
-                        // ইউজার থাকতে চাইলে স্টেট ধরে রাখবে
-                        history.pushState({ page: 'home' }, '', window.location.pathname);
-                    }
-                });
-            }
-        });
+                window.addEventListener('popstate', syncRouteFromHash);
 
         function syncRouteFromHash() {
             const rawHash = window.location.hash.replace(/^#/, '');
