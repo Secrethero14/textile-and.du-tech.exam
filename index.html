@@ -17,7 +17,6 @@
     <style>
         :root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
         
-        /* 🔴 ব্যাকগ্রাউন্ড একদম পরিষ্কার (সুঁই-সুতা বাদ) 🔴 */
         body { 
             font-family: 'Hind Siliguri', sans-serif; 
             background: var(--bg);
@@ -147,13 +146,46 @@
         .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
         
-        .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
+        /* 🔴 গ্রিড লেআউট 🔴 */
+        .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
         
-        /* 🔴 চারপাশের অ্যানিমেটেড গ্লোয়িং বর্ডার (Border Beam / Neon Glow) 🔴 */
+        /* 🔴 সাব-ক্যাটাগরি ফোল্ডারের জন্য স্পেশাল ২-কলাম গ্রিড (মোবাইলে পাশাপাশি ২টি) 🔴 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            .compact-folder {
+                padding: 16px 8px !important;
+                border-radius: 12px !important;
+            }
+            .compact-folder .icon-box {
+                font-size: 32px !important;
+                margin-bottom: 6px !important;
+            }
+            .compact-folder h3 {
+                font-size: 13px !important;
+                margin: 0 !important;
+                line-height: 1.25 !important;
+            }
+            .compact-folder p {
+                font-size: 11px !important;
+                margin-top: 4px !important;
+                color: #888 !important;
+            }
+        }
+        
+        /* 🔴 অ্যানিমেটেড নিয়ন গ্লোয়িং বর্ডার (Border Beam) 🔴 */
         .item-card { 
             position: relative;
             background: white; 
-            padding: 25px; 
+            padding: 22px; 
             border-radius: 16px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
             text-align: center; 
@@ -163,7 +195,6 @@
             z-index: 1;
         }
 
-        /* কার্ডের পেছনে ঘূর্ণায়মান নিয়ন লাইট (ম্যাজেন্টা + সায়ান/নীল) */
         .item-card::before {
             content: '';
             position: absolute;
@@ -173,15 +204,14 @@
             height: 200%;
             background: conic-gradient(
                 transparent, 
-                #00d2d3, /* সায়ান / নীল আলো */
-                #e84393, /* ম্যাজেন্টা / পিঙ্ক আলো */
+                #00d2d3, /* সায়ান আলো */
+                #e84393, /* ম্যাজেন্টা পিঙ্ক আলো */
                 transparent 35%
             );
             animation: rotateGlow 3.5s linear infinite;
             z-index: -2;
         }
 
-        /* কার্ডের ভেতরের সাদা ব্যাকগ্রাউন্ড লেয়ার (যাতে শুধু ২ পিক্সেল বর্ডার গ্লো করে) */
         .item-card::after {
             content: '';
             position: absolute;
@@ -197,22 +227,20 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* কার্ডের কনটেন্টগুলো যেন বর্ডারের ওপরে স্পষ্ট থাকে */
         .item-card > * {
             position: relative;
             z-index: 2;
         }
 
-        /* হোভার করলে কার্ডটি কিছুটা উঁচু হয়ে গ্লো করবে */
         .item-card:hover {
-            transform: translateY(-6px) scale(1.02);
+            transform: translateY(-5px) scale(1.02);
             box-shadow: 0 15px 30px rgba(108, 92, 231, 0.2), 0 0 20px rgba(0, 210, 211, 0.25);
         }
         .item-card:hover::after {
             background: #fafbff;
         }
 
-        .icon-box { font-size: 45px; margin-bottom: 15px; }
+        .icon-box { font-size: 42px; margin-bottom: 12px; }
         .folder-icon { color: #f9ca24; }
         .exam-icon { color: var(--primary); }
         .badge { position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: bold; }
@@ -253,7 +281,7 @@
         .telegram { background: #f0f9ff; color: #0088cc; }
         .telegram:hover { background: #0088cc; color: white; }
         
-        /* 🔴 ফুটার সেকশন 🔴 */
+        /* 🔴 ফুটার 🔴 */
         .site-footer { 
             background-color: #1e272e; color: #ffffff; 
             padding: 40px 0 25px 0; margin-top: 50px; 
@@ -375,7 +403,7 @@
                     <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
                     <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
                 </div>
-                <a href="https://t.me/careforcandidates" target="_blank" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
+                <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
                     <i class="fab fa-telegram-plane"></i> Join
                 </a>
             </div>
@@ -433,6 +461,7 @@
         </footer>
     </div>
 
+    <!-- 🔴 পেমেন্ট মডাল (টেলিগ্রাম লিংক ফিক্সড) 🔴 -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
@@ -448,13 +477,14 @@
             <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align: left;">
                 <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
                 <div class="contact-buttons">
-                    <a href="https://wa.me/8801925251621" target="_blank" class="btn-contact btn-whatsapp">
+                    <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="btn-contact btn-whatsapp">
                         <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
                     </a>
-                    <a href="https://t.me/@Admissionhelper007" target="_blank" class="btn-contact btn-telegram"> 
+                    <!-- ✅ @ ছাড়া সঠিক টেলিগ্রাম লিংক ✅ -->
+                    <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="btn-contact btn-telegram"> 
                         <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
                     </a>
-                    <a href="https://www.facebook.com/habibs.care.edu/" target="_blank" class="btn-contact btn-facebook">
+                    <a href="https://www.facebook.com/habibs.care.edu/" target="_blank" rel="noopener noreferrer" class="btn-contact btn-facebook">
                         <i class="fab fa-facebook-messenger"></i> Facebook Page -এ মেসেজ দিন
                     </a>
                 </div>
@@ -464,13 +494,15 @@
         </div>
     </div>
 
+    <!-- 🔴 হেল্প উইজেট (টেলিগ্রাম লিংক ফিক্সড) 🔴 -->
     <div id="supportWidget" class="support-container">
         <div id="socialLinks" class="social-box">
             <div class="help-header">সাহায্য প্রয়োজন?</div>
-            <a href="https://wa.me/8801925251621" target="_blank" class="s-link whatsapp">
+            <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="s-link whatsapp">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
-            <a href="https://t.me/admissionhelper007" target="_blank" class="s-link telegram">
+            <!-- ✅ @ ছাড়া সঠিক টেলিগ্রাম লিংক ✅ -->
+            <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="s-link telegram">
                 <i class="fab fa-telegram-plane"></i> Telegram
             </a>
         </div>
@@ -489,38 +521,46 @@
         const auth = firebase.auth();
         
         let allExams = [];
-        let currentFolder = ""; 
+        let currentMaster = ""; 
+        let currentCategory = ""; 
         let userEnrollment = null;
         let isRegistering = false;
         let isGuest = false;
 
-        // 🔴 ফোল্ডার নেভিগেশন ও History Stack কন্ট্রোল 🔴
-        function openFolder(folder) {
-            currentFolder = folder;
-            renderView();
-            history.pushState({ folder: folder }, '', '#' + encodeURIComponent(folder));
+        // 🔴 ফোল্ডার নেভিগেশন ও History কন্ট্রোল 🔴
+        function openMaster(mCat) {
+            currentMaster = mCat;
+            currentCategory = "";
+            window.location.hash = encodeURIComponent(mCat);
         }
 
-        function navigateBack() {
-            if (currentFolder) {
-                currentFolder = "";
-                renderView();
-                history.pushState({ page: 'home' }, '', window.location.pathname);
+        function openCategory(cat) {
+            currentCategory = cat;
+            if (currentMaster) {
+                window.location.hash = encodeURIComponent(currentMaster) + '/' + encodeURIComponent(cat);
+            } else {
+                window.location.hash = encodeURIComponent(cat);
             }
         }
 
-        // হোমপেজের অবস্থা ট্র্যাকিংয়ের জন্য প্রাথমিক পুশ
-        history.replaceState({ page: 'home' }, '');
-
-        // 🔴 মোবাইলের ব্যাক বাটন চাপলে এক্সিট পপ-আপ ও এক ক্লিকে ব্যাক লজিক 🔴
-        window.addEventListener('popstate', function(e) {
-            if (currentFolder) {
-                // ফোল্ডারে থাকলে ব্যাক বাটন চাপলে সরাসরি হোমপেজে চলে আসবে
-                currentFolder = "";
-                renderView();
-                history.replaceState({ page: 'home' }, '', window.location.pathname);
+        function navigateBack() {
+            if (currentCategory && currentMaster) {
+                // সাব-ক্যাটাগরি থেকে মাস্টার ক্যাটাগরিতে ফিরবে
+                window.location.hash = encodeURIComponent(currentMaster);
             } else {
-                // অলরেডি হোমপেজে আছে, এখন বের হতে চাইলে সুইট অ্যালার্ট দিয়ে নিশ্চিত করবে
+                // মাস্টার ক্যাটাগরি থেকে সোজা হোমে ফিরবে
+                window.location.hash = '';
+            }
+        }
+
+        // 🔴 মোবাইলের ব্যাক বাটন ও এক্সিট পপ-আপ লজিক 🔴
+        window.addEventListener('popstate', function(e) {
+            const rawHash = window.location.hash.replace(/^#/, '');
+            if (rawHash) {
+                syncRouteFromHash();
+            } else {
+                // ইউজার একদম হোমপেজে আছে এবং বের হতে চাচ্ছে
+                syncRouteFromHash();
                 Swal.fire({
                     title: 'বের হতে চান?',
                     text: 'আপনি কি ওয়েবসাইট থেকে বের হতে চাচ্ছেন?',
@@ -533,10 +573,10 @@
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.history.go(-1); // ইউজার বের হয়ে যাবে
+                        window.history.go(-1); // সাইট থেকে বের হয়ে যাবে
                     } else {
-                        // ইউজার থাকতে চাইলে হিস্ট্রি স্টেট আবার ধরে রাখবে
-                        history.pushState({ page: 'home' }, '');
+                        // ইউজার থাকতে চাইলে স্টেট ধরে রাখবে
+                        history.pushState({ page: 'home' }, '', window.location.pathname);
                     }
                 });
             }
@@ -544,7 +584,24 @@
 
         function syncRouteFromHash() {
             const rawHash = window.location.hash.replace(/^#/, '');
-            currentFolder = rawHash ? decodeURIComponent(rawHash) : "";
+            if (!rawHash) {
+                currentMaster = "";
+                currentCategory = "";
+            } else {
+                const parts = rawHash.split('/').map(decodeURIComponent);
+                if (parts.length > 1) {
+                    currentMaster = parts[0];
+                    currentCategory = parts[1];
+                } else {
+                    const isMaster = allExams.some(e => e['Master Category'] === parts[0]);
+                    if (isMaster) {
+                        currentMaster = parts[0];
+                        currentCategory = "";
+                    } else {
+                        currentCategory = parts[0];
+                    }
+                }
+            }
             if (allExams.length > 0) {
                 renderView();
             }
@@ -777,7 +834,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // 🔴 ১০০% শিট-ড্রিভেন ডাইনামিক রেন্ডারিং 🔴
+        // 🔴 ৩-লেভেল ডাইনামিক রেন্ডারিং (মাস্টার ➡️ সাব-ফোল্ডার [মোবাইলে ২টি করে] ➡️ এক্সাম) 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
             const pathTitle = document.getElementById('currentPathTitle');
@@ -785,54 +842,113 @@
             document.getElementById('loader').style.display = 'none';
             container.innerHTML = "";
 
-            if (!currentFolder) {
-                // লেভেল ০: হোম পেজ (সরাসরি শিটের সব ক্যাটাগরি ফোল্ডার)
-                backBtn.style.display = 'none';
-                pathTitle.innerText = "Textile and DU Tech Exam Batch";
-                
-                const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
-                let html = "";
-                categories.forEach(cat => {
-                    const count = allExams.filter(e => e['Category'] === cat).length;
-                    html += `
-                        <div class="item-card" onclick="openFolder('${cat}')">
-                            <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
-                            <h3 style="margin:0;">${cat}</h3>
-                            <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
-                        </div>`;
-                });
-                container.innerHTML = html;
-            } 
-            else {
-                // লেভেল ১: ক্যাটাগরি ফোল্ডারের ভেতর (আসল এক্সামগুলো)
-                backBtn.style.display = 'block';
-                pathTitle.innerText = currentFolder;
-                
-                const filtered = allExams.filter(e => e['Category'] === currentFolder);
-                let html = "";
-                filtered.forEach(exam => {
-                    const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
-                    let unlocked = !isPaid;
-                    if(userEnrollment) { unlocked = true; }
+            // শিটে Master Category আছে কি না তা চেক করা
+            const hasMaster = allExams.some(e => e['Master Category'] && String(e['Master Category']).trim() !== "");
 
-                    const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
-                    const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
+            if (hasMaster) {
+                if (!currentMaster) {
+                    // লেভেল ০: হোম পেজ (মাস্টার ক্যাটাগরি ফোল্ডারগুলো দেখাবে)
+                    backBtn.style.display = 'none';
+                    pathTitle.innerText = "Textile and DU Tech Exam Batch";
+                    container.className = "exam-grid";
+
+                    const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
+                    let html = "";
+                    masterCats.forEach(mCat => {
+                        const count = allExams.filter(e => e['Master Category'] === mCat).length;
+                        html += `
+                            <div class="item-card folder-card" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
+                                <div class="icon-box folder-icon"><i class="fas fa-layer-group"></i></div>
+                                <h3 style="margin:0;">${mCat}</h3>
+                                <p style="font-size:12px; color:#888; margin-top:5px;">${count} Exams</p>
+                            </div>`;
+                    });
+                    container.innerHTML = html;
+                } 
+                else if (currentMaster && !currentCategory) {
+                    // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (সাব-ফোল্ডারগুলো: মোবাইলে পাশাপাশি ২টি করে)
+                    backBtn.style.display = 'block';
+                    pathTitle.innerText = currentMaster;
+                    container.className = "category-grid"; // ✅ মোবাইলে ২-কলাম গ্রিড ✅
+
+                    const masterExams = allExams.filter(e => e['Master Category'] === currentMaster);
+                    const categories = [...new Set(masterExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                     
-                    html += `
-                        <div class="item-card" onclick="${action}">
-                            ${badge}
-                            <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
-                            <h3 style="margin:0 0 10px 0;">${exam['Exam Name'] || 'Untitled Exam'}</h3>
-                            <div style="font-size:13px; color:#666; margin-bottom:5px;"><i class="far fa-clock"></i> ${exam['Total Time'] || 0} Minutes</div>
-                            <div style="font-size:13px; color:#666;"><i class="fas fa-bullseye"></i> ${exam['Total Marks'] || 0} Marks</div>
-                            <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto;">
-                                ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
-                            </button>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
+                    let html = "";
+                    categories.forEach(cat => {
+                        const count = masterExams.filter(e => e['Category'] === cat).length;
+                        html += `
+                            <div class="item-card folder-card compact-folder" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">
+                                <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
+                                <h3>${cat}</h3>
+                                <p>${count} Exams</p>
+                            </div>`;
+                    });
+                    container.innerHTML = html;
+                } 
+                else {
+                    // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সামগুলো)
+                    backBtn.style.display = 'block';
+                    pathTitle.innerText = currentCategory;
+                    container.className = "exam-grid";
+
+                    const filtered = allExams.filter(e => e['Master Category'] === currentMaster && e['Category'] === currentCategory);
+                    renderExamCards(filtered, container);
+                }
+            } else {
+                // ফলব্যাক (যদি এখনো শিটে Master Category না থাকে)
+                if (!currentCategory) {
+                    backBtn.style.display = 'none';
+                    pathTitle.innerText = "Textile and DU Tech Exam Batch";
+                    container.className = "category-grid"; // মোবাইলে ২ কলাম
+
+                    const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
+                    let html = "";
+                    categories.forEach(cat => {
+                        const count = allExams.filter(e => e['Category'] === cat).length;
+                        html += `
+                            <div class="item-card folder-card compact-folder" onclick="openCategory('${cat.replace(/'/g, "\\'")}')">
+                                <div class="icon-box folder-icon"><i class="fas fa-folder"></i></div>
+                                <h3>${cat}</h3>
+                                <p>${count} Exams</p>
+                            </div>`;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    backBtn.style.display = 'block';
+                    pathTitle.innerText = currentCategory;
+                    container.className = "exam-grid";
+                    const filtered = allExams.filter(e => e['Category'] === currentCategory);
+                    renderExamCards(filtered, container);
+                }
             }
+        }
+
+        // এক্সাম কার্ড রেন্ডার করার ফাংশন
+        function renderExamCards(filtered, container) {
+            let html = "";
+            filtered.forEach(exam => {
+                const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
+                let unlocked = !isPaid;
+                if(userEnrollment) { unlocked = true; }
+
+                const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
+                const action = unlocked ? `location.href='exam.html?id=${encodeURIComponent(exam['Tab ID'])}'` : `openPaymentModal()`;
+                
+                html += `
+                    <div class="item-card exam-card" onclick="${action}">
+                        ${badge}
+                        <div class="icon-box exam-icon"><i class="fas fa-file-alt"></i></div>
+                        <h3 style="margin:0 0 10px 0;">${exam['Exam Name'] || 'Untitled Exam'}</h3>
+                        <div style="font-size:13px; color:#666; margin-bottom:5px;"><i class="far fa-clock"></i> ${exam['Total Time'] || 0} Minutes</div>
+                        <div style="font-size:13px; color:#666;"><i class="fas fa-bullseye"></i> ${exam['Total Marks'] || 0} Marks</div>
+                        <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto;">
+                            ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function copyNumber() {
