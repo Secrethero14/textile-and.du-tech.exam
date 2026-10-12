@@ -16,7 +16,14 @@
 
     <style>
         :root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
-        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-bottom: 50px; padding-top: 70px; }
+        
+        /* 🔴 ব্যাকগ্রাউন্ডে সুঁই-সুতা ও সেলাইয়ের টেক্সটাইল ওয়াটারমার্ক 🔴 */
+        body { 
+            font-family: 'Hind Siliguri', sans-serif; 
+            background-color: var(--bg);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%236c5ce7' fill-opacity='0.035'%3E%3Cpath d='M15 15 L45 15 M15 35 L45 35' stroke='%236c5ce7' stroke-width='1' stroke-dasharray='4,4' fill='none'/%3E%3Cpath d='M65 25 L85 45' stroke='%236c5ce7' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='66' cy='26' r='1.8' fill='%236c5ce7'/%3E%3Cpath d='M25 75 Q 40 60, 55 75 T 85 75' stroke='%236c5ce7' stroke-width='1.2' stroke-dasharray='3,3' fill='none'/%3E%3Ccircle cx='85' cy='75' r='1.5' fill='%236c5ce7'/%3E%3C/g%3E%3C/svg%3E");
+            margin: 0; color: var(--text); padding-bottom: 50px; padding-top: 70px; 
+        }
         
         #system-loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -143,7 +150,7 @@
         
         .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
         
-        /* 🔴 3-Level Folder UI Custom Styles 🔴 */
+        /* 🔴 ফোল্ডার ও কার্ডের সুন্দর পপ-আপ ও হোভার ইফেক্ট 🔴 */
         .item-card { 
             background: white; padding: 25px; border-radius: 15px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; 
@@ -162,10 +169,6 @@
             transform: translateY(-5px); 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
         }
-        
-        .master-folder { text-align: center; padding: 40px 20px; }
-        .master-folder i { font-size: 50px; color: #0984e3; margin-bottom: 15px; }
-        /* 🔴 End of Custom Styles 🔴 */
 
         .folder-card { border-bottom-color: #f9ca24; }
         .exam-card { border-bottom-color: var(--primary); }
@@ -210,14 +213,47 @@
         .telegram { background: #f0f9ff; color: #0088cc; }
         .telegram:hover { background: #0088cc; color: white; }
         
-        .site-footer { background-color: #1e272e; color: #ffffff; padding-top: 40px; margin-top: 40px; font-family: 'Hind Siliguri', sans-serif; border-top: 5px solid var(--primary); }
-        .footer-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
-        .footer-col h4 { color: #a29bfe; margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid #4b4b4b; padding-bottom: 8px; }
-        .footer-links { list-style: none; padding: 0; }
-        .footer-links li { margin-bottom: 12px; }
-        .footer-links a { color: #dcdde1; text-decoration: none; transition: 0.3s; font-size: 14px; display: block; }
-        .footer-links a:hover { color: #fff; transform: translateX(5px); color: var(--warning); }
-        .footer-bottom { background: #000; text-align: center; padding: 15px; margin-top: 30px; font-size: 13px; color: #7f8fa6; }
+        /* 🔴 সম্পূর্ণ নতুন এবং আধুনিক কমিউনিটি ফুটার 🔴 */
+        .site-footer { 
+            background-color: #1e272e; color: #ffffff; 
+            padding: 40px 0 25px 0; margin-top: 50px; 
+            font-family: 'Hind Siliguri', sans-serif; 
+            border-top: 5px solid var(--primary); 
+        }
+        .footer-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        .community-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 30px; 
+        }
+        .community-card {
+            background: #2f3640; border-radius: 12px; padding: 20px 10px;
+            text-align: center; text-decoration: none; color: white;
+            transition: all 0.3s ease; display: flex; flex-direction: column;
+            align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .community-card i { font-size: 32px; transition: transform 0.3s ease; }
+        .community-card span { font-size: 13px; font-weight: 600; color: #dcdde1; }
+        .community-card:hover { 
+            transform: translateY(-5px); 
+            background: #353b48; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+        .community-card:hover i { transform: scale(1.15); }
+        
+        .community-card.yt:hover i { color: #ff4757; }
+        .community-card.tg:hover i, .community-card.tg-chat:hover i { color: #00a8ff; }
+        .community-card.fb:hover i, .community-card.fb-group:hover i { color: #2ed573; }
+        
+        .footer-bottom { 
+            border-top: 1px solid rgba(255,255,255,0.1); 
+            text-align: center; padding-top: 20px; font-size: 13px; color: #a4b0be; 
+        }
+        .brand-link { 
+            color: #a29bfe; text-decoration: none; font-weight: bold; transition: color 0.2s; 
+        }
+        .brand-link:hover { color: #fdcb6e; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -325,33 +361,34 @@
             <div id="examContainer" class="exam-grid"></div>
         </div>
 
+        <!-- 🔴 আপনার দেওয়া ৫টি লিংক সহ নতুন ফুটার 🔴 -->
         <footer class="site-footer">
             <div class="footer-container">
-                <div class="footer-col">
-                    <h4><i class="fab fa-telegram-plane"></i> টেলিগ্রাম কমিউনিটি</h4>
-                    <ul class="footer-links">
-                        <li><a href="https://t.me/GST_Preparation" target="_blank">ফ্রি প্রস্তুতি (Join Now)</a></li>
-                        <li><a href="https://t.me/careforcandidates" target="_blank">টেক্সটাইল ইঞ্জিঃ তথ্য ও গাইডলাইন</a></li>
-                        <li><a href="https://t.me/Study_on_Telegram" target="_blank">Admission & Academic News</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4><i class="fab fa-youtube"></i> ফ্রি ভিডিও ক্লাস</h4>
-                    <ul class="footer-links">
-                        <li><a href="https://www.youtube.com/@olosbd" target="_blank">ফ্রি প্রস্তুতি ক্লাস</a></li>
-                        <li><a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank">টেক্সটাইল ও ঢাবি প্রযুক্তি ইউনিট</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4><i class="fas fa-globe"></i> কানেক্টেড থাকুন</h4>
-                    <ul class="footer-links">
-                        <li><a href="https://www.facebook.com/habibs.care.edu" target="_blank"><i class="fab fa-facebook-square"></i> Facebook Page</a></li>
-                        <li><a href="https://facebook.com/groups/489136275227144/" target="_blank"><i class="fas fa-users"></i> Facebook Group</a></li>
-                    </ul>
+                <div class="community-grid">
+                    <a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer" class="community-card yt">
+                        <i class="fab fa-youtube" style="color: #ff4757;"></i>
+                        <span>YouTube চ্যানেল</span>
+                    </a>
+                    <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="community-card tg">
+                        <i class="fab fa-telegram-plane" style="color: #00a8ff;"></i>
+                        <span>Telegram চ্যানেল</span>
+                    </a>
+                    <a href="https://t.me/careforcandidate" target="_blank" rel="noopener noreferrer" class="community-card tg-chat">
+                        <i class="fas fa-comments" style="color: #70a1ff;"></i>
+                        <span>Telegram ডিসকাশন</span>
+                    </a>
+                    <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="community-card fb">
+                        <i class="fab fa-facebook-square" style="color: #2ed573;"></i>
+                        <span>Facebook পেজ</span>
+                    </a>
+                    <a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer" class="community-card fb-group">
+                        <i class="fas fa-users" style="color: #ffa502;"></i>
+                        <span>Facebook গ্রুপ</span>
+                    </a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Habib's Care. All Rights Reserved.</p>
+                <p>&copy; 2026 <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="brand-link">Habib's Care</a>. All Rights Reserved.</p>
             </div>
         </footer>
     </div>
@@ -374,7 +411,8 @@
                     <a href="https://wa.me/8801925251621" target="_blank" class="btn-contact btn-whatsapp">
                         <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
                     </a>
-                    <a href="https://t.me/@Admissionhelper007" target="_blank" class="btn-contact btn-telegram"> <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
+                    <a href="https://t.me/@Admissionhelper007" target="_blank" class="btn-contact btn-telegram"> 
+                        <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
                     </a>
                     <a href="https://www.facebook.com/habibs.care.edu/" target="_blank" class="btn-contact btn-facebook">
                         <i class="fab fa-facebook-messenger"></i> Facebook Page -এ মেসেজ দিন
@@ -411,7 +449,7 @@
         const auth = firebase.auth();
         
         let allExams = [];
-        let currentFolder = ""; // 🔴 ৩-লেভেল সিস্টেমের জন্য ভ্যারিয়েবল 🔴
+        let currentFolder = ""; 
         let userEnrollment = null;
         let isRegistering = false;
         let isGuest = false;
@@ -422,11 +460,7 @@
         }
 
         function navigateBack() {
-            if (currentFolder === 'Textile_Master') {
-                window.location.hash = ''; // হোমপেজে যাবে
-            } else {
-                window.location.hash = 'Textile_Master'; // মাস্টার ফোল্ডারে যাবে
-            }
+            window.location.hash = ''; // সোজা হোমপেজে ফেরত যাবে
         }
 
         function syncRouteFromHash() {
@@ -663,11 +697,11 @@
             try {
                 const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
                 allExams = await res.json();
-                syncRouteFromHash(); // রিফ্রেশ দিলে URL hash থেকে ফোল্ডার লোড করবে
+                syncRouteFromHash();
             } catch (e) { console.error(e); }
         }
 
-        // 🔴 3-Level Render View Function 🔴
+        // 🔴 ১০০% শিট-ড্রিভেন ডাইনামিক রেন্ডারিং (ফিক্সড ফোল্ডার বাদ) 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
             const pathTitle = document.getElementById('currentPathTitle');
@@ -676,21 +710,9 @@
             container.innerHTML = "";
 
             if (!currentFolder) {
-                // লেভেল ০: হোম পেজ (শুধুমাত্র মাস্টার ফোল্ডার দেখাবে)
+                // লেভেল ০: হোম পেজ (সরাসরি আপনার শিটের সব ক্যাটাগরি ফোল্ডার দেখাবে)
                 backBtn.style.display = 'none';
                 pathTitle.innerText = "Textile and DU Tech Exam Batch";
-                
-                container.innerHTML = `
-                    <div class="item-card folder-card master-folder" onclick="openFolder('Textile_Master')">
-                        <i class="fas fa-layer-group"></i>
-                        <h2 style="margin:0; color:#2d3436;">টেক্সটাইল (Textile)</h2>
-                        <p style="font-size:14px; color:#636e72; margin-top:5px;">সকল সাবজেক্টের ফোল্ডার ও এক্সাম</p>
-                    </div>`;
-            } 
-            else if (currentFolder === 'Textile_Master') {
-                // লেভেল ১: মাস্টার ফোল্ডার (সব সাবজেক্ট ফোল্ডার দেখাবে)
-                backBtn.style.display = 'block';
-                pathTitle.innerText = "Textile Categories";
                 
                 const categories = [...new Set(allExams.map(e => e['Category']))].filter(cat => cat && cat !== "General");
                 let html = "";
@@ -706,7 +728,7 @@
                 container.innerHTML = html;
             } 
             else {
-                // লেভেল ২: সাবজেক্ট ফোল্ডার (আসল এক্সামগুলো দেখাবে)
+                // লেভেল ১: ক্যাটাগরি ফোল্ডারের ভেতর (আসল এক্সামগুলো দেখাবে)
                 backBtn.style.display = 'block';
                 pathTitle.innerText = currentFolder;
                 
@@ -715,7 +737,7 @@
                 filtered.forEach(exam => {
                     const isPaid = (exam['Type']||'').toLowerCase() === 'paid';
                     let unlocked = !isPaid;
-                    if(userEnrollment) { unlocked = true; } // Enrolled student logic
+                    if(userEnrollment) { unlocked = true; }
 
                     const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
                     const action = unlocked ? `location.href='exam.html?id=${exam['Tab ID']}'` : `openPaymentModal()`;
