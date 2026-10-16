@@ -448,47 +448,148 @@
         .telegram { background: #f0f9ff; color: #0088cc; }
         .telegram:hover { background: #0088cc; color: white; }
         
-        /* 🔴 ফুটার 🔴 */
+        /* 🔴 নান্দনিক ও কম্প্যাক্ট ফুটার (Aesthetic Modern Dark Footer) 🔴 */
         .site-footer { 
-            background-color: #1e272e; color: #ffffff; 
-            padding: 40px 0 25px 0; margin-top: 50px; 
+            position: relative;
+            background: linear-gradient(180deg, #131722 0%, #0b0d14 100%);
+            color: #ffffff; 
+            padding: 28px 0 20px 0; 
+            margin-top: 45px; 
             font-family: 'Hind Siliguri', sans-serif; 
-            border-top: 5px solid var(--primary); 
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
         }
-        .footer-container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-        .community-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 30px; 
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            max-width: 600px;
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, #6c5ce7, #00d2d3, transparent);
+            box-shadow: 0 0 12px rgba(108, 92, 231, 0.5);
         }
-        .community-card {
-            background: #2f3640; border-radius: 12px; padding: 20px 10px;
-            text-align: center; text-decoration: none; color: white;
-            transition: all 0.3s ease; display: flex; flex-direction: column;
-            align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .community-card i { font-size: 32px; transition: transform 0.3s ease; }
-        .community-card span { font-size: 13px; font-weight: 600; color: #dcdde1; }
-        .community-card:hover { 
-            transform: translateY(-5px); 
-            background: #353b48; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-        }
-        .community-card:hover i { transform: scale(1.15); }
+        .footer-container { max-width: 900px; margin: 0 auto; padding: 0 15px; text-align: center; }
         
-        .community-card.yt:hover i { color: #ff4757; }
-        .community-card.tg:hover i, .community-card.tg-chat:hover i { color: #00a8ff; }
-        .community-card.fb:hover i, .community-card.fb-group:hover i { color: #2ed573; }
+        .footer-brand-wrap {
+            margin-bottom: 16px;
+        }
+        .footer-brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f1f2f6;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: 0.3px;
+        }
+        .footer-brand-title i {
+            color: #a29bfe;
+            font-size: 16px;
+        }
+        .footer-tagline {
+            font-size: 12px;
+            color: #8395a7;
+            margin: 3px 0 0 0;
+        }
+
+        .community-pills { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .comm-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #c8d6e5;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .comm-pill i {
+            font-size: 15px;
+            transition: transform 0.25s ease;
+        }
+        .comm-pill:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        }
+        .comm-pill:hover i { transform: scale(1.18); }
+        
+        .comm-pill.yt i { color: #ff4757; }
+        .comm-pill.yt:hover { border-color: rgba(255, 71, 87, 0.4); box-shadow: 0 4px 15px rgba(255, 71, 87, 0.25); }
+        
+        .comm-pill.tg i { color: #00a8ff; }
+        .comm-pill.tg:hover { border-color: rgba(0, 168, 255, 0.4); box-shadow: 0 4px 15px rgba(0, 168, 255, 0.25); }
+        
+        .comm-pill.tg-chat i { color: #70a1ff; }
+        .comm-pill.tg-chat:hover { border-color: rgba(112, 161, 255, 0.4); box-shadow: 0 4px 15px rgba(112, 161, 255, 0.25); }
+        
+        .comm-pill.fb i { color: #2ed573; }
+        .comm-pill.fb:hover { border-color: rgba(46, 213, 115, 0.4); box-shadow: 0 4px 15px rgba(46, 213, 115, 0.25); }
+        
+        .comm-pill.fb-group i { color: #ffa502; }
+        .comm-pill.fb-group:hover { border-color: rgba(255, 165, 2, 0.4); box-shadow: 0 4px 15px rgba(255, 165, 2, 0.25); }
         
         .footer-bottom { 
-            border-top: 1px solid rgba(255,255,255,0.1); 
-            text-align: center; padding-top: 20px; font-size: 13px; color: #a4b0be; 
+            border-top: 1px solid rgba(255, 255, 255, 0.06); 
+            text-align: center; 
+            padding-top: 15px; 
+            font-size: 12px; 
+            color: #718093; 
         }
+        .footer-bottom p { margin: 0; }
         .brand-link { 
-            color: #a29bfe; text-decoration: none; font-weight: bold; transition: color 0.2s; 
+            color: #a29bfe; text-decoration: none; font-weight: 600; transition: color 0.2s; 
         }
         .brand-link:hover { color: #fdcb6e; text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .site-footer {
+                padding: 20px 0 16px 0 !important;
+                margin-top: 30px !important;
+            }
+            .footer-brand-wrap {
+                margin-bottom: 12px !important;
+            }
+            .footer-brand-title {
+                font-size: 14px !important;
+            }
+            .footer-tagline {
+                font-size: 11px !important;
+            }
+            .community-pills {
+                gap: 7px !important;
+                margin-bottom: 14px !important;
+                padding: 0 5px !important;
+            }
+            .comm-pill {
+                padding: 6px 11px !important;
+                font-size: 11.5px !important;
+                gap: 6px !important;
+            }
+            .comm-pill i {
+                font-size: 13px !important;
+            }
+            .footer-bottom {
+                padding-top: 12px !important;
+                font-size: 11px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -596,34 +697,37 @@
             <div id="examContainer" class="exam-grid"></div>
         </div>
 
-        <!-- 🔴 ফুটার 🔴 -->
+        <!-- 🔴 নান্দনিক ও কম্প্যাক্ট ফুটার 🔴 -->
         <footer class="site-footer">
             <div class="footer-container">
-                <div class="community-grid">
-                    <a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer" class="community-card yt">
-                        <i class="fab fa-youtube" style="color: #ff4757;"></i>
-                        <span>YouTube চ্যানেল</span>
+                <div class="footer-brand-wrap">
+                    <div class="footer-brand-title">
+                        <i class="fas fa-graduation-cap"></i> Habib's Care
+                    </div>
+                    <p class="footer-tagline">Textile Engineering Admission Preparation</p>
+                </div>
+
+                <div class="community-pills">
+                    <a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer" class="comm-pill yt">
+                        <i class="fab fa-youtube"></i> <span>YouTube</span>
                     </a>
-                    <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="community-card tg">
-                        <i class="fab fa-telegram-plane" style="color: #00a8ff;"></i>
-                        <span>Telegram চ্যানেল</span>
+                    <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="comm-pill tg">
+                        <i class="fab fa-telegram-plane"></i> <span>Telegram চ্যানেল</span>
                     </a>
-                    <a href="https://t.me/careforcandidate" target="_blank" rel="noopener noreferrer" class="community-card tg-chat">
-                        <i class="fas fa-comments" style="color: #70a1ff;"></i>
-                        <span>Telegram ডিসকাশন</span>
+                    <a href="https://t.me/careforcandidate" target="_blank" rel="noopener noreferrer" class="comm-pill tg-chat">
+                        <i class="fas fa-comments"></i> <span>ডিসকাশন গ্রুপ</span>
                     </a>
-                    <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="community-card fb">
-                        <i class="fab fa-facebook-square" style="color: #2ed573;"></i>
-                        <span>Facebook পেজ</span>
+                    <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="comm-pill fb">
+                        <i class="fab fa-facebook-square"></i> <span>Facebook পেজ</span>
                     </a>
-                    <a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer" class="community-card fb-group">
-                        <i class="fas fa-users" style="color: #ffa502;"></i>
-                        <span>Facebook গ্রুপ</span>
+                    <a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer" class="comm-pill fb-group">
+                        <i class="fas fa-users"></i> <span>Facebook গ্রুপ</span>
                     </a>
                 </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="brand-link">Habib's Care</a>. All Rights Reserved.</p>
+
+                <div class="footer-bottom">
+                    <p>&copy; 2026 <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="brand-link">Habib's Care</a>. All Rights Reserved.</p>
+                </div>
             </div>
         </footer>
     </div>
