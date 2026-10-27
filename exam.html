@@ -207,18 +207,54 @@
                     config: exam['Config'] ? JSON.parse(exam['Config']) : null,
                     optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
                     fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || [],
-                    features: exam['Features'] || '' 
+                    features: exam['Features'] || '',
+                    range: exam['Range'] || exam['range'] || '',
+                    shuffle: exam['Shuffle'] !== undefined && exam['Shuffle'] !== '' ? (String(exam['Shuffle']).toLowerCase().trim() !== 'false' && String(exam['Shuffle']).toLowerCase().trim() !== 'no') : true
                 };
                 document.getElementById('examTitle').innerText = examConfig.name;
             }
         }
 
+        // --- Helper: Shuffle questions safely ---
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // --- Helper: Apply question range filter (e.g. 1-50, 51-100, 50) ---
+        function applyQuestionRange(questions, rangeStr) {
+            if (!rangeStr || typeof rangeStr !== 'string' || !rangeStr.trim()) {
+                return questions;
+            }
+            const cleanStr = rangeStr.replace(/[০-৯]/g, d => "০১২৩৪৫৬৭৮৯".indexOf(d)).trim();
+            const match = cleanStr.match(/^(\d+)\s*[-–—]\s*(\d+)$/);
+            if (match) {
+                const start = parseInt(match[1], 10);
+                const end = parseInt(match[2], 10);
+                if (!isNaN(start) && !isNaN(end) && start > 0 && end >= start) {
+                    return questions.slice(start - 1, end);
+                }
+            }
+            const singleNum = parseInt(cleanStr, 10);
+            if (!isNaN(singleNum) && singleNum > 0 && /^\d+$/.test(cleanStr)) {
+                return questions.slice(0, singleNum);
+            }
+            return questions;
+        }
         async function loadQuestions() {
             const res = await fetch(JSON_BASE + tabId + ".json");
             let rawQuestions = await res.json();
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
             rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+
+            // Apply Range filter if specified in sheet (e.g. 1-50, 51-100)
+            if (examConfig.range) {
+                rawQuestions = applyQuestionRange(rawQuestions, examConfig.range);
+            }
 
             allFetchedQuestions = rawQuestions;
             allQuestions = groupQuestions(rawQuestions); 
@@ -334,6 +370,11 @@
             if(loaderCont) loaderCont.style.display = 'none';
 
             if(filteredQuestions.length === 0) return container.innerHTML = "<p>প্রশ্ন পাওয়া যায়নি।</p>";
+
+            // নিরাপদে প্রশ্ন শাফল/র‍্যান্ডমাইজ করা (প্রশ্ন, অপশন ও উত্তর অক্ষত থাকবে)
+            if (examConfig.shuffle !== false) {
+                shuffleArray(filteredQuestions);
+            }
 
             filteredQuestions.forEach((q, index) => {
                 let qIdx = q.originalIndex; 
