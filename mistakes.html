@@ -1,3 +1,36 @@
+
+        // --- Smart Deduplication & Grouping ---
+        function groupAndDeduplicateMistakes(rawList) {
+            const groupedMap = new Map();
+
+            rawList.forEach(m => {
+                const key = (m.question || '').trim().replace(/\s+/g, ' ');
+                if (!key) return;
+
+                const exName = m.examName ? m.examName.trim() : (m.examId ? m.examId : '');
+
+                if (!groupedMap.has(key)) {
+                    groupedMap.set(key, {
+                        ...m,
+                        allDocIds: m._id ? [m._id] : [],
+                        allExams: exName ? [exName] : [],
+                        mistakeCount: 1
+                    });
+                } else {
+                    const existing = groupedMap.get(key);
+                    existing.mistakeCount++;
+                    if (m._id && !existing.allDocIds.includes(m._id)) {
+                        existing.allDocIds.push(m._id);
+                    }
+                    if (exName && !existing.allExams.includes(exName)) {
+                        existing.allExams.push(exName);
+                    }
+                }
+            });
+
+            return Array.from(groupedMap.values());
+        }
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -640,7 +673,7 @@
                     }
                 });
 
-                allMistakes = combined;
+                allMistakes = groupAndDeduplicateMistakes(combined);
                 initFilters();
                 renderMistakes();
             } catch (err) {
@@ -652,7 +685,7 @@
 
         // --- Load from LocalStorage (for guests) ---
         function loadMistakesFromLocalStorage() {
-            allMistakes = getLocalMistakes();
+            allMistakes = groupAndDeduplicateMistakes(getLocalMistakes());
             initFilters();
             renderMistakes();
         }
@@ -806,18 +839,44 @@
                     </div>
                 ` : '';
 
+                // স্মার্ট এক্সাম ইনফো তৈরি
+                let examInfoHtml = '';
+                if (m.allExams && m.allExams.length > 0) {
+                    const uniqueExams = [...new Set(m.allExams.filter(Boolean))];
+                    const isSingleAndSameAsChapter = uniqueExams.length === 1 && 
+                        normalizeChapter(uniqueExams[0]) === normalizeChapter(m.chapter);
+                    
+                    if (!isSingleAndSameAsChapter) {
+                        examInfoHtml = `
+                            <div style="margin: 4px 0 10px 0;">
+                                <span style="background:#f1f2f6; color:#4b6584; font-size:12px; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; border:1px solid #dfe4ea;">
+                                    <i class="fas fa-file-alt" style="color:var(--primary);"></i>
+                                    <span>পরীক্ষা: <strong>${uniqueExams.join(', ')}</strong></span>
+                                </span>
+                            </div>
+                        `;
+                    }
+                }
+
+                const mistakeBadge = m.mistakeCount > 1 ? `
+                    <span class="tag" style="background:#ffeaa7; color:#d63031; font-weight:bold; border:1px solid #fdcb6e;">
+                        <i class="fas fa-exclamation-triangle"></i> ${m.mistakeCount} বার ভুল হয়েছে
+                    </span>
+                ` : '';
+
                 cardsHtml += `
                     <div class="q-card" id="card-${idx}">
                         <div class="q-header">
                             <div class="q-tags">
                                 <span class="tag tag-subject">${sub}</span>
                                 <span class="tag tag-chapter">${ch}</span>
-                                ${m.examName ? `<span class="tag tag-exam">${m.examName}</span>` : ''}
+                                ${mistakeBadge}
                             </div>
                             <button class="btn-resolve" onclick="markAsResolved('${m._id || ''}', ${idx})" title="এই ভুলটি সমাধান হয়েছে হিসেবে চিহ্নিত করুন">
                                 <i class="fas fa-check"></i> সমাধান হয়েছে
                             </button>
                         </div>
+                        ${examInfoHtml}
                         <div class="q-title">${idx + 1}. ${m.question || 'প্রশ্ন পাওয়া যায়নি'}</div>
                         <div class="opt-list">
                             ${optsHtml}
@@ -861,12 +920,15 @@
 
             if (!confirm.isConfirmed) return;
 
-            // Remove from Firestore
-            if (docId && currentUser) {
-                try {
-                    await db.collection("user_mistakes").doc(docId).delete();
-                } catch(e) {
-                    console.error("Firestore delete error:", e);
+            // Remove from Firestore (সবগুলো ডুপ্লিকেট রেকর্ড একসাথে ডিলিট)
+            if (currentUser) {
+                const idsToDelete = (item.allDocIds && item.allDocIds.length > 0) ? item.allDocIds : (docId ? [docId] : []);
+                for (const dId of idsToDelete) {
+                    try {
+                        await db.collection("user_mistakes").doc(dId).delete();
+                    } catch(e) {
+                        console.error("Firestore delete error:", e);
+                    }
                 }
             }
 
@@ -894,6 +956,8 @@
 
             // Prepare questions in standard exam format
             const examQuestions = currentlyDisplayed.map((m, idx) => ({
+                _id: m._id || '',
+                allDocIds: m.allDocIds || (m._id ? [m._id] : []),
                 originalIndex: m.originalIndex !== undefined ? m.originalIndex : idx,
                 examId: m.examId || 'mistakes',
                 "প্রশ্ন (LaTeX সহ)": m.question,

@@ -662,10 +662,17 @@
                             secureScore += markPerQuestion; 
                             secureCorrect++; 
                             chapterAnalysis[ch].correct++;
-                            if (isMistakeMode && q._id) { solvedMistakeIds.push(q._id); }
+                            if (isMistakeMode) {
+                                if (q.allDocIds && Array.isArray(q.allDocIds) && q.allDocIds.length > 0) {
+                                    solvedMistakeIds.push(...q.allDocIds);
+                                } else if (q._id) {
+                                    solvedMistakeIds.push(q._id);
+                                }
+                            }
                         } else {
                             secureScore -= negativeMark; 
                             secureWrong++;
+                            if (!isMistakeMode) {
                             mistakesToSave.push({
                                 examId: tabId,
                                 examName: examConfig.name || tabId,
@@ -682,6 +689,7 @@
                                 explanation: q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা"] || "",
                                 status: "wrong"
                             });
+                            }
                         }
                     }
                 });
@@ -758,6 +766,13 @@
                             }
                         });
                         localStorage.setItem("user_mistakes", JSON.stringify(localList));
+                    }
+                    if (solvedMistakeIds.length > 0) {
+                        try {
+                            let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
+                            localList = localList.filter(lm => !solvedMistakeIds.includes(lm._id));
+                            localStorage.setItem("user_mistakes", JSON.stringify(localList));
+                        } catch(e) {}
                     }
                 } catch (mistakeErr) { console.error("Mistake save error:", mistakeErr); }
 
