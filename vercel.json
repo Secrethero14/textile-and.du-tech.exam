@@ -1,0 +1,10 @@
+{
+  "headers": [
+    {
+      "source": "/public/questions/(.*).json",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>ভুল ব্যাংক (Mistake Bank) | Textile Engineering Admission</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- KaTeX for LaTeX Math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --primary-dark: #5641e5;
+            --bg: #f8f9fd;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+            --text-muted: #636e72;
+            --border: #e2e8f0;
+            --success: #00b894;
+            --success-bg: #e6fffa;
+            --error: #d63031;
+            --error-bg: #fff5f5;
+            --warning: #f39c12;
+            --warning-bg: #fef9e7;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 70px;
+        }
+
+        /* Top Navbar */
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-back {
+            background: #f1f2f6;
+            border: none;
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #dfe4ea;
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-user {
+            background: #eef2ff;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        /* Hero / Stats Banner */
+        .hero-banner {
+            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .hero-info h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .hero-info p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-chip {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(8px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .stat-chip .num {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-chip .lbl {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        /* Controls / Filter Box */
+        .filter-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.2fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .filter-grid .btn-reexam-wrap {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-grid .btn-reexam-wrap {
+                grid-column: span 1;
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .select-input, .search-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .select-input:focus, .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+        }
+
+        .btn-reexam {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(0, 184, 148, 0.35);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-reexam:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 184, 148, 0.45);
+        }
+
+        /* Question Cards */
+        .q-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .q-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+
+        .q-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .q-tags {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .tag-subject {
+            background: #eef2ff;
+            color: var(--primary);
+        }
+
+        .tag-chapter {
+            background: #f1f2f6;
+            color: #4b6584;
+        }
+
+        .tag-exam {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .btn-resolve {
+            background: none;
+            border: 1px solid #fed7d7;
+            color: var(--error);
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-resolve:hover {
+            background: var(--error-bg);
+            border-color: var(--error);
+        }
+
+        .q-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 14px;
+            color: #1e293b;
+        }
+
+        /* Options Grid */
+        .opt-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        @media (min-width: 600px) {
+            .opt-list {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .opt-item {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .opt-letter {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f1f2f6;
+            color: #4b6584;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Right / Wrong highlights */
+        .opt-item.is-correct {
+            background: var(--success-bg);
+            border-color: var(--success);
+            color: #00775a;
+            font-weight: 600;
+        }
+
+        .opt-item.is-correct .opt-letter {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .opt-item.is-user-wrong {
+            background: var(--error-bg);
+            border-color: var(--error);
+            color: #b33939;
+            font-weight: 600;
+        }
+
+        .opt-item.is-user-wrong .opt-letter {
+            background: var(--error);
+            color: #fff;
+        }
+
+        /* Explanation Box */
+        .exp-box {
+            background: #f8fafc;
+            border-left: 3px solid var(--primary);
+            padding: 12px 14px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #334155;
+            margin-top: 10px;
+        }
+
+        .exp-box strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            border: 1.5px dashed var(--border);
+            margin-top: 30px;
+        }
+
+        .empty-state i {
+            font-size: 54px;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        .empty-state p {
+            margin: 0 0 20px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Loader */
+        .loader-wrap {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            font-size: 32px;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> হোমপেজ
+            </a>
+            <div class="nav-title">
+                <i class="fas fa-book-open"></i> ভুল ব্যাংক (Mistake Bank)
+            </div>
+        </div>
+        <div class="nav-right">
+            <span class="badge-user" id="userBadge">
+                <i class="fas fa-circle-notch fa-spin"></i> লোডিং...
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Hero Stats Banner -->
+        <div class="hero-banner">
+            <div class="hero-info">
+                <h1>ভুল উত্তর সংশোধন ও রি-টেস্ট</h1>
+                <p>এখানে আপনার পরীক্ষায় ভুল হওয়া প্রশ্নগুলো জমা থাকে। এগুলো চর্চা করে আপনার প্রস্তুতিকে নিখুঁত করুন।</p>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-chip">
+                    <div class="num" id="totalCountDisplay">0</div>
+                    <div class="lbl">মোট ভুল প্রশ্ন</div>
+                </div>
+                <div class="stat-chip">
+                    <div class="num" id="filteredCountDisplay">0</div>
+                    <div class="lbl">বর্তমান ফিল্টারে</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Action Bar -->
+        <div class="filter-card">
+            <div class="filter-grid">
+                <!-- Subject Filter -->
+                <div class="filter-group">
+                    <span class="filter-label"><i class="fas fa-layer-group"></i> বিষয় (Subject)</span>
+                    <select id="subjectFilter" class="select-input" onchange="onSubjectChange()">
+                        <option value="ALL">সকল বিষয় (All Subjects)</option>
+                    </select>
+                </div>
+
+                <!-- Chapter Filter -->
+                <div class="filter-group">
+                    <span class="filter-label"><i class="fas fa-bookmark"></i> অধ্যায় (Chapter)</span>
+                    <select id="chapterFilter" class="select-input" onchange="renderMistakes()">
+                        <option value="ALL">সকল অধ্যায় (All Chapters)</option>
+                    </select>
+                </div>
+
+                <!-- Search Box -->
+                <div class="filter-group">
+                    <span class="filter-label"><i class="fas fa-search"></i> প্রশ্ন খুঁজুন</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="প্রশ্ন লিখে সার্চ করুন..." onkeyup="renderMistakes()">
+                </div>
+
+                <!-- Start Re-exam Button -->
+                <div class="filter-group btn-reexam-wrap">
+                    <span class="filter-label" style="visibility:hidden;">Action</span>
+                    <button class="btn-reexam" onclick="startReExam()">
+                        <i class="fas fa-play-circle"></i> রি-টেস্ট দিন
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question List Container -->
+        <div id="loaderWrap" class="loader-wrap">
+            <i class="fas fa-circle-notch spinner"></i>
+            <p style="margin-top:10px; color:#666;">ভুল প্রশ্নগুলো লোড হচ্ছে...</p>
+        </div>
+
+        <div id="questionsContainer" style="display:none;"></div>
+
+    </div>
+
+    <script>
+        // --- Firebase Config ---
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", 
+            authDomain: "hstu---cou--exam-2026.firebaseapp.com", 
+            projectId: "hstu---cou--exam-2026", 
+            storageBucket: "hstu---cou--exam-2026.firebasestorage.app", 
+            messagingSenderId: "1058124789396", 
+            appId: "1:1058124789396:web:fc772af33deb7c18c9e681" 
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        let allMistakes = [];
+        let currentlyDisplayed = [];
+
+        // --- Subject Normalizer (যে কোনো বানান ও স্পেস স্বয়ংক্রিয়ভাবে হ্যান্ডেল করবে) ---
+        function normalizeSubject(raw) {
+            if (!raw) return "অন্যান্য (Other)";
+            const s = String(raw).trim().toLowerCase();
+            if (s.includes('physic') || s.includes('পদার্থ')) return 'পদার্থবিজ্ঞান (Physics)';
+            if (s.includes('chem') || s.includes('রসায়') || s.includes('রসায')) return 'রসায়ন (Chemistry)';
+            if (s.includes('math') || s.includes('গণিত') || s.includes('হায়ার ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
+            if (s.includes('eng') || s.includes('ইংরেজ')) return 'ইংরেজি (English)';
+            if (s.includes('bang') || s.includes('বাংলা')) return 'বাংলা (Bangla)';
+            return String(raw).trim() || 'অন্যান্য (Other)';
+        }
+
+        function normalizeChapter(raw) {
+            if (!raw) return "সাধারণ (General)";
+            let c = String(raw).trim();
+            c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
+            return c || "সাধারণ (General)";
+        }
+
+        // --- Init Auth & Load Data ---
+        window.onload = function() {
+            auth.onAuthStateChanged(user => {
+                const badge = document.getElementById('userBadge');
+                if (user) {
+                    currentUser = user;
+                    badge.innerHTML = `<i class="fas fa-user-check"></i> ${user.displayName || user.email}`;
+                    loadMistakesFromFirestore(user.email);
+                } else {
+                    currentUser = null;
+                    badge.innerHTML = `<i class="fas fa-user"></i> Guest Mode`;
+                    loadMistakesFromLocalStorage();
+                }
+            });
+        };
+
+        // --- Load from Firestore ---
+        async function loadMistakesFromFirestore(email) {
+            try {
+                const snapshot = await db.collection("user_mistakes")
+                    .where("email", "==", email)
+                    .where("status", "==", "wrong")
+                    .get();
+
+                const firestoreList = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data._id = doc.id;
+                    firestoreList.push(data);
+                });
+
+                // LocalStorage-এ কোনো গেস্ট মিস্টেক থাকলে তাও মার্জ করা হবে
+                const localList = getLocalMistakes();
+                const combined = [...firestoreList];
+                
+                // Add local ones not already present
+                localList.forEach(l => {
+                    if (!combined.some(c => c.examId === l.examId && c.originalIndex === l.originalIndex)) {
+                        combined.push(l);
+                    }
+                });
+
+                allMistakes = combined;
+                initFilters();
+                renderMistakes();
+            } catch (err) {
+                console.error("Firestore Error:", err);
+                // Fallback to local
+                loadMistakesFromLocalStorage();
+            }
+        }
+
+        // --- Load from LocalStorage (for guests) ---
+        function loadMistakesFromLocalStorage() {
+            allMistakes = getLocalMistakes();
+            initFilters();
+            renderMistakes();
+        }
+
+        function getLocalMistakes() {
+            try {
+                const raw = localStorage.getItem('user_mistakes');
+                return raw ? JSON.parse(raw) : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        // --- Populate Subject Dropdown ---
+        function initFilters() {
+            const subjectSelect = document.getElementById('subjectFilter');
+            const subjectsCount = {};
+
+            allMistakes.forEach(m => {
+                const sub = normalizeSubject(m.subject);
+                subjectsCount[sub] = (subjectsCount[sub] || 0) + 1;
+            });
+
+            let html = `<option value="ALL">সকল বিষয় (${allMistakes.length})</option>`;
+            for (const sub in subjectsCount) {
+                html += `<option value="${sub}">${sub} (${subjectsCount[sub]})</option>`;
+            }
+            subjectSelect.innerHTML = html;
+
+            populateChapters();
+        }
+
+        function onSubjectChange() {
+            populateChapters();
+            renderMistakes();
+        }
+
+        // --- Populate Chapter Dropdown ---
+        function populateChapters() {
+            const selectedSub = document.getElementById('subjectFilter').value;
+            const chapterSelect = document.getElementById('chapterFilter');
+            const chaptersCount = {};
+
+            allMistakes.forEach(m => {
+                const sub = normalizeSubject(m.subject);
+                if (selectedSub === 'ALL' || sub === selectedSub) {
+                    const ch = normalizeChapter(m.chapter);
+                    chaptersCount[ch] = (chaptersCount[ch] || 0) + 1;
+                }
+            });
+
+            let html = `<option value="ALL">সকল অধ্যায়</option>`;
+            for (const ch in chaptersCount) {
+                html += `<option value="${ch}">${ch} (${chaptersCount[ch]})</option>`;
+            }
+            chapterSelect.innerHTML = html;
+        }
+
+        // --- Render Mistake Cards ---
+        function renderMistakes() {
+            const selectedSub = document.getElementById('subjectFilter').value;
+            const selectedCh = document.getElementById('chapterFilter').value;
+            const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+
+            const container = document.getElementById('questionsContainer');
+            const loader = document.getElementById('loaderWrap');
+
+            loader.style.display = 'none';
+            container.style.display = 'block';
+
+            // Filter logic
+            currentlyDisplayed = allMistakes.filter(m => {
+                const sub = normalizeSubject(m.subject);
+                const ch = normalizeChapter(m.chapter);
+
+                if (selectedSub !== 'ALL' && sub !== selectedSub) return false;
+                if (selectedCh !== 'ALL' && ch !== selectedCh) return false;
+
+                if (query) {
+                    const qText = String(m.question || '').toLowerCase();
+                    const qExp = String(m.explanation || '').toLowerCase();
+                    if (!qText.includes(query) && !qExp.includes(query)) return false;
+                }
+                return true;
+            });
+
+            // Update stats counter
+            document.getElementById('totalCountDisplay').innerText = allMistakes.length;
+            document.getElementById('filteredCountDisplay').innerText = currentlyDisplayed.length;
+
+            if (currentlyDisplayed.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>চমৎকার! কোনো ভুল প্রশ্ন পাওয়া যায়নি</h3>
+                        <p>${allMistakes.length === 0 ? "আপনি এখনো কোনো ভুল করেননি অথবা সব ভুল সমাধান করেছেন!" : "এই ফিল্টারে কোনো ভুল প্রশ্ন নেই।"}</p>
+                        <a href="index.html" class="btn-reexam" style="display:inline-flex; text-decoration:none;">
+                            <i class="fas fa-home"></i> পরীক্ষা দিন
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let cardsHtml = '';
+            currentlyDisplayed.forEach((m, idx) => {
+                const sub = normalizeSubject(m.subject);
+                const ch = normalizeChapter(m.chapter);
+                const rightAns = String(m.rightAns || '').toUpperCase();
+                const userAns = String(m.userAns || '').toUpperCase();
+
+                const optA = m.optA || (m.options && m.options.A) || '';
+                const optB = m.optB || (m.options && m.options.B) || '';
+                const optC = m.optC || (m.options && m.options.C) || '';
+                const optD = m.optD || (m.options && m.options.D) || '';
+
+                const options = [
+                    { key: 'A', text: optA },
+                    { key: 'B', text: optB },
+                    { key: 'C', text: optC },
+                    { key: 'D', text: optD }
+                ];
+
+                let optsHtml = '';
+                options.forEach(opt => {
+                    if (!opt.text) return;
+                    let optClass = 'opt-item';
+                    let badge = '';
+
+                    if (opt.key === rightAns) {
+                        optClass += ' is-correct';
+                        badge = `<i class="fas fa-check" style="margin-left:auto; color:var(--success);"></i>`;
+                    } else if (opt.key === userAns) {
+                        optClass += ' is-user-wrong';
+                        badge = `<span style="margin-left:auto; font-size:12px; color:var(--error);"><i class="fas fa-times"></i> আপনার উত্তর</span>`;
+                    }
+
+                    optsHtml += `
+                        <div class="${optClass}">
+                            <div class="opt-letter">${opt.key}</div>
+                            <div style="flex-grow:1;">${opt.text}</div>
+                            ${badge}
+                        </div>
+                    `;
+                });
+
+                const explanation = m.explanation ? `
+                    <div class="exp-box">
+                        <strong><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong>
+                        <div>${m.explanation}</div>
+                    </div>
+                ` : '';
+
+                cardsHtml += `
+                    <div class="q-card" id="card-${idx}">
+                        <div class="q-header">
+                            <div class="q-tags">
+                                <span class="tag tag-subject">${sub}</span>
+                                <span class="tag tag-chapter">${ch}</span>
+                                ${m.examName ? `<span class="tag tag-exam">${m.examName}</span>` : ''}
+                            </div>
+                            <button class="btn-resolve" onclick="markAsResolved('${m._id || ''}', ${idx})" title="এই ভুলটি সমাধান হয়েছে হিসেবে চিহ্নিত করুন">
+                                <i class="fas fa-check"></i> সমাধান হয়েছে
+                            </button>
+                        </div>
+                        <div class="q-title">${idx + 1}. ${m.question || 'প্রশ্ন পাওয়া যায়নি'}</div>
+                        <div class="opt-list">
+                            ${optsHtml}
+                        </div>
+                        ${explanation}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = cardsHtml;
+
+            // Render KaTeX Math formulas
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(container, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '\\[', right: '\\]', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // --- Mark As Resolved / Delete from Bank ---
+        async function markAsResolved(docId, idx) {
+            const item = currentlyDisplayed[idx];
+            if (!item) return;
+
+            const confirm = await Swal.fire({
+                title: 'সমাধান হয়েছে?',
+                text: 'এই প্রশ্নটিকে কি আপনি ভুল ব্যাংক থেকে মুছে ফেলতে চান?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#00b894',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'হ্যাঁ, মুছে ফেলুন',
+                cancelButtonText: 'না'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            // Remove from Firestore
+            if (docId && currentUser) {
+                try {
+                    await db.collection("user_mistakes").doc(docId).delete();
+                } catch(e) {
+                    console.error("Firestore delete error:", e);
+                }
+            }
+
+            // Remove from local memory & LocalStorage
+            allMistakes = allMistakes.filter(m => !(m.examId === item.examId && m.originalIndex === item.originalIndex));
+            try {
+                localStorage.setItem('user_mistakes', JSON.stringify(allMistakes));
+            } catch(e) {}
+
+            renderMistakes();
+            Swal.fire({
+                title: 'মুছে ফেলা হয়েছে!',
+                text: 'প্রশ্নটি আপনার ভুল ব্যাংক থেকে সরানো হয়েছে।',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+
+        // --- Start Re-Exam ---
+        function startReExam() {
+            if (currentlyDisplayed.length === 0) {
+                return Swal.fire('কোনো প্রশ্ন নেই', 'পরীক্ষা দেওয়ার মতো কোনো ভুল প্রশ্ন নেই!', 'info');
+            }
+
+            // Prepare questions in standard exam format
+            const examQuestions = currentlyDisplayed.map((m, idx) => ({
+                originalIndex: m.originalIndex !== undefined ? m.originalIndex : idx,
+                examId: m.examId || 'mistakes',
+                "প্রশ্ন (LaTeX সহ)": m.question,
+                "অপশন A": m.optA || (m.options && m.options.A) || '',
+                "অপশন B": m.optB || (m.options && m.options.B) || '',
+                "অপশন C": m.optC || (m.options && m.options.C) || '',
+                "অপশন D": m.optD || (m.options && m.options.D) || '',
+                "উত্তর": m.rightAns,
+                "বিস্তারিত ব্যাখ্যা (LaTeX সহ)": m.explanation || '',
+                "Subject": m.subject || 'General',
+                "Chapter": m.chapter || 'General'
+            }));
+
+            // Store in sessionStorage for exam.html
+            sessionStorage.setItem('reExamQuestions', JSON.stringify(examQuestions));
+            sessionStorage.setItem('reExamConfig', JSON.stringify({
+                name: 'ভুল ব্যাংক রি-টেস্ট (Mistake Re-Exam)',
+                time: Math.max(5, Math.ceil(examQuestions.length * 1.2)), // ~1.2 mins per question
+                totalMarks: examQuestions.length,
+                neg: 0.25,
+                type: 'practice'
+            }));
+
+            // Redirect to exam page in mistake mode
+            window.location.href = 'exam.html?mode=mistakes';
+        }
+    </script>
+</body>
+</html>

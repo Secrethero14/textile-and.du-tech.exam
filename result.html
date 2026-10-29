@@ -129,6 +129,7 @@
             <div class="btn-row">
                 <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
                 <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
+            <a href="mistakes.html" class="btn-main" style="background:#8e44ad; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;"><i class="fas fa-book-open"></i> ভুল ব্যাংক</a>
             </div>
         </div>
 
@@ -313,7 +314,14 @@
 
                 qRes.forEach((q, idx) => { q.originalIndex = idx; });
                 const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
-                const displayQuestions = groupQuestions(rawQuestions);
+                let displayQuestions = [];
+                if (resultData.questionOrder && Array.isArray(resultData.questionOrder) && resultData.questionOrder.length > 0) {
+                    const qMap = new Map();
+                    rawQuestions.forEach(q => qMap.set(q.originalIndex, q));
+                    displayQuestions = resultData.questionOrder.map(idx => qMap.get(idx)).filter(Boolean);
+                } else {
+                    displayQuestions = groupQuestions(rawQuestions);
+                }
 
                 const userAnsMap = resultData.userAnswers || {};
                 const examInfo = indexRes.find(e => e['Tab ID'] === tabId);

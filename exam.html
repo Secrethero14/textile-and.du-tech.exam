@@ -163,6 +163,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         const urlParams = new URLSearchParams(window.location.search);
+        const isMistakeMode = urlParams.get('mode') === 'mistakes';
         const tabId = urlParams.get('id') || "Phy_1"; 
 
         let allQuestions = [], filteredQuestions = [], examConfig = {};
@@ -194,9 +195,23 @@
         };
 
         async function loadExamConfig() {
+            if (isMistakeMode) {
+                const customConfig = JSON.parse(sessionStorage.getItem('reExamConfig') || '{}');
+                examConfig = {
+                    name: customConfig.name || 'ভুল ব্যাংক রি-টেস্ট (Mistake Re-Exam)',
+                    time: customConfig.time || 20,
+                    neg: customConfig.neg !== undefined ? customConfig.neg : 0.25,
+                    totalMarks: customConfig.totalMarks || null,
+                    type: 'practice',
+                    shuffle: true
+                };
+                document.getElementById('examTitle').innerText = examConfig.name;
+                return;
+            }
             const res = await fetch(JSON_BASE + "exam-index.json");
             const data = await res.json();
-            const exam = data.find(e => e['Tab ID'] === tabId);
+            const matchingExams = data.filter(e => e['Tab ID'] === tabId);
+            const exam = matchingExams.slice().reverse().find(e => (e['Range'] && String(e['Range']).trim() !== '') || (e['range'] && String(e['range']).trim() !== '')) || matchingExams[0];
             if(exam) {
                 examConfig = {
                     time: Number(exam['Total Time']), 
@@ -245,6 +260,19 @@
             return questions;
         }
         async function loadQuestions() {
+            if (isMistakeMode) {
+                let rawQuestions = JSON.parse(sessionStorage.getItem('reExamQuestions') || '[]');
+                rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
+                allFetchedQuestions = rawQuestions;
+                allQuestions = rawQuestions;
+                document.getElementById('introTitle').innerText = examConfig.name;
+                document.getElementById('introTime').innerText = examConfig.time;
+                document.getElementById('introMarks').innerText = examConfig.totalMarks || allQuestions.length;
+                document.getElementById('introNeg').innerText = examConfig.neg;
+                document.getElementById('loaderContainer').style.display = 'none';
+                document.getElementById('introModal').style.display = 'flex';
+                return;
+            }
             const res = await fetch(JSON_BASE + tabId + ".json");
             let rawQuestions = await res.json();
             
@@ -594,6 +622,8 @@
                 let secureWrong = 0;
                 let chapterAnalysis = {};
                 let userAnswers = {};
+                let mistakesToSave = [];
+                let solvedMistakeIds = [];
                 
                 const timeTaken = Math.floor((new Date() - startTime) / 1000);
 
@@ -632,9 +662,26 @@
                             secureScore += markPerQuestion; 
                             secureCorrect++; 
                             chapterAnalysis[ch].correct++;
+                            if (isMistakeMode && q._id) { solvedMistakeIds.push(q._id); }
                         } else {
                             secureScore -= negativeMark; 
                             secureWrong++;
+                            mistakesToSave.push({
+                                examId: tabId,
+                                examName: examConfig.name || tabId,
+                                originalIndex: qIdx,
+                                subject: q["Subject"] || "General",
+                                chapter: ch,
+                                question: q["প্রশ্ন (LaTeX সহ)"] || "",
+                                optA: q["অপশন A"] || "",
+                                optB: q["অপশন B"] || "",
+                                optC: q["অপশন C"] || "",
+                                optD: q["অপশন D"] || "",
+                                rightAns: rightAns,
+                                userAns: selectedVal,
+                                explanation: q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা"] || "",
+                                status: "wrong"
+                            });
                         }
                     }
                 });
@@ -664,12 +711,39 @@
                     score: secureScore, correct: secureCorrect, wrong: secureWrong, timeTaken,
                     markPerQuestion: markPerQuestion, negativeMark: negativeMark,       
                     student: userName, email: userEmail,
-                    analysis: chapterAnalysis, userAnswers, isPractice: isPracticeMode
+                    analysis: chapterAnalysis, userAnswers,
+                    questionOrder: filteredQuestions.map(q => q.originalIndex),
+                    isPractice: isPracticeMode
                 };
 
                 const finalRecord = { ...cleanData(rawData), timestamp: firebase.firestore.FieldValue.serverTimestamp() };
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
+                // --- Save mistakes to Firestore & LocalStorage ---
+                try {
+                    if (user) {
+                        for (const m of mistakesToSave) {
+                            const docId = (user.email + "_" + m.examId + "_" + m.originalIndex).replace(/[/\s#\?]/g, "_");
+                            await db.collection("user_mistakes").doc(docId).set({
+                                ...m,
+                                email: user.email,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true });
+                        }
+                        for (const sId of solvedMistakeIds) {
+                            await db.collection("user_mistakes").doc(sId).delete().catch(console.error);
+                        }
+                    } else {
+                        let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
+                        mistakesToSave.forEach(m => {
+                            if (!localList.some(lm => lm.examId === m.examId && lm.originalIndex === m.originalIndex)) {
+                                localList.push(m);
+                            }
+                        });
+                        localStorage.setItem("user_mistakes", JSON.stringify(localList));
+                    }
+                } catch (mistakeErr) { console.error("Mistake save error:", mistakeErr); }
+
                 
                 
                 window.location.replace(`result.html?id=${docRef.id}`);
