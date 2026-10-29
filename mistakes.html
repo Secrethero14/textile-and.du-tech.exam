@@ -1,36 +1,3 @@
-
-        // --- Smart Deduplication & Grouping ---
-        function groupAndDeduplicateMistakes(rawList) {
-            const groupedMap = new Map();
-
-            rawList.forEach(m => {
-                const key = (m.question || '').trim().replace(/\s+/g, ' ');
-                if (!key) return;
-
-                const exName = m.examName ? m.examName.trim() : (m.examId ? m.examId : '');
-
-                if (!groupedMap.has(key)) {
-                    groupedMap.set(key, {
-                        ...m,
-                        allDocIds: m._id ? [m._id] : [],
-                        allExams: exName ? [exName] : [],
-                        mistakeCount: 1
-                    });
-                } else {
-                    const existing = groupedMap.get(key);
-                    existing.mistakeCount++;
-                    if (m._id && !existing.allDocIds.includes(m._id)) {
-                        existing.allDocIds.push(m._id);
-                    }
-                    if (exName && !existing.allExams.includes(exName)) {
-                        existing.allExams.push(exName);
-                    }
-                }
-            });
-
-            return Array.from(groupedMap.values());
-        }
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -630,6 +597,39 @@
             c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
             return c || "সাধারণ (General)";
         }
+
+        // --- Smart Deduplication & Grouping ---
+        function groupAndDeduplicateMistakes(rawList) {
+            const groupedMap = new Map();
+
+            rawList.forEach(m => {
+                const key = (m.question || '').trim().replace(/\s+/g, ' ');
+                if (!key) return;
+
+                const exName = m.examName ? m.examName.trim() : (m.examId ? m.examId : '');
+
+                if (!groupedMap.has(key)) {
+                    groupedMap.set(key, {
+                        ...m,
+                        allDocIds: m._id ? [m._id] : [],
+                        allExams: exName ? [exName] : [],
+                        mistakeCount: 1
+                    });
+                } else {
+                    const existing = groupedMap.get(key);
+                    existing.mistakeCount++;
+                    if (m._id && !existing.allDocIds.includes(m._id)) {
+                        existing.allDocIds.push(m._id);
+                    }
+                    if (exName && !existing.allExams.includes(exName)) {
+                        existing.allExams.push(exName);
+                    }
+                }
+            });
+
+            return Array.from(groupedMap.values());
+        }
+
 
         // --- Init Auth & Load Data ---
         window.onload = function() {
