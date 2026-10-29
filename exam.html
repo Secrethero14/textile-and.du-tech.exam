@@ -713,8 +713,25 @@
                     student: userName, email: userEmail,
                     analysis: chapterAnalysis, userAnswers,
                     questionOrder: filteredQuestions.map(q => q.originalIndex),
-                    isPractice: isPracticeMode
+                    isPractice: isPracticeMode,
+                    isMistakeReExam: isMistakeMode
                 };
+
+                // Mistake re-exam: প্রশ্নের ডেটা সরাসরি result-এ সেভ করি
+                if (isMistakeMode) {
+                    rawData.mistakeQuestions = filteredQuestions.map(q => ({
+                        originalIndex: q.originalIndex,
+                        question: q["প্রশ্ন (LaTeX সহ)"] || "",
+                        optA: q["অপশন A"] || "",
+                        optB: q["অপশন B"] || "",
+                        optC: q["অপশন C"] || "",
+                        optD: q["অপশন D"] || "",
+                        answer: q["উত্তর"] || "",
+                        explanation: q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা"] || "",
+                        subject: q["Subject"] || "General",
+                        chapter: q["Chapter"] || q["অধ্যায়"] || "General"
+                    }));
+                }
 
                 const finalRecord = { ...cleanData(rawData), timestamp: firebase.firestore.FieldValue.serverTimestamp() };
 

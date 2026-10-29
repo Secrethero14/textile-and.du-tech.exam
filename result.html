@@ -307,13 +307,34 @@
         async function loadDataAndRender() {
             try {
                 const tabId = resultData.examId;
-                const [qRes, indexRes] = await Promise.all([
-                    fetch(JSON_BASE + tabId + ".json").then(r => r.json()),
-                    fetch(JSON_BASE + "exam-index.json").then(r => r.json())
-                ]);
+                let rawQuestions = [];
+                let examInfo = null;
 
-                qRes.forEach((q, idx) => { q.originalIndex = idx; });
-                const rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+                if (resultData.isMistakeReExam && resultData.mistakeQuestions) {
+                    // Mistake re-exam: প্রশ্ন সরাসরি result document থেকে পড়ি
+                    rawQuestions = resultData.mistakeQuestions.map((mq, idx) => ({
+                        originalIndex: mq.originalIndex !== undefined ? mq.originalIndex : idx,
+                        "প্রশ্ন (LaTeX সহ)": mq.question,
+                        "অপশন A": mq.optA,
+                        "অপশন B": mq.optB,
+                        "অপশন C": mq.optC,
+                        "অপশন D": mq.optD,
+                        "উত্তর": mq.answer,
+                        "বিস্তারিত ব্যাখ্যা (LaTeX সহ)": mq.explanation,
+                        "Subject": mq.subject,
+                        "Chapter": mq.chapter
+                    }));
+                } else {
+                    // Normal exam: JSON ফাইল থেকে প্রশ্ন লোড করি
+                    const [qRes, indexRes] = await Promise.all([
+                        fetch(JSON_BASE + tabId + ".json").then(r => r.json()),
+                        fetch(JSON_BASE + "exam-index.json").then(r => r.json())
+                    ]);
+                    qRes.forEach((q, idx) => { q.originalIndex = idx; });
+                    rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+                    examInfo = indexRes.find(e => e['Tab ID'] === tabId);
+                }
+
                 let displayQuestions = [];
                 if (resultData.questionOrder && Array.isArray(resultData.questionOrder) && resultData.questionOrder.length > 0) {
                     const qMap = new Map();
@@ -324,7 +345,7 @@
                 }
 
                 const userAnsMap = resultData.userAnswers || {};
-                const examInfo = indexRes.find(e => e['Tab ID'] === tabId);
+                // examInfo already set above
                 
                 document.getElementById('examName').innerText = resultData.examName || "Exam Result";
                 
