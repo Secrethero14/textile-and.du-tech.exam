@@ -299,23 +299,40 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         }
         }
 
-        async function checkEnrollment(email) {
+        function checkEnrollment(email) {
             try {
-                const snap = await db.collection("payment_requests")
-                    .where("email", "==", email).where("status", "==", "approved").get();
-                const promoBanner = document.getElementById('promoBanner');
-                const successBanner = document.getElementById('successBanner');
-                
-                if (!snap.empty) {
-                    userEnrollment = 'TextileFull';
-                    promoBanner.style.display = 'none'; 
-                    successBanner.style.display = 'flex';
-                } else {
-                    promoBanner.style.display = 'flex'; 
-                    successBanner.style.display = 'none';
-                }
-                loadExams();
-            } catch (error) { console.error(error); loadExams(); }
+                // 🔴 রিয়েল-টাইম লিসেনার: অ্যাডমিন এক্সেস দিলে ১ সেকেন্ডের মধ্যে লাইভ আনলক হবে
+                db.collection("payment_requests")
+                    .where("email", "==", email)
+                    .where("status", "==", "approved")
+                    .onSnapshot((snap) => {
+                        const promoBanner = document.getElementById('promoBanner');
+                        const successBanner = document.getElementById('successBanner');
+                        
+                        if (!snap.empty) {
+                            userEnrollment = 'TextileFull';
+                            if (promoBanner) promoBanner.style.display = 'none'; 
+                            if (successBanner) successBanner.style.display = 'flex';
+                        } else {
+                            userEnrollment = null;
+                            if (promoBanner) promoBanner.style.display = 'flex'; 
+                            if (successBanner) successBanner.style.display = 'none';
+                        }
+
+                        // পরীক্ষাগুলো অলরেডি লোড করা থাকলে সাথে সাথে রি-রেন্ডার করে আনলক করা
+                        if (allExams && allExams.length > 0) {
+                            renderView();
+                        } else {
+                            loadExams();
+                        }
+                    }, (error) => {
+                        console.error("Enrollment listener error:", error);
+                        loadExams();
+                    });
+            } catch (error) { 
+                console.error(error); 
+                loadExams(); 
+            }
         }
 
         async function loadExams() {

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
@@ -114,6 +115,25 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // লগইন করা থাকলে স্বয়ংক্রিয়ভাবে ইমেইল ও নাম পূরণ হবে
+        auth.onAuthStateChanged(user => {
+            if (user && user.email) {
+                const emailInp = document.getElementById('sEmail');
+                if (emailInp) {
+                    emailInp.value = user.email;
+                    emailInp.readOnly = true;
+                    emailInp.style.backgroundColor = "#e8f5e9";
+                    emailInp.style.borderColor = "#00b894";
+                    emailInp.title = "আপনার লগইন করা ইমেইলটি স্বয়ংক্রিয়ভাবে বসেছে";
+                }
+                const nameInp = document.getElementById('sName');
+                if (nameInp && !nameInp.value && user.displayName) {
+                    nameInp.value = user.displayName;
+                }
+            }
+        });
 
         async function submitForm() {
             const data = {
@@ -129,6 +149,7 @@
                 package: "TextileFull", 
                 status: "approved", 
                 method: "student_form",
+                session: "2026-27",
                 timestamp: new Date().toISOString()
             };
 
