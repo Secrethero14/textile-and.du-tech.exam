@@ -208,10 +208,21 @@
                 document.getElementById('examTitle').innerText = examConfig.name;
                 return;
             }
-            const res = await fetch(JSON_BASE + "exam-index.json");
+            const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
             const data = await res.json();
             const matchingExams = data.filter(e => e['Tab ID'] === tabId);
-            const exam = matchingExams.slice().reverse().find(e => (e['Range'] && String(e['Range']).trim() !== '') || (e['range'] && String(e['range']).trim() !== '')) || matchingExams[0];
+            const urlName = urlParams.get('name');
+            const urlRange = urlParams.get('range');
+            let exam = null;
+            if (urlName) {
+                exam = matchingExams.find(e => (e['Exam Name'] || '').trim() === urlName.trim());
+            }
+            if (!exam) {
+                exam = matchingExams.slice().reverse().find(e => {
+                    const r = e['Range'] || e['range'] || e['রেঞ্জ'] || e['Question Range'] || '';
+                    return r && String(r).trim() !== '';
+                }) || matchingExams[0];
+            }
             if(exam) {
                 examConfig = {
                     time: Number(exam['Total Time']), 
@@ -223,7 +234,7 @@
                     optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
                     fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || [],
                     features: exam['Features'] || '',
-                    range: exam['Range'] || exam['range'] || '',
+                    range: (urlRange && urlRange.trim()) ? urlRange.trim() : (exam['Range'] || exam['range'] || exam['রেঞ্জ'] || exam['Question Range'] || '').trim(),
                     shuffle: exam['Shuffle'] !== undefined && exam['Shuffle'] !== '' ? (String(exam['Shuffle']).toLowerCase().trim() !== 'false' && String(exam['Shuffle']).toLowerCase().trim() !== 'no') : true
                 };
                 document.getElementById('examTitle').innerText = examConfig.name;
@@ -273,11 +284,18 @@
                 document.getElementById('introModal').style.display = 'flex';
                 return;
             }
-            const res = await fetch(JSON_BASE + tabId + ".json");
+            const res = await fetch(JSON_BASE + tabId + ".json?v=" + new Date().getTime());
             let rawQuestions = await res.json();
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
-            rawQuestions = rawQuestions.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
+            rawQuestions = rawQuestions.filter(q => {
+                const text = q["প্রশ্ন (LaTeX সহ)"] || q["Question"] || "";
+                if (!text || String(text).trim() === "") return false;
+                const sub = String(q["Subject"] || "").trim().toLowerCase();
+                const ch = String(q["Chapter"] || q["অধ্যায়"] || "").trim().toLowerCase();
+                if (sub === 'subject' && (ch === 'chapter' || ch === 'অধ্যায়' || ch === '')) return false;
+                return true;
+            });
 
             // Apply Range filter if specified in sheet (e.g. 1-50, 51-100)
             if (examConfig.range) {

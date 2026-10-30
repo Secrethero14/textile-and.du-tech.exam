@@ -479,7 +479,9 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     if(userEnrollment) { unlocked = true; }
 
                     const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
-                    const action = unlocked ? `location.href='exam.html?id=${encodeURIComponent(item['Tab ID'])}'` : `openPaymentModal()`;
+                    const itemRange = (item['Range'] || item['range'] || item['রেঞ্জ'] || item['Question Range'] || '').trim();
+                    const itemName = (item['Exam Name'] || '').trim();
+                    const action = unlocked ? `location.href='exam.html?id=${encodeURIComponent(item['Tab ID'])}&name=${encodeURIComponent(itemName)}&range=${encodeURIComponent(itemRange)}'` : `openPaymentModal()`;
                     
                     html += `
                         <div class="item-card exam-card" onclick="${action}">
