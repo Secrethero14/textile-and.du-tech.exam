@@ -5,14 +5,471 @@
     <title>My Profile | Exam History</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
-        // --- Subject & Chapter Normalizers ---
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root { --primary: #6c5ce7; --bg: #f8f9fd; --card: #ffffff; --text: #2d3436; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-top: 70px; padding-bottom: 50px; }
+
+        .top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000;
+        }
+        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+        /* USER HEADER */
+        .profile-header {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            padding: 25px; border-radius: 15px; color: white;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin-bottom: 25px;
+        }
+        .profile-info { display: flex; align-items: center; gap: 15px; }
+        .profile-pic { width: 75px; height: 75px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); object-fit: cover; background: white; }
+        
+        .user-details p { margin: 2px 0; font-size: 13px; opacity: 0.9; }
+        
+        .btn-update { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 14px; }
+        .btn-update:hover { background: white; color: var(--primary); }
+
+        /* STATS GRID */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: var(--card); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.04); border-bottom: 3px solid var(--primary); }
+        .stat-box.success { border-bottom-color: var(--success); }
+        .stat-box.danger { border-bottom-color: var(--danger); }
+        .stat-num { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+        .stat-label { font-size: 13px; color: #636e72; font-weight: 600; }
+
+        /* HISTORY SECTION */
+        .history-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .section-title { margin-bottom: 15px; font-weight: bold; color: #444; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: 0.2s; flex-wrap: wrap; gap: 10px;}
+        .history-item:hover { background: #f8f9fa; }
+        .history-item:last-child { border-bottom: none; }
+        
+        .exam-title { font-weight: bold; color: var(--primary); font-size: 16px; margin-bottom: 4px; }
+        .exam-meta { font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        
+        .score-badge { font-weight: 800; font-size: 16px; color: var(--success); background: #e6fffa; padding: 4px 10px; border-radius: 8px; border: 1px solid #00b894; }
+        .score-badge.negative { color: var(--danger); background: #fff5f5; border-color: var(--danger); }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 5px; }
+        .btn-action { text-decoration: none; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none; }
+        .btn-view { background: #e0e6ed; color: #2d3436; }
+        .btn-view:hover { background: #d1d8e0; }
+        .btn-retake { background: #6c5ce7; color: white; }
+        .btn-retake:hover { background: #5a4fcf; }
+
+        #loader { text-align: center; padding: 40px; color: var(--primary); }
+
+        /* MODAL STYLES */
+        .swal2-container { z-index: 9999 !important; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #444; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; box-sizing: border-box; }
+        .form-group input:focus { border-color: var(--primary); }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-cancel { background: #eee; color: #333; }
+
+        @media(max-width: 500px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; align-items: flex-start; }
+            .btn-update { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="index.html" class="home-link"><i class="fas fa-arrow-left"></i> ড্যাশবোর্ড</a>
+    </div>
+
+    <div class="container">
+        <!-- প্রোফাইল পরিচিতি -->
+        <div class="profile-header">
+            <div class="profile-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="userPic" class="profile-pic">
+                <div class="user-details">
+                    <h2 id="userName" style="margin:0 0 5px 0;">Loading...</h2>
+                    <p id="userEmail"><i class="fas fa-envelope"></i> Student</p>
+                    <p id="userCollege" style="display:none;"><i class="fas fa-university"></i> <span></span></p>
+                    <p id="userBatch" style="display:none;"><i class="fas fa-graduation-cap"></i> Batch: <span></span></p>
+                    <p id="userPhone" style="display:none;"><i class="fas fa-phone"></i> <span></span></p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="mistakes.html" class="btn-update" style="background:#e17055; text-decoration:none;" title="ভুল প্রশ্ন ব্যাংক"><i class="fas fa-book-open"></i> ভুল ব্যাংক</a>
+                <button onclick="openProfileModal()" class="btn-update"><i class="fas fa-user-edit"></i> আপডেট প্রোফাইল</button>
+            </div>
+        </div>
+
+        <!-- ৩টি মূল পরিসংখ্যান বক্স -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-num" id="statExams">0</div>
+                <div class="stat-label">মোট এক্সাম</div>
+            </div>
+            <div class="stat-box success">
+                <div class="stat-num" id="statCorrect" style="color:var(--success)">0</div>
+                <div class="stat-label">মোট সঠিক উত্তর</div>
+            </div>
+            <div class="stat-box danger">
+                <div class="stat-num" id="statWrong" style="color:var(--danger)">0</div>
+                <div class="stat-label">মোট ভুল উত্তর</div>
+            </div>
+        </div>
+
+        <!-- 📩 ভাইয়ার পরামর্শ ও উত্তরের ব্যানার (যদি থাকে) -->
+        <div id="adminReplyBanner" style="display:none; background: linear-gradient(135deg, #e6fffa, #ffffff); border: 2px solid #00b894; border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,184,148,0.1);">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#00b894; color:white; display:flex; align-items:center; justify-content:center; font-size:18px;"><i class="fas fa-envelope-open-text"></i></div>
+                <div>
+                    <h4 style="margin:0; color:#00624e; font-size:16px;">এডমিন / ভাইয়ার পরামর্শ ও উত্তর</h4>
+                    <small id="adminReplyDate" style="color:#636e72;">সাম্প্রতিক</small>
+                </div>
+            </div>
+            <div id="adminReplyText" style="background:white; border-left:4px solid #00b894; padding:12px 15px; border-radius:8px; font-size:15px; color:#2d3436; line-height:1.6; font-style:italic;"></div>
+        </div>
+
+        <!-- 📊 বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স কার্ড -->
+        <div class="subject-performance-card" style="background:var(--card); padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.04); margin-bottom:25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
+                <div>
+                    <h3 style="margin:0; color:#2d3436; font-size:18px;"><i class="fas fa-chart-bar" style="color:var(--primary); margin-right:8px;"></i> বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স</h3>
+                    <small style="color:#636e72;">যে কোনো বিষয়ে ক্লিক করে অধ্যায়গুলোর প্রস্তুতি ও দুর্বলতা দেখুন</small>
+                </div>
+            </div>
+            <div id="subjectPerformanceList">
+                <div style="text-align:center; padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা বিশ্লেষণ করা হচ্ছে...</div>
+            </div>
+        </div>
+
+        <!-- 💙 এডমিশন মাইন্ড গেম ও মানসিক সহায়তা কার্ড -->
+        <div class="mental-support-card" style="background: linear-gradient(135deg, #6c5ce7, #8e44ad); color:white; padding:22px; border-radius:15px; margin-bottom:25px; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.25);">
+            <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap; justify-content:space-between;">
+                <div style="flex:1; min-width:260px;">
+                    <h3 style="margin:0 0 6px 0; font-size:18px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-heartbeat" style="color:#ff7675;"></i> এডমিশন শুধুই পড়ার লড়াই নয়, এটি একটি বড় মাইন্ড গেম!
+                    </h3>
+                    <p style="margin:0; font-size:13px; opacity:0.92; line-height:1.5;">
+                        পড়াশোনার চাপ, বিষণ্ণতা বা এমন কোনো সমস্যা যা কারো সাথে শেয়ার করতে পারছ না? একা একা ভেঙে পড়ো না, ভাইয়া সবসময় তোমার পাশে আছে।
+                    </p>
+                </div>
+                <button onclick="openMentalModal()" style="background:white; color:#6c5ce7; border:none; padding:10px 18px; border-radius:25px; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 10px rgba(0,0,0,0.15); transition:0.2s;">
+                    <i class="fas fa-paper-plane"></i> মনের কথা জানাও
+                </button>
+            </div>
+        </div>
+
+        <!-- আমার এক্সাম হিস্ট্রি -->
+        <div class="history-section">
+            <div class="section-title"><i class="fas fa-history"></i> আমার এক্সাম হিস্ট্রি</div>
+            <div id="loader"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small style="margin-top:10px; display:inline-block; color:#666;">ডাটা লোড হচ্ছে...</small></div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <!-- 👤 প্রোফাইল আপডেট মডাল -->
+    <div id="profileModal" class="modal-overlay" onclick="closeProfileModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0; color:var(--primary);"><i class="fas fa-user-edit"></i> প্রোফাইল আপডেট</h3>
+                <button onclick="closeProfileModal()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#888; padding: 0;">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>College Name (কলেজের নাম)</label>
+                <input type="text" id="inpCollege" placeholder="e.g. Dhaka College">
+            </div>
+            <div class="form-group">
+                <label>HSC Batch (এইচএসসি ব্যাচ)</label>
+                <input type="text" id="inpBatch" placeholder="e.g. 2026">
+            </div>
+            <div class="form-group">
+                <label>Phone Number (মোবাইল নম্বর)</label>
+                <input type="tel" id="inpPhone" placeholder="01XXX-XXXXXX">
+            </div>
+            
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeProfileModal()">বাতিল</button>
+                <button class="btn-save" onclick="saveProfileData()" id="saveBtn">সেভ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 💙 মানসিক সহায়তা মডাল -->
+    <div id="mentalModal" class="modal-overlay" onclick="closeMentalModal()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:440px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin:0; color:var(--primary); font-size:18px;"><i class="fas fa-heart" style="color:#ff7675;"></i> মনের কথা / সমস্যা শেয়ার করো</h3>
+                <button onclick="closeMentalModal()" style="background:none; border:none; font-size:26px; cursor:pointer; color:#888;">&times;</button>
+            </div>
+            <p style="font-size:13px; color:#636e72; margin:0 0 15px 0;">তোমার এই বার্তাটি সরাসরি এডমিন/ভাইয়া ছাড়া অন্য কেউ দেখতে পাবে না। সম্পূর্ণ মন খুলে লিখতে পারো।</p>
+            
+            <div class="form-group">
+                <label>তোমার সমস্যা বা কথা বিস্তারিত লেখো *</label>
+                <textarea id="mentalMsgInput" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box; outline:none; resize:vertical;" placeholder="পড়াশোনায় মন বসছে না, রেজাল্ট খারাপ হচ্ছে বা অন্য যেকোনো সমস্যা..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>তুমি কীভাবে উত্তর পেতে চাও? *</label>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:5px; font-size:13px;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="radio" name="replyType" value="profile" checked onchange="toggleContactInput()">
+                        <span>আমার এই প্রোফাইল ড্যাশবোর্ডেই উত্তর দিন (১০০% গোপনীয়)</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="radio" name="replyType" value="whatsapp" onchange="toggleContactInput()">
+                        <span>আমাকে WhatsApp বা Telegram-এ ভয়েস/মেসেজে উত্তর দিন</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" id="contactInputWrap" style="display:none;">
+                <label>তোমার WhatsApp নম্বর বা Telegram আইডি *</label>
+                <input type="text" id="mentalContactInput" placeholder="01XXXXXXXXX বা @username">
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeMentalModal()">বাতিল</button>
+                <button class="btn-save" id="mentalSendBtn" onclick="sendMentalMessage()">পাঠিয়ে দাও</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- জাভাস্ক্রিপ্ট লজিক -->
+    <script>
+        // FIREBASE CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let currentUserEmail = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUserEmail = user.email;
+                document.getElementById('userName').innerText = user.displayName || "প্রিয় ছাত্র";
+                document.getElementById('userEmail').innerHTML = `<i class="fas fa-envelope"></i> ${user.email}`;
+                if(user.photoURL) document.getElementById('userPic').src = user.photoURL;
+                
+                loadUserProfile(user.email);
+                fetchStudentData(user.email); 
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // --- LOAD USER PROFILE DATA ---
+        async function loadUserProfile(email) {
+            try {
+                const doc = await db.collection("users").doc(email).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    if(data.college) {
+                        const el = document.getElementById('userCollege');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.college;
+                        document.getElementById('inpCollege').value = data.college;
+                    }
+                    if(data.batch) {
+                        const el = document.getElementById('userBatch');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.batch;
+                        document.getElementById('inpBatch').value = data.batch;
+                    }
+                    if(data.phone) {
+                        const el = document.getElementById('userPhone');
+                        el.style.display = 'block';
+                        el.querySelector('span').innerText = data.phone;
+                        document.getElementById('inpPhone').value = data.phone;
+                    }
+                    if(data.mentalSupport && data.mentalSupport.reply) {
+                        const banner = document.getElementById('adminReplyBanner');
+                        if (banner) {
+                            banner.style.display = 'block';
+                            document.getElementById('adminReplyText').innerText = data.mentalSupport.reply;
+                            let dStr = "সাম্প্রতিক";
+                            if (data.mentalSupport.repliedAt) {
+                                const rDate = parseDate(data.mentalSupport.repliedAt);
+                                if (rDate) dStr = rDate.toLocaleDateString("bn-BD", { day: 'numeric', month: 'short', year: 'numeric' });
+                            }
+                            document.getElementById('adminReplyDate').innerText = dStr;
+                        }
+                    }
+                }
+            } catch (e) { console.error("Profile load error:", e); }
+        }
+
+        // --- MODAL CONTROLS ---
+        function openProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
+        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // --- SAVE PROFILE DATA ---
+        async function saveProfileData() {
+            const college = document.getElementById('inpCollege').value.trim();
+            const batch = document.getElementById('inpBatch').value.trim();
+            const phone = document.getElementById('inpPhone').value.trim();
+            const saveBtn = document.getElementById('saveBtn');
+
+            if(!currentUserEmail) return;
+
+            saveBtn.innerText = "সেভ হচ্ছে...";
+            saveBtn.disabled = true;
+
+            try {
+                await db.collection("users").doc(currentUserEmail).set({
+                    college: college,
+                    batch: batch,
+                    phone: phone,
+                    email: currentUserEmail,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                closeProfileModal();
+
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'সফল!', 
+                    text: 'প্রোফাইল আপডেট হয়েছে।', 
+                    timer: 1500, 
+                    showConfirmButton: false 
+                });
+                
+                loadUserProfile(currentUserEmail); 
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'সেভ করতে সমস্যা হয়েছে!', 'error');
+            } finally {
+                saveBtn.innerText = "সেভ করুন";
+                saveBtn.disabled = false;
+            }
+        }
+
+        // --- PARSE DATE ---
+        function parseDate(data) {
+            if (!data) return null;
+            const raw = data.timestamp || data.date || data.time || data.created_at || data;
+            if (!raw) return null;
+            if (typeof raw.toDate === 'function') return raw.toDate(); 
+            if (raw.seconds) return new Date(raw.seconds * 1000); 
+            const date = new Date(raw);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        // --- FETCH EXAM HISTORY & CALCULATE STATS ---
+        async function fetchStudentData(email) {
+            try {
+                const snapshot = await db.collection("exam_results").where("email", "==", email).get();
+                document.getElementById('loader').style.display = 'none';
+                
+                if (snapshot.empty) {
+                    document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
+                    renderSubjectPerformance([]);
+                    return;
+                }
+
+                let exams = [];
+                let overallCorrect = 0;
+                let overallWrong = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    exams.push({ id: doc.id, ...data });
+                    
+                    if(!data.isPractice) { 
+                        overallCorrect += Number(data.correct || 0);
+                        overallWrong += Number(data.wrong || 0);
+                    }
+                });
+
+                exams.sort((a, b) => {
+                    const dateA = parseDate(a) || new Date(0);
+                    const dateB = parseDate(b) || new Date(0);
+                    return dateB - dateA;
+                });
+
+                // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong)
+                document.getElementById('statExams').innerText = exams.length;
+                document.getElementById('statCorrect').innerText = overallCorrect;
+                document.getElementById('statWrong').innerText = overallWrong;
+
+                // বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স রেন্ডার
+                renderSubjectPerformance(exams);
+
+                // এক্সাম হিস্ট্রি লিস্ট রেন্ডার
+                const listContainer = document.getElementById('historyList');
+                listContainer.innerHTML = ""; 
+                exams.forEach(exam => renderHistoryItem(exam, listContainer));
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে।</p>";
+                renderSubjectPerformance([]);
+            }
+        }
+
+        // --- RENDER HISTORY ITEM ---
+        function renderHistoryItem(data, container) {
+            const dateObj = parseDate(data);
+            const dateStr = dateObj ? dateObj.toLocaleDateString("en-US", { 
+                day: 'numeric', month: 'short', year: 'numeric', 
+                hour: 'numeric', minute: '2-digit', hour12: true 
+            }) : '<span style="color:#999; font-style:italic;">Unknown Date</span>';
+            
+            const scoreNum = parseFloat(data.score || 0);
+            const scoreClass = scoreNum < 0 ? 'negative' : '';
+            const scoreStr = scoreNum.toFixed(2);
+
+            const badgeHtml = data.isPractice ? '<span style="background:#dfe6e9; color:#636e72; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:8px;">Practice</span>' : '';
+            const retakeLink = `exam.html?id=${data.examId}`;
+            const resultLink = `result.html?id=${data.id}`;
+
+            const html = `
+                <div class="history-item">
+                    <div>
+                        <div class="exam-title">${data.examName || "Untited Exam"} ${badgeHtml}</div>
+                        <div class="exam-meta">
+                            <span><i class="far fa-clock"></i> ${dateStr}</span>
+                            <span class="score-badge ${scoreClass}">স্কোর: ${scoreStr}</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="${resultLink}" class="btn-action btn-view"><i class="fas fa-file-invoice"></i> রেজাল্ট</a>
+                        <a href="${retakeLink}" class="btn-action btn-retake"><i class="fas fa-redo"></i> আবার দিন</a>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        }
+
+        // --- SUBJECT & CHAPTER NORMALIZERS ---
         function normalizeSubject(raw) {
             if (!raw) return "অন্যান্য (Other)";
             const s = String(raw).trim().toLowerCase();
             if (s.includes('physic') || s.includes('পদার্থ')) return 'পদার্থবিজ্ঞান (Physics)';
             if (s.includes('chem') || s.includes('রসায়') || s.includes('রসায')) return 'রসায়ন (Chemistry)';
-            if (s.includes('math') || s.includes('গণিত') || s.includes('হায়ার ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
+            if (s.includes('math') || s.includes('গণিত') || s.includes('হায়ার ম্যাথ') || s.includes('উচ্চতর গণিত') || s.includes('ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
             if (s.includes('eng') || s.includes('ইংরেজ')) return 'ইংরেজি (English)';
             if (s.includes('bang') || s.includes('বাংলা')) return 'বাংলা (Bangla)';
             return String(raw).trim() || 'অন্যান্য (Other)';
@@ -25,7 +482,7 @@
             return c || "সাধারণ (General)";
         }
 
-        // --- Render Subject & Chapter Performance ---
+        // --- RENDER SUBJECT & CHAPTER PERFORMANCE ---
         function renderSubjectPerformance(exams) {
             const container = document.getElementById('subjectPerformanceList');
             if (!container) return;
@@ -58,10 +515,12 @@
 
             const subjects = Object.keys(subjectStats);
             if (subjects.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color:#888;">
-                    <i class="fas fa-chart-line fa-2x" style="opacity:0.3; margin-bottom:10px;"></i>
-                    <p style="margin:0; font-size:14px;">তুমি এক্সাম দেওয়া শুরু করলে এখানে প্রতিটি বিষয় ও অধ্যায়ের দুর্বলতা ও প্রস্তুতি দেখতে পাবে।</p>
-                </div>`;
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 25px 15px; color:#888;">
+                        <i class="fas fa-chart-pie fa-2x" style="opacity:0.3; margin-bottom:10px;"></i>
+                        <p style="margin:0; font-size:14px; color:#636e72;">তুমি এক্সাম দেওয়া শুরু করলে এখানে প্রতিটি বিষয় ও অধ্যায়ের দুর্বলতা ও প্রস্তুতি স্বয়ংক্রিয়ভাবে দেখতে পাবে।</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -150,9 +609,15 @@
             }
         }
 
-        // --- Mental Support Controls ---
-        function openMentalModal() { document.getElementById('mentalModal').style.display = 'flex'; }
-        function closeMentalModal() { document.getElementById('mentalModal').style.display = 'none'; }
+        // --- MENTAL SUPPORT CONTROLS ---
+        function openMentalModal() { 
+            const m = document.getElementById('mentalModal');
+            if (m) m.style.display = 'flex'; 
+        }
+        function closeMentalModal() { 
+            const m = document.getElementById('mentalModal');
+            if (m) m.style.display = 'none'; 
+        }
         function toggleContactInput() {
             const replyType = document.querySelector('input[name="replyType"]:checked')?.value;
             const wrap = document.getElementById('contactInputWrap');
@@ -204,477 +669,6 @@
                 sendBtn.innerText = "পাঠিয়ে দাও";
             }
         }
-
     </script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        :root { --primary: #6c5ce7; --bg: #f8f9fd; --card: #ffffff; --text: #2d3436; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; }
-        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-top: 70px; padding-bottom: 50px; }
-
-        .top-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000;
-        }
-        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-        /* USER HEADER */
-        .profile-header {
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            padding: 25px; border-radius: 15px; color: white;
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin-bottom: 25px;
-        }
-        .profile-info { display: flex; align-items: center; gap: 15px; }
-        .profile-pic { width: 75px; height: 75px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); object-fit: cover; background: white; }
-        
-        .user-details p { margin: 2px 0; font-size: 13px; opacity: 0.9; }
-        
-        .btn-update { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 14px; }
-        .btn-update:hover { background: white; color: var(--primary); }
-
-        /* STATS GRID */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: var(--card); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.04); border-bottom: 3px solid var(--primary); }
-        .stat-box.success { border-bottom-color: var(--success); }
-        .stat-box.danger { border-bottom-color: var(--danger); }
-        .stat-num { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
-        .stat-label { font-size: 13px; color: #636e72; font-weight: 600; }
-
-        /* ACCURACY BAR */
-        .accuracy-card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.04); margin-bottom: 30px; text-align: center; }
-        .progress-container { width: 100%; background: #eee; height: 12px; border-radius: 10px; overflow: hidden; margin: 15px 0 10px 0; }
-        .progress-bar { height: 100%; background: var(--success); border-radius: 10px; transition: width 1s ease-in-out; }
-
-        /* HISTORY SECTION */
-        .history-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .section-title { margin-bottom: 15px; font-weight: bold; color: #444; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-        
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: 0.2s; flex-wrap: wrap; gap: 10px;}
-        .history-item:hover { background: #f8f9fa; }
-        .history-item:last-child { border-bottom: none; }
-        
-        .exam-title { font-weight: bold; color: var(--primary); font-size: 16px; margin-bottom: 4px; }
-        .exam-meta { font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        
-        .score-badge { font-weight: 800; font-size: 16px; color: var(--success); background: #e6fffa; padding: 4px 10px; border-radius: 8px; border: 1px solid #00b894; }
-        .score-badge.negative { color: var(--danger); background: #fff5f5; border-color: var(--danger); }
-
-        .btn-group { display: flex; gap: 8px; margin-top: 5px; }
-        .btn-action { text-decoration: none; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none; }
-        .btn-view { background: #e0e6ed; color: #2d3436; }
-        .btn-view:hover { background: #d1d8e0; }
-        .btn-retake { background: #6c5ce7; color: white; }
-        .btn-retake:hover { background: #5a4fcf; }
-
-        #loader { text-align: center; padding: 40px; color: var(--primary); }
-
-        /* MODAL STYLES (Fixed Bug: z-index for SweetAlert) */
-        .swal2-container { z-index: 9999 !important; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #444; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; box-sizing: border-box; }
-        .form-group input:focus { border-color: var(--primary); }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        .btn-save { background: var(--primary); color: white; }
-        .btn-cancel { background: #eee; color: #333; }
-
-        @media(max-width: 500px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .profile-header { flex-direction: column; align-items: flex-start; }
-            .btn-update { width: 100%; justify-content: center; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="top-nav">
-        <a href="index.html" class="home-link"><i class="fas fa-arrow-left"></i> ড্যাশবোর্ড</a>
-    </div>
-
-    <div class="container">
-        <div class="profile-header">
-            <div class="profile-info">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="userPic" class="profile-pic">
-                <div class="user-details">
-                    <h2 id="userName" style="margin:0 0 5px 0;">Loading...</h2>
-                    <p id="userEmail"><i class="fas fa-envelope"></i> Student</p>
-                    <p id="userCollege" style="display:none;"><i class="fas fa-university"></i> <span></span></p>
-                    <p id="userBatch" style="display:none;"><i class="fas fa-graduation-cap"></i> Batch: <span></span></p>
-                    <p id="userPhone" style="display:none;"><i class="fas fa-phone"></i> <span></span></p>
-                </div>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <a href="mistakes.html" class="btn-update" style="background:#e17055; text-decoration:none;" title="ভুল প্রশ্ন ব্যাংক"><i class="fas fa-book-open"></i> ভুল ব্যাংক</a>
-                <button onclick="openProfileModal()" class="btn-update"><i class="fas fa-user-edit"></i> আপডেট প্রোফাইল</button>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-num" id="statExams">0</div>
-                <div class="stat-label">মোট এক্সাম</div>
-            </div>
-            <div class="stat-box success">
-                <div class="stat-num" id="statCorrect" style="color:var(--success)">0</div>
-                <div class="stat-label">মোট সঠিক উত্তর</div>
-            </div>
-            <div class="stat-box danger">
-                <div class="stat-num" id="statWrong" style="color:var(--danger)">0</div>
-                <div class="stat-label">মোট ভুল উত্তর</div>
-            </div>
-        </div>
-
-        <div class="accuracy-card">
-            <h3 style="margin:0; color:#444;">তোমার একুরেসি (Accuracy)</h3>
-            <div class="progress-container">
-                <div class="progress-bar" id="accuracyBar" style="width: 0%;"></div>
-            </div>
-            <div style="font-weight:bold; color:var(--primary); font-size:18px;"><span id="accuracyText">0</span>%</div>
-            <p style="font-size:13px; color:#666; margin:5px 0 0 0;">তুমি যতগুলো উত্তর দাগিয়েছো, তার মধ্যে কতগুলো সঠিক হয়েছে তার হিসাব।</p>
-        </div>
-
-                <!-- 📩 ভাইয়ার পরামর্শ ও উত্তরের ব্যানার (যদি থাকে) -->
-        <div id="adminReplyBanner" style="display:none; background: linear-gradient(135deg, #e6fffa, #ffffff); border: 2px solid #00b894; border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,184,148,0.1);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                <div style="width:36px; height:36px; border-radius:50%; background:#00b894; color:white; display:flex; align-items:center; justify-content:center; font-size:18px;"><i class="fas fa-envelope-open-text"></i></div>
-                <div>
-                    <h4 style="margin:0; color:#00624e; font-size:16px;">এডমিন / ভাইয়ার পরামর্শ ও উত্তর</h4>
-                    <small id="adminReplyDate" style="color:#636e72;">সাম্প্রতিক</small>
-                </div>
-            </div>
-            <div id="adminReplyText" style="background:white; border-left:4px solid #00b894; padding:12px 15px; border-radius:8px; font-size:15px; color:#2d3436; line-height:1.6; font-style:italic;"></div>
-        </div>
-
-        <!-- 📊 বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স কার্ড -->
-        <div class="subject-performance-card" style="background:var(--card); padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.04); margin-bottom:25px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
-                <div>
-                    <h3 style="margin:0; color:#2d3436; font-size:18px;"><i class="fas fa-chart-bar" style="color:var(--primary); margin-right:8px;"></i> বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স</h3>
-                    <small style="color:#636e72;">যে কোনো বিষয়ে ক্লিক করে অধ্যায়গুলোর প্রস্তুতি ও দুর্বলতা দেখুন</small>
-                </div>
-            </div>
-            <div id="subjectPerformanceList">
-                <div style="text-align:center; padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা বিশ্লেষণ করা হচ্ছে...</div>
-            </div>
-        </div>
-
-        <!-- 💙 এডমিশন মাইন্ড গেম ও মানসিক সহায়তা কার্ড -->
-        <div class="mental-support-card" style="background: linear-gradient(135deg, #6c5ce7, #8e44ad); color:white; padding:22px; border-radius:15px; margin-bottom:25px; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.25);">
-            <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap; justify-content:space-between;">
-                <div style="flex:1; min-width:260px;">
-                    <h3 style="margin:0 0 6px 0; font-size:18px; display:flex; align-items:center; gap:8px;">
-                        <i class="fas fa-heartbeat" style="color:#ff7675;"></i> এডমিশন শুধুই পড়ার লড়াই নয়, এটি একটি বড় মাইন্ড গেম!
-                    </h3>
-                    <p style="margin:0; font-size:13px; opacity:0.92; line-height:1.5;">
-                        পড়াশোনার চাপ, বিষণ্ণতা বা এমন কোনো সমস্যা যা কারো সাথে শেয়ার করতে পারছ না? একা একা ভেঙে পড়ো না, ভাইয়া সবসময় তোমার পাশে আছে।
-                    </p>
-                </div>
-                <button onclick="openMentalModal()" style="background:white; color:#6c5ce7; border:none; padding:10px 18px; border-radius:25px; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 10px rgba(0,0,0,0.15); transition:0.2s;">
-                    <i class="fas fa-paper-plane"></i> মনের কথা জানাও
-                </button>
-            </div>
-        </div>
-
-        <div class="history-section">
-            <div class="section-title"><i class="fas fa-history"></i> আমার এক্সাম হিস্ট্রি</div>
-            <div id="loader"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small style="margin-top:10px; display:inline-block; color:#666;">ডাটা লোড হচ্ছে...</small></div>
-            <div id="historyList"></div>
-        </div>
-    </div>
-
-    <div id="profileModal" class="modal-overlay" onclick="closeProfileModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="margin:0; color:var(--primary);"><i class="fas fa-user-edit"></i> প্রোফাইল আপডেট</h3>
-                <button onclick="closeProfileModal()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#888; padding: 0;">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label>College Name (কলেজের নাম)</label>
-                <input type="text" id="inpCollege" placeholder="e.g. Dhaka College">
-            </div>
-            <div class="form-group">
-                <label>HSC Batch (এইচএসসি ব্যাচ)</label>
-                <input type="text" id="inpBatch" placeholder="e.g. 2026">
-            </div>
-            <div class="form-group">
-                <label>Phone Number (মোবাইল নম্বর)</label>
-                <input type="tel" id="inpPhone" placeholder="01XXX-XXXXXX">
-            </div>
-            
-            <div class="modal-btns">
-                <button class="btn-cancel" onclick="closeProfileModal()">বাতিল</button>
-                <button class="btn-save" onclick="saveProfileData()" id="saveBtn">সেভ করুন</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // CONFIG
-        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        let currentUserEmail = null;
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUserEmail = user.email;
-                document.getElementById('userName').innerText = user.displayName || "প্রিয় ছাত্র";
-                document.getElementById('userEmail').innerHTML = `<i class="fas fa-envelope"></i> ${user.email}`;
-                if(user.photoURL) document.getElementById('userPic').src = user.photoURL;
-                
-                loadUserProfile(user.email);
-                fetchStudentData(user.email); 
-            } else {
-                window.location.href = "index.html";
-            }
-        });
-
-        // --- LOAD USER PROFILE DATA ---
-        async function loadUserProfile(email) {
-            try {
-                const doc = await db.collection("users").doc(email).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    if(data.college) {
-                        const el = document.getElementById('userCollege');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.college;
-                        document.getElementById('inpCollege').value = data.college;
-                    }
-                    if(data.batch) {
-                        const el = document.getElementById('userBatch');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.batch;
-                        document.getElementById('inpBatch').value = data.batch;
-                    }
-                    if(data.phone) {
-                        const el = document.getElementById('userPhone');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.phone;
-                        document.getElementById('inpPhone').value = data.phone;
-                    }
-                    if(data.mentalSupport && data.mentalSupport.reply) {
-                        const banner = document.getElementById('adminReplyBanner');
-                        if (banner) {
-                            banner.style.display = 'block';
-                            document.getElementById('adminReplyText').innerText = data.mentalSupport.reply;
-                            let dStr = "সাম্প্রতিক";
-                            if (data.mentalSupport.repliedAt) {
-                                const rDate = parseDate(data.mentalSupport.repliedAt);
-                                if (rDate) dStr = rDate.toLocaleDateString("bn-BD", { day: 'numeric', month: 'short', year: 'numeric' });
-                            }
-                            document.getElementById('adminReplyDate').innerText = dStr;
-                        }
-                    }
-                }
-            } catch (e) { console.error("Profile load error:", e); }
-        }
-
-        // --- MODAL CONTROLS ---
-        function openProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
-        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
-
-        // --- SAVE PROFILE DATA (Fixed Bug: Close logic and SweetAlert depth) ---
-        async function saveProfileData() {
-            const college = document.getElementById('inpCollege').value.trim();
-            const batch = document.getElementById('inpBatch').value.trim();
-            const phone = document.getElementById('inpPhone').value.trim();
-            const saveBtn = document.getElementById('saveBtn');
-
-            if(!currentUserEmail) return;
-
-            // Show loading state
-            saveBtn.innerText = "সেভ হচ্ছে...";
-            saveBtn.disabled = true;
-
-            try {
-                // Save to database
-                await db.collection("users").doc(currentUserEmail).set({
-                    college: college,
-                    batch: batch,
-                    phone: phone,
-                    email: currentUserEmail,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-
-                // Close modal immediately after successful save
-                closeProfileModal();
-
-                // Show success message ON TOP
-                Swal.fire({ 
-                    icon: 'success', 
-                    title: 'সফল!', 
-                    text: 'প্রোফাইল আপডেট হয়েছে।', 
-                    timer: 1500, 
-                    showConfirmButton: false 
-                });
-                
-                // Update UI without refreshing
-                loadUserProfile(currentUserEmail); 
-
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Error', 'সেভ করতে সমস্যা হয়েছে!', 'error');
-            } finally {
-                // Reset button state
-                saveBtn.innerText = "সেভ করুন";
-                saveBtn.disabled = false;
-            }
-        }
-
-        // --- PARSE DATE ---
-        function parseDate(data) {
-            const raw = data.timestamp || data.date || data.time || data.created_at;
-            if (!raw) return null;
-            if (typeof raw.toDate === 'function') return raw.toDate(); 
-            if (raw.seconds) return new Date(raw.seconds * 1000); 
-            const date = new Date(raw);
-            return isNaN(date.getTime()) ? null : date;
-        }
-
-        // --- FETCH EXAM HISTORY & CALCULATE STATS ---
-        async function fetchStudentData(email) {
-            try {
-                const snapshot = await db.collection("exam_results").where("email", "==", email).get();
-                document.getElementById('loader').style.display = 'none';
-                
-                if (snapshot.empty) {
-                    document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
-                    return;
-                }
-
-                let exams = [];
-                let overallCorrect = 0;
-                let overallWrong = 0;
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    exams.push({ id: doc.id, ...data });
-                    
-                    if(!data.isPractice) { 
-                        overallCorrect += Number(data.correct || 0);
-                        overallWrong += Number(data.wrong || 0);
-                    }
-                });
-
-                exams.sort((a, b) => {
-                    const dateA = parseDate(a) || new Date(0);
-                    const dateB = parseDate(b) || new Date(0);
-                    return dateB - dateA;
-                });
-
-                // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong, Accuracy)
-                document.getElementById('statExams').innerText = exams.length;
-                document.getElementById('statCorrect').innerText = overallCorrect;
-                document.getElementById('statWrong').innerText = overallWrong;
-
-                let totalAttempted = overallCorrect + overallWrong;
-                let accuracyPct = totalAttempted > 0 ? Math.round((overallCorrect / totalAttempted) * 100) : 0;
-                
-                document.getElementById('accuracyBar').style.width = accuracyPct + "%";
-                document.getElementById('accuracyText').innerText = accuracyPct;
-
-                const listContainer = document.getElementById('historyList');
-                listContainer.innerHTML = ""; 
-                exams.forEach(exam => renderHistoryItem(exam, listContainer));
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে।</p>";
-            }
-        }
-
-        // --- RENDER HISTORY ITEM ---
-        function renderHistoryItem(data, container) {
-            const dateObj = parseDate(data);
-            const dateStr = dateObj ? dateObj.toLocaleDateString("en-US", { 
-                day: 'numeric', month: 'short', year: 'numeric', 
-                hour: 'numeric', minute: '2-digit', hour12: true 
-            }) : '<span style="color:#999; font-style:italic;">Unknown Date</span>';
-            
-            const scoreNum = parseFloat(data.score || 0);
-            const scoreClass = scoreNum < 0 ? 'negative' : '';
-            const scoreStr = scoreNum.toFixed(2);
-
-            const badgeHtml = data.isPractice ? '<span style="background:#dfe6e9; color:#636e72; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:8px;">Practice</span>' : '';
-            const retakeLink = `exam.html?id=${data.examId}`;
-            const resultLink = `result.html?id=${data.id}`;
-
-            const html = `
-                <div class="history-item">
-                    <div>
-                        <div class="exam-title">${data.examName || "Untited Exam"} ${badgeHtml}</div>
-                        <div class="exam-meta">
-                            <span><i class="far fa-clock"></i> ${dateStr}</span>
-                            <span class="score-badge ${scoreClass}">স্কোর: ${scoreStr}</span>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <a href="${resultLink}" class="btn-action btn-view"><i class="fas fa-file-invoice"></i> রেজাল্ট</a>
-                        <a href="${retakeLink}" class="btn-action btn-retake"><i class="fas fa-redo"></i> আবার দিন</a>
-                    </div>
-                </div>
-            `;
-            container.innerHTML += html;
-        }
-    </script>
-
-    <!-- 💙 মানসিক সহায়তা মডাল -->
-    <div id="mentalModal" class="modal-overlay" onclick="closeMentalModal()">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:440px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin:0; color:var(--primary); font-size:18px;"><i class="fas fa-heart" style="color:#ff7675;"></i> মনের কথা / সমস্যা শেয়ার করো</h3>
-                <button onclick="closeMentalModal()" style="background:none; border:none; font-size:26px; cursor:pointer; color:#888;">&times;</button>
-            </div>
-            <p style="font-size:13px; color:#636e72; margin:0 0 15px 0;">তোমার এই বার্তাটি সরাসরি এডমিন/ভাইয়া ছাড়া অন্য কেউ দেখতে পাবে না। সম্পূর্ণ মন খুলে লিখতে পারো।</p>
-            
-            <div class="form-group">
-                <label>তোমার সমস্যা বা কথা বিস্তারিত লেখো *</label>
-                <textarea id="mentalMsgInput" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box; outline:none; resize:vertical;" placeholder="পড়াশোনায় মন বসছে না, রেজাল্ট খারাপ হচ্ছে বা অন্য যেকোনো সমস্যা..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>তুমি কীভাবে উত্তর পেতে চাও? *</label>
-                <div style="display:flex; flex-direction:column; gap:8px; margin-top:5px; font-size:13px;">
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                        <input type="radio" name="replyType" value="profile" checked onchange="toggleContactInput()">
-                        <span>আমার এই প্রোফাইল ড্যাশবোর্ডেই উত্তর দিন (১০০% গোপনীয়)</span>
-                    </label>
-                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                        <input type="radio" name="replyType" value="whatsapp" onchange="toggleContactInput()">
-                        <span>আমাকে WhatsApp বা Telegram-এ ভয়েস/মেসেজে উত্তর দিন</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group" id="contactInputWrap" style="display:none;">
-                <label>তোমার WhatsApp নম্বর বা Telegram আইডি *</label>
-                <input type="text" id="mentalContactInput" placeholder="01XXXXXXXXX বা @username">
-            </div>
-
-            <div class="modal-btns">
-                <button class="btn-cancel" onclick="closeMentalModal()">বাতিল</button>
-                <button class="btn-save" id="mentalSendBtn" onclick="sendMentalMessage()">পাঠিয়ে দাও</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
