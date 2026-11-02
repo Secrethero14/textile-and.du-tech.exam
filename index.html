@@ -100,13 +100,20 @@
                 </a>
             </div>
 
-            <div id="promoBanner" class="promo-banner">
-                <div class="promo-content">
-                    <h2> "Textile Engineering Admission Preparation!"</h2>
-                    <p>সম্পূর্ণ কোর্স ১০০ টাকা (Textile Engineering Admission Preparation)।</p>
+            <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে ভর্তি ও পেমেন্টের নিয়ম দেখতে ক্লিক করুন">
+                <div class="promo-top-badge">
+                    <i class="fas fa-bolt"></i> স্পেশাল অফার • সম্পূর্ণ কোর্স মাত্র ১০০ টাকা
                 </div>
-                <div class="promo-actions">
-                    <button onclick="openPaymentModal()" class="btn-pay">Pay Now</button>
+                <div class="promo-main-row">
+                    <div class="promo-content">
+                        <h2>Textile Engineering Admission Preparation</h2>
+                        <p>সব অধ্যায়ের প্রশ্নব্যাংক, সাবজেক্টভিত্তিক ও ফাইনাল মডেল টেস্ট আনলক করতে এখনই যুক্ত হোন।</p>
+                    </div>
+                    <div class="promo-actions">
+                        <button onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay">
+                            <i class="fas fa-credit-card"></i> Pay Now <span class="pay-badge-pill">৳১০০</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -157,34 +164,104 @@
     </div>
 
     <!-- 🔴 পেমেন্ট মডাল 🔴 -->
-    <div id="paymentModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top:0;">টেক্সটাইল ব্যাচে ভর্তি</h3>
-            <div class="payment-text-box">
-                <p style="margin:0; font-weight:bold; color:#555;">Textile Engineering Admission Preparation - ভর্তি হতে ১০০ টাকা সেন্ড মানি করুন:</p>
-                <div class="payment-number-container">
-                    <span id="paymentNum" class="payment-number">01873275283</span>
-                    <button class="btn-copy" onclick="copyNumber()"><i class="fas fa-copy"></i> Copy</button>
+    <div id="paymentModal" class="modal-overlay" onclick="if(event.target === this) closePaymentModal()">
+        <div class="payment-modal-content">
+            <div class="pay-modal-header">
+                <div>
+                    <span class="pay-modal-badge"><i class="fas fa-graduation-cap"></i> অ্যাডমিশন কোর্স</span>
+                    <h3 class="pay-modal-title">কোর্সে ভর্তি ও পেমেন্ট</h3>
+                    <p class="pay-modal-subtitle">Textile Engineering Admission Preparation • কোর্স ফি <strong>১০০ টাকা</strong></p>
                 </div>
-                <small style="color:#777;">(bKash / Nagad)</small>
+                <button class="pay-modal-close" onclick="closePaymentModal()" title="বন্ধ করুন">&times;</button>
             </div>
 
-            <div id="methodDetails" style="background:#f9f9f9; padding:15px; border-radius:10px; text-align: left;">
-                <p style="font-size:14px; margin-bottom:10px; font-weight: bold; color: #d63031;">*টাকা পাঠানোর পর নিচের যেকোনো মাধ্যমে আপনার নাম এবং যে নম্বর থেকে টাকা পাঠিয়েছেন তা মেসেজ করে দিন। আমরা আপনাকে কোর্সে যুক্ত করে নিবো।</p>
-                <div class="contact-buttons">
-                    <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="btn-contact btn-whatsapp">
-                        <i class="fab fa-whatsapp"></i> WhatsApp -এ মেসেজ দিন
-                    </a>
-                    <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="btn-contact btn-telegram"> 
-                        <i class="fab fa-telegram-plane"></i> Telegram -এ মেসেজ দিন
-                    </a>
-                    <a href="https://www.facebook.com/habibs.care.edu/" target="_blank" rel="noopener noreferrer" class="btn-contact btn-facebook">
-                        <i class="fab fa-facebook-messenger"></i> Facebook Page -এ মেসেজ দিন
-                    </a>
+            <!-- 1. বিকাশ মার্চেন্ট (১ম ও প্রধান মাধ্যম) -->
+            <div class="pay-method-card bkash-card">
+                <div class="pay-method-header">
+                    <div class="pay-brand">
+                        <span class="brand-tag bkash-tag">বিকাশ (bKash)</span>
+                        <span class="merchant-badge"><i class="fas fa-shield-alt"></i> মার্চেন্ট একাউন্ট</span>
+                    </div>
+                    <span class="charge-free-pill"><i class="fas fa-check-circle"></i> ০% চার্জ (ফ্রি)</span>
+                </div>
+
+                <div class="pay-num-display">
+                    <div class="num-wrap">
+                        <span class="num-label">বিকাশ মার্চেন্ট নম্বর:</span>
+                        <span class="num-digits" id="bkashNum">01522102384</span>
+                    </div>
+                    <button class="btn-copy-num" onclick="copyPaymentNumber('01522102384', this)">
+                        <i class="fas fa-copy"></i> কপি করুন
+                    </button>
+                </div>
+
+                <div class="pay-alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>সতর্কতা:</strong> এটি মার্চেন্ট অ্যাকাউন্ট, তাই <u>Send Money হবে না</u>। বিকাশ অ্যাপে গিয়ে <strong>"Payment" (মেক পেমেন্ট)</strong> অপশন থেকে টাকা পাঠাতে হবে।
+                    </div>
+                </div>
+
+                <div class="pay-alert-benefit">
+                    <i class="fas fa-gift"></i>
+                    <div>
+                        <strong>০% খরচ সুবিধা:</strong> মার্চেন্ট পেমেন্টে আপনার কোনো সেন্ড মানি বা ক্যাশআউট চার্জ কাটবে না — একদম ফ্রি!
+                    </div>
+                </div>
+
+                <div class="pay-steps">
+                    <div class="step-item"><span class="step-num">১</span> বিকাশ অ্যাপে ঢুকে <strong>Payment (পেমেন্ট)</strong> চাপুন</div>
+                    <div class="step-item"><span class="step-num">২</span> নম্বর দিন: <code>01522102384</code> এবং পরিমাণ: <code>১০০</code> টাকা</div>
+                    <div class="step-item"><span class="step-num">৩</span> পিন দিয়ে পেমেন্ট সফল করুন ও TrxID সংরক্ষণ করুন</div>
                 </div>
             </div>
-            
-            <button onclick="closePaymentModal()" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">বন্ধ করুন</button>
+
+            <!-- 2. নগদ / রকেট (বিকল্প মাধ্যম) -->
+            <div class="pay-method-card alt-card">
+                <div class="pay-method-header">
+                    <div class="pay-brand">
+                        <span class="brand-tag nagad-tag">নগদ (Nagad)</span>
+                        <span class="brand-tag rocket-tag">রকেট (Rocket)</span>
+                        <span class="personal-badge">পার্সোনাল</span>
+                    </div>
+                </div>
+
+                <div class="pay-num-display">
+                    <div class="num-wrap">
+                        <span class="num-label">পার্সোনাল নম্বর:</span>
+                        <span class="num-digits" id="personalNum">01873275283</span>
+                    </div>
+                    <button class="btn-copy-num" onclick="copyPaymentNumber('01873275283', this)">
+                        <i class="fas fa-copy"></i> কপি করুন
+                    </button>
+                </div>
+
+                <div style="font-size:12px; color:#475569; display:flex; align-items:center; gap:6px;">
+                    <i class="fas fa-info-circle" style="color:#0284c7;"></i> নগদ বা রকেটে ১০০ টাকা <strong>Send Money (সেন্ড মানি)</strong> করুন।
+                </div>
+            </div>
+
+            <!-- 3. পেমেন্ট তথ্য সাবমিট বাটন -->
+            <div class="pay-action-section">
+                <p class="pay-action-instruction">
+                    <i class="fas fa-check-circle" style="color:#10b981;"></i> <strong>টাকা পাঠানো সম্পন্ন হয়েছে?</strong> নিচের ফর্মে তথ্য সাবমিট করুন:
+                </p>
+                <a href="give_access.html" class="btn-submit-payment">
+                    <i class="fas fa-file-invoice"></i> কোর্সে ভর্তির তথ্য সাবমিট করুন (ফর্ম)
+                </a>
+            </div>
+
+            <!-- 4. সাপোর্ট বার -->
+            <div class="pay-support-bar">
+                <span>যেকোনো সমস্যায় WhatsApp করুন:</span>
+                <a href="https://wa.me/8801873275283" target="_blank" rel="noopener noreferrer" class="btn-pay-wa">
+                    <i class="fab fa-whatsapp"></i> 01873275283
+                </a>
+            </div>
+
+            <button onclick="closePaymentModal()" class="btn-close-modal-link">
+                <i class="fas fa-times"></i> বন্ধ করুন
+            </button>
         </div>
     </div>
 
@@ -195,7 +272,7 @@
                 <span>সাহায্য প্রয়োজন?</span>
                 <span onclick="toggleHelp()" style="cursor: pointer; font-size: 16px; font-weight: bold; color: #888;">&times;</span>
             </div>
-            <a href="https://wa.me/8801925251621" target="_blank" rel="noopener noreferrer" class="s-link whatsapp">
+            <a href="https://wa.me/8801873275283" target="_blank" rel="noopener noreferrer" class="s-link whatsapp">
                 <i class="fab fa-whatsapp"></i> WhatsApp
             </a>
             <a href="https://t.me/Admissionhelper007" target="_blank" rel="noopener noreferrer" class="s-link telegram">

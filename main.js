@@ -515,6 +515,35 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             });
         }
 
+        function copyPaymentNumber(number, btn) {
+            if (!navigator.clipboard) {
+                const tempInput = document.createElement('input');
+                tempInput.value = number;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            } else {
+                navigator.clipboard.writeText(number);
+            }
+
+            if (btn) {
+                const originalHtml = btn.innerHTML;
+                btn.classList.add('copied');
+                btn.innerHTML = '<i class="fas fa-check"></i> কপি হয়েছে!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+            }
+        }
+
+        function copyNumber() {
+            const numEl = document.getElementById('bkashNum') || document.getElementById('personalNum') || document.getElementById('paymentNum');
+            const num = numEl ? numEl.innerText.trim() : '01522102384';
+            copyPaymentNumber(num, event ? event.currentTarget : null);
+        }
+
         function openPaymentModal() { 
             document.getElementById('paymentModal').style.display = 'flex';
             history.pushState({ modal: 'payment' }, '');
