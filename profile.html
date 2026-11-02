@@ -15,84 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        :root { --primary: #6c5ce7; --bg: #f8f9fd; --card: #ffffff; --text: #2d3436; --success: #00b894; --danger: #ff7675; --warning: #fdcb6e; }
-        body { font-family: 'Hind Siliguri', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding-top: 70px; padding-bottom: 50px; }
-
-        .top-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000;
-        }
-        .home-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-        /* USER HEADER */
-        .profile-header {
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            padding: 25px; border-radius: 15px; color: white;
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2); margin-bottom: 25px;
-        }
-        .profile-info { display: flex; align-items: center; gap: 15px; }
-        .profile-pic { width: 75px; height: 75px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.4); object-fit: cover; background: white; }
-        
-        .user-details p { margin: 2px 0; font-size: 13px; opacity: 0.9; }
-        
-        .btn-update { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 14px; }
-        .btn-update:hover { background: white; color: var(--primary); }
-
-        /* STATS GRID */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: var(--card); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.04); border-bottom: 3px solid var(--primary); }
-        .stat-box.success { border-bottom-color: var(--success); }
-        .stat-box.danger { border-bottom-color: var(--danger); }
-        .stat-num { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
-        .stat-label { font-size: 13px; color: #636e72; font-weight: 600; }
-
-        /* HISTORY SECTION */
-        .history-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .section-title { margin-bottom: 15px; font-weight: bold; color: #444; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-        
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: 0.2s; flex-wrap: wrap; gap: 10px;}
-        .history-item:hover { background: #f8f9fa; }
-        .history-item:last-child { border-bottom: none; }
-        
-        .exam-title { font-weight: bold; color: var(--primary); font-size: 16px; margin-bottom: 4px; }
-        .exam-meta { font-size: 13px; color: #636e72; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        
-        .score-badge { font-weight: 800; font-size: 16px; color: var(--success); background: #e6fffa; padding: 4px 10px; border-radius: 8px; border: 1px solid #00b894; }
-        .score-badge.negative { color: var(--danger); background: #fff5f5; border-color: var(--danger); }
-
-        .btn-group { display: flex; gap: 8px; margin-top: 5px; }
-        .btn-action { text-decoration: none; padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: none; }
-        .btn-view { background: #e0e6ed; color: #2d3436; }
-        .btn-view:hover { background: #d1d8e0; }
-        .btn-retake { background: #6c5ce7; color: white; }
-        .btn-retake:hover { background: #5a4fcf; }
-
-        #loader { text-align: center; padding: 40px; color: var(--primary); }
-
-        /* MODAL STYLES */
-        .swal2-container { z-index: 9999 !important; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; overflow-y: auto; padding: 20px 10px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 95%; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; margin: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #444; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; outline: none; box-sizing: border-box; }
-        .form-group input:focus { border-color: var(--primary); }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        .btn-save { background: var(--primary); color: white; }
-        .btn-cancel { background: #eee; color: #333; }
-
-        @media(max-width: 500px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .profile-header { flex-direction: column; align-items: flex-start; }
-            .btn-update { width: 100%; justify-content: center; }
-        }
-    </style>
+    <link rel="stylesheet" href="profile.css">
 </head>
 <body>
 
@@ -136,15 +59,20 @@
         </div>
 
         <!-- 📩 ভাইয়ার পরামর্শ ও উত্তরের ব্যানার (যদি থাকে) -->
-        <div id="adminReplyBanner" style="display:none; background: linear-gradient(135deg, #e6fffa, #ffffff); border: 2px solid #00b894; border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,184,148,0.1);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                <div style="width:36px; height:36px; border-radius:50%; background:#00b894; color:white; display:flex; align-items:center; justify-content:center; font-size:18px;"><i class="fas fa-envelope-open-text"></i></div>
-                <div>
-                    <h4 style="margin:0; color:#00624e; font-size:16px;">এডমিন / ভাইয়ার পরামর্শ ও উত্তর</h4>
-                    <small id="adminReplyDate" style="color:#636e72;">সাম্প্রতিক</small>
+        <div id="adminReplyBanner" style="display:none; background: linear-gradient(135deg, #e6fffa, #ffffff); border: 2px solid #00b894; border-radius: 15px; padding: 18px 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,184,148,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#00b894; color:white; display:flex; align-items:center; justify-content:center; font-size:18px;"><i class="fas fa-envelope-open-text"></i></div>
+                    <div>
+                        <h4 style="margin:0; color:#00624e; font-size:16px;">ভাইয়ার পরামর্শ ও উত্তর এসেছে!</h4>
+                        <small id="adminReplyDate" style="color:#636e72;">সাম্প্রতিক</small>
+                    </div>
                 </div>
+                <button onclick="openMentalModal()" style="background:#00b894; color:white; border:none; padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 3px 8px rgba(0,184,148,0.25);">
+                    <i class="fas fa-comments"></i> পুরো চ্যাট দেখুন
+                </button>
             </div>
-            <div id="adminReplyText" style="background:white; border-left:4px solid #00b894; padding:12px 15px; border-radius:8px; font-size:15px; color:#2d3436; line-height:1.6; font-style:italic;"></div>
+            <div id="adminReplyText" style="background:white; border-left:4px solid #00b894; padding:12px 15px; border-radius:8px; font-size:14px; color:#2d3436; line-height:1.6; font-style:italic;"></div>
         </div>
 
         <!-- 📊 বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স কার্ড -->
@@ -152,7 +80,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
                 <div>
                     <h3 style="margin:0; color:#2d3436; font-size:18px;"><i class="fas fa-chart-bar" style="color:var(--primary); margin-right:8px;"></i> বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স</h3>
-                    <small style="color:#636e72;">যে কোনো বিষয়ে ক্লিক করে অধ্যায়গুলোর প্রস্তুতি ও দুর্বলতা দেখুন</small>
+                    <div style="font-size:12px; color:#636e72; margin-top:5px; line-height:1.4;"><i class="fas fa-info-circle" style="color:var(--primary); margin-right:4px;"></i> এখন পর্যন্ত আপনার দেয়া এক্সামের উপর ভিত্তি করে এই অগ্রগতি। পরবর্তীতে আরও বেশি এক্সাম দিলে এটি বাড়তে বা কমতে পারে।</div>
                 </div>
             </div>
             <div id="subjectPerformanceList">
@@ -213,26 +141,33 @@
         </div>
     </div>
 
-    <!-- 💙 মানসিক সহায়তা মডাল -->
+    <!-- 💙 মানসিক সহায়তা ও চ্যাটবক্স মডাল -->
     <div id="mentalModal" class="modal-overlay" onclick="closeMentalModal()">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:440px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin:0; color:var(--primary); font-size:18px;"><i class="fas fa-heart" style="color:#ff7675;"></i> মনের কথা / সমস্যা শেয়ার করো</h3>
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:500px; padding:20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h3 style="margin:0; color:var(--primary); font-size:18px;"><i class="fas fa-comments" style="color:#6c5ce7;"></i> ভাইয়ার সাথে মনের কথা ও পরামর্শ</h3>
                 <button onclick="closeMentalModal()" style="background:none; border:none; font-size:26px; cursor:pointer; color:#888;">&times;</button>
             </div>
-            <p style="font-size:13px; color:#636e72; margin:0 0 15px 0;">তোমার এই বার্তাটি সরাসরি এডমিন/ভাইয়া ছাড়া অন্য কেউ দেখতে পাবে না। সম্পূর্ণ মন খুলে লিখতে পারো।</p>
             
-            <div class="form-group">
-                <label>তোমার সমস্যা বা কথা বিস্তারিত লেখো *</label>
-                <textarea id="mentalMsgInput" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box; outline:none; resize:vertical;" placeholder="পড়াশোনায় মন বসছে না, রেজাল্ট খারাপ হচ্ছে বা অন্য যেকোনো সমস্যা..."></textarea>
+            <!-- চ্যাট হিস্ট্রি উইন্ডো -->
+            <div id="mentalChatContainer" style="max-height: 280px; min-height: 120px; overflow-y: auto; padding: 12px; background: #f8f9fd; border-radius: 12px; border: 1px solid #edf2f7; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                <div style="text-align: center; color: #888; padding: 25px 10px; font-size: 13px;">
+                    <i class="fas fa-spinner fa-spin"></i> চ্যাট হিস্ট্রি লোড হচ্ছে...
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>তুমি কীভাবে উত্তর পেতে চাও? *</label>
-                <div style="display:flex; flex-direction:column; gap:8px; margin-top:5px; font-size:13px;">
+            <!-- নতুন বার্তা পাঠানোর ফর্ম -->
+            <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:13px; font-weight:600; color:#333; margin-bottom:4px; display:block;">নতুন বার্তা বা সমস্যা লিখুন:</label>
+                <textarea id="mentalMsgInput" rows="3" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; font-family:inherit; font-size:14px; box-sizing:border-box; outline:none; resize:vertical;" placeholder="পড়াশোনায় মন বসছে না, রেজাল্ট খারাপ হচ্ছে বা অন্য যেকোনো সমস্যা ভাইয়াকে মন খুলে লিখো..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px;">
+                <label style="font-size:12px; color:#555; display:block; margin-bottom:4px;">উত্তরের মাধ্যম:</label>
+                <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                         <input type="radio" name="replyType" value="profile" checked onchange="toggleContactInput()">
-                        <span>আমার এই প্রোফাইল ড্যাশবোর্ডেই উত্তর দিন (১০০% গোপনীয়)</span>
+                        <span>আমার এই ড্যাশবোর্ডেই উত্তর দিন (১০০% গোপনীয়)</span>
                     </label>
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                         <input type="radio" name="replyType" value="whatsapp" onchange="toggleContactInput()">
@@ -241,450 +176,23 @@
                 </div>
             </div>
 
-            <div class="form-group" id="contactInputWrap" style="display:none;">
-                <label>তোমার WhatsApp নম্বর বা Telegram আইডি *</label>
-                <input type="text" id="mentalContactInput" placeholder="01XXXXXXXXX বা @username">
+            <div class="form-group" id="contactInputWrap" style="display:none; margin-bottom:12px;">
+                <label style="font-size:12px;">তোমার WhatsApp নম্বর বা Telegram আইডি *</label>
+                <input type="text" id="mentalContactInput" placeholder="01XXXXXXXXX বা @username" style="font-size:13px; padding:8px 10px;">
             </div>
 
-            <div class="modal-btns">
-                <button class="btn-cancel" onclick="closeMentalModal()">বাতিল</button>
-                <button class="btn-save" id="mentalSendBtn" onclick="sendMentalMessage()">পাঠিয়ে দাও</button>
+            <div class="modal-btns" style="margin-top:10px;">
+                <button class="btn-cancel" onclick="closeMentalModal()">বন্ধ করুন</button>
+                <button class="btn-save" id="mentalSendBtn" onclick="sendMentalMessage()"><i class="fas fa-paper-plane"></i> বার্তা পাঠান</button>
             </div>
         </div>
     </div>
 
     <!-- জাভাস্ক্রিপ্ট লজিক -->
-    <script>
-        // FIREBASE CONFIG
-        const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
-        
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        let currentUserEmail = null;
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUserEmail = user.email;
-                document.getElementById('userName').innerText = user.displayName || "প্রিয় ছাত্র";
-                document.getElementById('userEmail').innerHTML = `<i class="fas fa-envelope"></i> ${user.email}`;
-                if(user.photoURL) document.getElementById('userPic').src = user.photoURL;
-                
-                loadUserProfile(user.email);
-                fetchStudentData(user.email); 
-            } else {
-                window.location.href = "index.html";
-            }
-        });
-
-        // --- LOAD USER PROFILE DATA ---
-        async function loadUserProfile(email) {
-            try {
-                const doc = await db.collection("users").doc(email).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    if(data.college) {
-                        const el = document.getElementById('userCollege');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.college;
-                        document.getElementById('inpCollege').value = data.college;
-                    }
-                    if(data.batch) {
-                        const el = document.getElementById('userBatch');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.batch;
-                        document.getElementById('inpBatch').value = data.batch;
-                    }
-                    if(data.phone) {
-                        const el = document.getElementById('userPhone');
-                        el.style.display = 'block';
-                        el.querySelector('span').innerText = data.phone;
-                        document.getElementById('inpPhone').value = data.phone;
-                    }
-                    if(data.mentalSupport && data.mentalSupport.reply) {
-                        const banner = document.getElementById('adminReplyBanner');
-                        if (banner) {
-                            banner.style.display = 'block';
-                            document.getElementById('adminReplyText').innerText = data.mentalSupport.reply;
-                            let dStr = "সাম্প্রতিক";
-                            if (data.mentalSupport.repliedAt) {
-                                const rDate = parseDate(data.mentalSupport.repliedAt);
-                                if (rDate) dStr = rDate.toLocaleDateString("bn-BD", { day: 'numeric', month: 'short', year: 'numeric' });
-                            }
-                            document.getElementById('adminReplyDate').innerText = dStr;
-                        }
-                    }
-                }
-            } catch (e) { console.error("Profile load error:", e); }
-        }
-
-        // --- MODAL CONTROLS ---
-        function openProfileModal() { 
-            document.getElementById('profileModal').style.display = 'flex'; 
-            document.body.style.overflow = 'hidden';
-        }
-        function closeProfileModal() { 
-            document.getElementById('profileModal').style.display = 'none'; 
-            document.body.style.overflow = '';
-        }
-
-        // --- SAVE PROFILE DATA ---
-        async function saveProfileData() {
-            const college = document.getElementById('inpCollege').value.trim();
-            const batch = document.getElementById('inpBatch').value.trim();
-            const phone = document.getElementById('inpPhone').value.trim();
-            const saveBtn = document.getElementById('saveBtn');
-
-            if(!currentUserEmail) return;
-
-            saveBtn.innerText = "সেভ হচ্ছে...";
-            saveBtn.disabled = true;
-
-            try {
-                await db.collection("users").doc(currentUserEmail).set({
-                    college: college,
-                    batch: batch,
-                    phone: phone,
-                    email: currentUserEmail,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-
-                closeProfileModal();
-
-                Swal.fire({ 
-                    icon: 'success', 
-                    title: 'সফল!', 
-                    text: 'প্রোফাইল আপডেট হয়েছে।', 
-                    timer: 1500, 
-                    showConfirmButton: false 
-                });
-                
-                loadUserProfile(currentUserEmail); 
-
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Error', 'সেভ করতে সমস্যা হয়েছে!', 'error');
-            } finally {
-                saveBtn.innerText = "সেভ করুন";
-                saveBtn.disabled = false;
-            }
-        }
-
-        // --- PARSE DATE ---
-        function parseDate(data) {
-            if (!data) return null;
-            const raw = data.timestamp || data.date || data.time || data.created_at || data;
-            if (!raw) return null;
-            if (typeof raw.toDate === 'function') return raw.toDate(); 
-            if (raw.seconds) return new Date(raw.seconds * 1000); 
-            const date = new Date(raw);
-            return isNaN(date.getTime()) ? null : date;
-        }
-
-        // --- FETCH EXAM HISTORY & CALCULATE STATS ---
-        async function fetchStudentData(email) {
-            try {
-                const snapshot = await db.collection("exam_results").where("email", "==", email).get();
-                document.getElementById('loader').style.display = 'none';
-                
-                if (snapshot.empty) {
-                    document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
-                    renderSubjectPerformance([]);
-                    return;
-                }
-
-                let exams = [];
-                let overallCorrect = 0;
-                let overallWrong = 0;
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    exams.push({ id: doc.id, ...data });
-                    
-                    if(!data.isPractice) { 
-                        overallCorrect += Number(data.correct || 0);
-                        overallWrong += Number(data.wrong || 0);
-                    }
-                });
-
-                exams.sort((a, b) => {
-                    const dateA = parseDate(a) || new Date(0);
-                    const dateB = parseDate(b) || new Date(0);
-                    return dateB - dateA;
-                });
-
-                // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong)
-                document.getElementById('statExams').innerText = exams.length;
-                document.getElementById('statCorrect').innerText = overallCorrect;
-                document.getElementById('statWrong').innerText = overallWrong;
-
-                // বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স রেন্ডার
-                renderSubjectPerformance(exams);
-
-                // এক্সাম হিস্ট্রি লিস্ট রেন্ডার
-                const listContainer = document.getElementById('historyList');
-                listContainer.innerHTML = ""; 
-                exams.forEach(exam => renderHistoryItem(exam, listContainer));
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে।</p>";
-                renderSubjectPerformance([]);
-            }
-        }
-
-        // --- RENDER HISTORY ITEM ---
-        function renderHistoryItem(data, container) {
-            const dateObj = parseDate(data);
-            const dateStr = dateObj ? dateObj.toLocaleDateString("en-US", { 
-                day: 'numeric', month: 'short', year: 'numeric', 
-                hour: 'numeric', minute: '2-digit', hour12: true 
-            }) : '<span style="color:#999; font-style:italic;">Unknown Date</span>';
-            
-            const scoreNum = parseFloat(data.score || 0);
-            const scoreClass = scoreNum < 0 ? 'negative' : '';
-            const scoreStr = scoreNum.toFixed(2);
-
-            const badgeHtml = data.isPractice ? '<span style="background:#dfe6e9; color:#636e72; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:8px;">Practice</span>' : '';
-            const retakeLink = `exam.html?id=${data.examId}`;
-            const resultLink = `result.html?id=${data.id}`;
-
-            const html = `
-                <div class="history-item">
-                    <div>
-                        <div class="exam-title">${data.examName || "Untited Exam"} ${badgeHtml}</div>
-                        <div class="exam-meta">
-                            <span><i class="far fa-clock"></i> ${dateStr}</span>
-                            <span class="score-badge ${scoreClass}">স্কোর: ${scoreStr}</span>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <a href="${resultLink}" class="btn-action btn-view"><i class="fas fa-file-invoice"></i> রেজাল্ট</a>
-                        <a href="${retakeLink}" class="btn-action btn-retake"><i class="fas fa-redo"></i> আবার দিন</a>
-                    </div>
-                </div>
-            `;
-            container.innerHTML += html;
-        }
-
-        // --- SUBJECT & CHAPTER NORMALIZERS ---
-        function normalizeSubject(raw) {
-            if (!raw) return null;
-            const s = String(raw).trim().toLowerCase();
-            if (s === 'general' || s === 'subject' || s === 'chapter' || s === 'অধ্যায়' || s === 'topic' || s === 'undefined' || s === 'null') return null;
-            if (s.includes('physic') || s.includes('পদার্থ')) return 'পদার্থবিজ্ঞান (Physics)';
-            if (s.includes('chem') || s.includes('রসায়') || s.includes('রসায')) return 'রসায়ন (Chemistry)';
-            if (s.includes('math') || s.includes('গণিত') || s.includes('হায়ার ম্যাথ') || s.includes('উচ্চতর গণিত') || s.includes('ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
-            if (s.includes('eng') || s.includes('ইংরেজ')) return 'ইংরেজি (English)';
-            if (s.includes('bang') || s.includes('বাংলা')) return 'বাংলা (Bangla)';
-            return null;
-        }
-
-        function normalizeChapter(raw) {
-            if (!raw) return null;
-            let c = String(raw).trim();
-            const lower = c.toLowerCase();
-            if (lower === 'general' || lower === 'subject' || lower === 'chapter' || lower === 'অধ্যায়' || lower === 'topic' || lower === 'undefined' || lower === 'null' || lower === '') return null;
-            c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
-            return c;
-        }
-
-        // --- RENDER SUBJECT & CHAPTER PERFORMANCE ---
-        function renderSubjectPerformance(exams) {
-            const container = document.getElementById('subjectPerformanceList');
-            if (!container) return;
-
-            let subjectStats = {};
-
-            exams.forEach(exam => {
-                if (exam.analysis && typeof exam.analysis === 'object') {
-                    for (const [ch, chData] of Object.entries(exam.analysis)) {
-                        if (!chData || typeof chData !== 'object') continue;
-                        const sub = normalizeSubject(chData.subject);
-                        const chName = normalizeChapter(ch);
-                        if (!sub || !chName) continue;
-                        const cCount = Number(chData.correct || 0);
-                        const tCount = Number(chData.total || 0);
-                        if (tCount <= 0) continue;
-
-                        if (!subjectStats[sub]) {
-                            subjectStats[sub] = { correct: 0, total: 0, chapters: {} };
-                        }
-                        subjectStats[sub].correct += cCount;
-                        subjectStats[sub].total += tCount;
-
-                        if (!subjectStats[sub].chapters[chName]) {
-                            subjectStats[sub].chapters[chName] = { correct: 0, total: 0 };
-                        }
-                        subjectStats[sub].chapters[chName].correct += cCount;
-                        subjectStats[sub].chapters[chName].total += tCount;
-                    }
-                }
-            });
-
-            const subjects = Object.keys(subjectStats);
-            if (subjects.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align:center; padding: 25px 15px; color:#888;">
-                        <i class="fas fa-chart-pie fa-2x" style="opacity:0.3; margin-bottom:10px;"></i>
-                        <p style="margin:0; font-size:14px; color:#636e72;">তুমি এক্সাম দেওয়া শুরু করলে এখানে প্রতিটি বিষয় ও অধ্যায়ের দুর্বলতা ও প্রস্তুতি স্বয়ংক্রিয়ভাবে দেখতে পাবে।</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const colorMap = {
-                'পদার্থবিজ্ঞান (Physics)': '#0984e3',
-                'রসায়ন (Chemistry)': '#00b894',
-                'উচ্চতর গণিত (Higher Math)': '#6c5ce7',
-                'ইংরেজি (English)': '#e17055',
-                'বাংলা (Bangla)': '#fdcb6e',
-                'অন্যান্য (Other)': '#636e72'
-            };
-
-            let html = '';
-            subjects.forEach((sub, sIdx) => {
-                const sData = subjectStats[sub];
-                const sPct = sData.total > 0 ? Math.round((sData.correct / sData.total) * 100) : 0;
-                const color = colorMap[sub] || '#6c5ce7';
-
-                const chEntries = Object.entries(sData.chapters);
-                chEntries.sort((a, b) => {
-                    const pA = a[1].total > 0 ? (a[1].correct / a[1].total) : 0;
-                    const pB = b[1].total > 0 ? (b[1].correct / b[1].total) : 0;
-                    return pA - pB;
-                });
-
-                let chListHtml = '';
-                chEntries.forEach(([chName, cData]) => {
-                    const cPct = cData.total > 0 ? Math.round((cData.correct / cData.total) * 100) : 0;
-                    const isWeak = cPct < 50;
-                    const badge = isWeak 
-                        ? `<span style="background:#fff0f0; color:#d63031; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; border:1px solid #ff7675;"><i class="fas fa-exclamation-circle"></i> দুর্বল অধ্যায়</span>`
-                        : `<span style="background:#e6fffa; color:#00b894; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700;"><i class="fas fa-check"></i> ভালো</span>`;
-
-                    chListHtml += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:#f8f9fa; border-radius:8px; margin-bottom:6px; font-size:13px;">
-                            <div style="font-weight:600; color:#2d3436; display:flex; align-items:center; gap:8px;">
-                                <span>${chName}</span>
-                                ${badge}
-                            </div>
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <span style="color:#636e72; font-size:12px;">সঠিক: <b style="color:#2d3436;">${cData.correct}</b> / ${cData.total}</span>
-                                <span style="font-weight:700; color:${cPct >= 60 ? '#00b894' : (cPct < 50 ? '#d63031' : '#e17055')}; min-width:35px; text-align:right;">${cPct}%</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += `
-                    <div style="border: 1px solid #edf2f7; border-radius: 12px; padding: 15px; margin-bottom: 12px; background: white; transition: 0.2s;">
-                        <div onclick="toggleChapterList(${sIdx})" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="flex:1;">
-                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; padding-right:15px;">
-                                    <span style="font-weight:700; font-size:15px; color:#2d3436; display:flex; align-items:center; gap:8px;">
-                                        <span style="width:10px; height:10px; border-radius:50%; background:${color};"></span>
-                                        ${sub}
-                                    </span>
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <span style="font-size:12px; color:#636e72;">সঠিক: <b style="color:${color};">${sData.correct}</b> / ${sData.total}</span>
-                                        <span style="font-weight:800; font-size:15px; color:${color}; min-width:35px; text-align:right;">${sPct}%</span>
-                                    </div>
-                                </div>
-                                <div style="width: calc(100% - 15px); background: #eee; height: 8px; border-radius: 6px; overflow: hidden;">
-                                    <div style="width: ${sPct}%; background: ${color}; height: 100%; border-radius: 6px; transition: width 0.8s ease;"></div>
-                                </div>
-                            </div>
-                            <i id="caret-${sIdx}" class="fas fa-chevron-down" style="color:#a4b0be; transition:0.3s; padding:5px;"></i>
-                        </div>
-                        <div id="chList-${sIdx}" style="display:none; margin-top:15px; border-top:1px dashed #e2e8f0; padding-top:12px;">
-                            <div style="margin-bottom:8px; font-size:12px; color:#747d8c; font-weight:600;">অধ্যায়ভিত্তিক প্রস্তুতি (দুর্বল অধ্যায়গুলো আগে দেখানো হচ্ছে):</div>
-                            ${chListHtml}
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function toggleChapterList(idx) {
-            const el = document.getElementById('chList-' + idx);
-            const caret = document.getElementById('caret-' + idx);
-            if (!el) return;
-            if (el.style.display === 'none' || el.style.display === '') {
-                el.style.display = 'block';
-                if (caret) caret.style.transform = 'rotate(180deg)';
-            } else {
-                el.style.display = 'none';
-                if (caret) caret.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        // --- MENTAL SUPPORT CONTROLS ---
-        function openMentalModal() { 
-            const m = document.getElementById('mentalModal');
-            if (m) m.style.display = 'flex'; 
-            document.body.style.overflow = 'hidden';
-        }
-        function closeMentalModal() { 
-            const m = document.getElementById('mentalModal');
-            if (m) m.style.display = 'none'; 
-            document.body.style.overflow = '';
-        }
-        function toggleContactInput() {
-            const replyType = document.querySelector('input[name="replyType"]:checked')?.value;
-            const wrap = document.getElementById('contactInputWrap');
-            if (wrap) wrap.style.display = (replyType === 'whatsapp') ? 'block' : 'none';
-        }
-
-        async function sendMentalMessage() {
-            const msg = document.getElementById('mentalMsgInput').value.trim();
-            if (!msg) {
-                return Swal.fire('সতর্কতা', 'দয়া করে তোমার মনের কথা বা সমস্যাটি বিস্তারিত লেখো।', 'warning');
-            }
-            const replyType = document.querySelector('input[name="replyType"]:checked')?.value || 'profile';
-            const contactVal = document.getElementById('mentalContactInput').value.trim();
-            if (replyType === 'whatsapp' && !contactVal) {
-                return Swal.fire('নম্বর প্রয়োজন', 'WhatsApp বা Telegram এ উত্তর পেতে তোমার নম্বর বা আইডি দাও।', 'warning');
-            }
-
-            const sendBtn = document.getElementById('mentalSendBtn');
-            sendBtn.disabled = true;
-            sendBtn.innerText = "পাঠানো হচ্ছে...";
-
-            try {
-                const payload = {
-                    message: msg,
-                    replyType: replyType,
-                    contact: contactVal || "N/A",
-                    status: "pending",
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection("users").doc(currentUserEmail).set({
-                    mentalSupport: payload
-                }, { merge: true });
-
-                closeMentalModal();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'বার্তা পৌঁছে গেছে!',
-                    text: 'তোমার মনের কথা সরাসরি ভাইয়ার কাছে পৌঁছে গেছে। দ্রুতই উত্তর পাবে ইনশাআল্লাহ।',
-                    confirmButtonColor: 'var(--primary)'
-                });
-                document.getElementById('mentalMsgInput').value = '';
-                document.getElementById('mentalContactInput').value = '';
-            } catch(err) {
-                console.error(err);
-                Swal.fire('Error', 'মেসেজ পাঠানো যায়নি: ' + err.message, 'error');
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerText = "পাঠিয়ে দাও";
-            }
-        }
-    </script>
+    <script src="profile-config.js"></script>
+    <script src="profile-mental.js"></script>
+    <script src="profile-info.js"></script>
+    <script src="profile-history.js"></script>
+    <script src="profile-performance.js"></script>
 </body>
 </html>
