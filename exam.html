@@ -294,9 +294,13 @@
             const cleanStr = rangeStr.replace(/[০-৯]/g, d => "০১২৩৪৫৬৭৮৯".indexOf(d)).trim();
             const match = cleanStr.match(/^(\d+)\s*[-–—]\s*(\d+)$/);
             if (match) {
-                const start = parseInt(match[1], 10);
-                const end = parseInt(match[2], 10);
+                let start = parseInt(match[1], 10);
+                let end = parseInt(match[2], 10);
                 if (!isNaN(start) && !isNaN(end) && start > 0 && end >= start) {
+                    if (questions.length > 0 && questions[0].sheetRow !== undefined) {
+                        if (start === 1) start = 2;
+                        return questions.filter(q => q.sheetRow >= start && q.sheetRow <= end);
+                    }
                     return questions.slice(start - 1, end);
                 }
             }
@@ -324,7 +328,16 @@
             let rawQuestions = await res.json();
             rawQuestions = rawQuestions.map(q => normalizeQuestion(q));
             
-            rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
+            rawQuestions.forEach((q, idx) => {
+                q.sheetRow = idx + 2; // Row 1 in Google Sheet is header, data[0] is Row 2
+                q.originalIndex = idx;
+            });
+
+            // Apply Range filter based on Google Sheet Row numbers BEFORE removing empty rows
+            if (examConfig.range) {
+                rawQuestions = applyQuestionRange(rawQuestions, examConfig.range);
+            }
+
             rawQuestions = rawQuestions.filter(q => {
                 const text = q["প্রশ্ন (LaTeX সহ)"] || q["Question"] || "";
                 if (!text || String(text).trim() === "") return false;
@@ -333,11 +346,6 @@
                 if (sub === 'subject' && (ch === 'chapter' || ch === 'অধ্যায়' || ch === '')) return false;
                 return true;
             });
-
-            // Apply Range filter if specified in sheet (e.g. 1-50, 51-100)
-            if (examConfig.range) {
-                rawQuestions = applyQuestionRange(rawQuestions, examConfig.range);
-            }
 
             allFetchedQuestions = rawQuestions;
             allQuestions = groupQuestions(rawQuestions); 
