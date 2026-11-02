@@ -310,6 +310,42 @@
             return m[firstChar] || firstChar;
         }
 
+                function isAnswerLetter(val) {
+            if (!val) return false;
+            const s = String(val).trim().toUpperCase();
+            return s === '(A)' || s === '(B)' || s === '(C)' || s === '(D)' || s === 'A' || s === 'B' || s === 'C' || s === 'D';
+        }
+
+        function normalizeQuestion(q) {
+            if (!q || typeof q !== 'object') return q;
+            const optD = q["অপশন D"] || q["Option D"] || "";
+            const topic = q["Topic"] || q["টপিক"] || "";
+            const qText = q["প্রশ্ন (LaTeX সহ)"] || q["Question"] || "";
+
+            // Check if 1-column shift happened (Question was placed in Topic column)
+            if (isAnswerLetter(optD) && topic && topic.trim().length > 5) {
+                return {
+                    ...q,
+                    "Topic": "",
+                    "originalTopic": topic,
+                    "প্রশ্ন (LaTeX সহ)": topic.trim(),
+                    "Question": topic.trim(),
+                    "অপশন A": qText,
+                    "Option A": qText,
+                    "অপশন B": q["অপশন A"] || q["Option A"] || "",
+                    "Option B": q["অপশন A"] || q["Option A"] || "",
+                    "অপশন C": q["অপশন B"] || q["Option B"] || "",
+                    "Option C": q["অপশন B"] || q["Option B"] || "",
+                    "অপশন D": q["অপশন C"] || q["Option C"] || "",
+                    "Option D": q["অপশন C"] || q["Option C"] || "",
+                    "উত্তর": optD.trim(),
+                    "Answer": optD.trim(),
+                    "বিস্তারিত ব্যাখ্যা (LaTeX সহ)": q["উত্তর"] || q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || ""
+                };
+            }
+            return q;
+        }
+
         function groupQuestions(questions) {
             let grouped = {};
             questions.forEach(q => {
@@ -346,10 +382,11 @@
                     }));
                 } else {
                     // Normal exam: JSON ফাইল থেকে প্রশ্ন লোড করি
-                    const [qRes, indexRes] = await Promise.all([
+                    const [rawQRes, indexRes] = await Promise.all([
                         fetch(JSON_BASE + tabId + ".json").then(r => r.json()),
                         fetch(JSON_BASE + "exam-index.json").then(r => r.json())
                     ]);
+                    const qRes = rawQRes.map(q => normalizeQuestion(q));
                     qRes.forEach((q, idx) => { q.originalIndex = idx; });
                     rawQuestions = qRes.filter(q => q["প্রশ্ন (LaTeX সহ)"] && String(q["প্রশ্ন (LaTeX সহ)"]).trim() !== "");
                     examInfo = indexRes.find(e => e['Tab ID'] === tabId);

@@ -170,6 +170,42 @@
         let timerInterval, startTime, selectedSubjects = [];
         let allFetchedQuestions = [], isSubmitting = false;
 
+        function isAnswerLetter(val) {
+            if (!val) return false;
+            const s = String(val).trim().toUpperCase();
+            return s === '(A)' || s === '(B)' || s === '(C)' || s === '(D)' || s === 'A' || s === 'B' || s === 'C' || s === 'D';
+        }
+
+        function normalizeQuestion(q) {
+            if (!q || typeof q !== 'object') return q;
+            const optD = q["অপশন D"] || q["Option D"] || "";
+            const topic = q["Topic"] || q["টপিক"] || "";
+            const qText = q["প্রশ্ন (LaTeX সহ)"] || q["Question"] || "";
+
+            // Check if 1-column shift happened (Question was placed in Topic column)
+            if (isAnswerLetter(optD) && topic && topic.trim().length > 5) {
+                return {
+                    ...q,
+                    "Topic": "",
+                    "originalTopic": topic,
+                    "প্রশ্ন (LaTeX সহ)": topic.trim(),
+                    "Question": topic.trim(),
+                    "অপশন A": qText,
+                    "Option A": qText,
+                    "অপশন B": q["অপশন A"] || q["Option A"] || "",
+                    "Option B": q["অপশন A"] || q["Option A"] || "",
+                    "অপশন C": q["অপশন B"] || q["Option B"] || "",
+                    "Option C": q["অপশন B"] || q["Option B"] || "",
+                    "অপশন D": q["অপশন C"] || q["Option C"] || "",
+                    "Option D": q["অপশন C"] || q["Option C"] || "",
+                    "উত্তর": optD.trim(),
+                    "Answer": optD.trim(),
+                    "বিস্তারিত ব্যাখ্যা (LaTeX সহ)": q["উত্তর"] || q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || ""
+                };
+            }
+            return q;
+        }
+
         function isMCQ(q) {
             if(q["অপশন A"]) return true; 
             if(q["উত্তর"] && String(q["উত্তর"]).trim() !== "" && String(q["উত্তর"]).length === 1) return true; 
@@ -286,6 +322,7 @@
             }
             const res = await fetch(JSON_BASE + tabId + ".json?v=" + new Date().getTime());
             let rawQuestions = await res.json();
+            rawQuestions = rawQuestions.map(q => normalizeQuestion(q));
             
             rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
             rawQuestions = rawQuestions.filter(q => {
