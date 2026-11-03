@@ -68,6 +68,62 @@
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 80vh; overflow-y: auto; text-align: center; }
+        
+        /* Subject Analysis Cards */
+        .subject-card {
+            background: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            text-align: left;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .sub-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .sub-name {
+            font-weight: 700;
+            font-size: 14.5px;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sub-score-pill {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .sub-progress-bg {
+            width: 100%;
+            height: 7px;
+            background: #f1f3f5;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .sub-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+        .sub-details-grid {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            color: #636e72;
+            padding-top: 6px;
+            border-top: 1px dashed #eef2f5;
+        }
+        .stat-pill-correct { color: #00b894; display: flex; align-items: center; gap: 4px; }
+        .stat-pill-wrong { color: #d63031; display: flex; align-items: center; gap: 4px; }
+        .stat-pill-skip { color: #e67e22; display: flex; align-items: center; gap: 4px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
 
@@ -294,7 +350,7 @@
 
             <div class="btn-row">
                 <button onclick="downloadPDF()" class="btn-main" style="background:#0984e3;"><i class="fas fa-file-pdf"></i> পিডিএফ সেভ করুন</button>
-                <button onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
+                <button id="btnAnalysis" onclick="openChapterModal()" class="btn-main" style="background:var(--primary);"><i class="fas fa-chart-pie"></i> এনালাইসিস</button>
             <a href="mistakes.html" class="btn-main" style="background:#8e44ad; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:8px;"><i class="fas fa-book-open"></i> ভুল ব্যাংক</a>
             </div>
         </div>
@@ -334,9 +390,11 @@
 
     <div id="chapterModal" class="modal-overlay" onclick="closeChapterModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>বিষয়ভিত্তিক রিপোর্ট</h3>
-                <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #edf2f7; padding-bottom:10px;">
+                <h3 style="margin:0; font-size:18px; color:#2d3436; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-chart-pie" style="color:var(--primary);"></i> বিষয়ভিত্তিক রিপোর্ট
+                </h3>
+                <button onclick="closeChapterModal()" style="border:none; background:none; font-size:24px; color:#888; cursor:pointer; line-height:1;">&times;</button>
             </div>
             <div id="chapterTableContainer">Loading...</div>
         </div>
@@ -546,6 +604,7 @@
                 } else {
                     displayQuestions = groupQuestions(rawQuestions);
                 }
+                window.currentExamQuestions = displayQuestions;
 
                 const userAnsMap = resultData.userAnswers || {};
                 // examInfo already set above
@@ -773,21 +832,133 @@
             }
         }
 
+        function getCleanSubjectName(raw) {
+            if (!raw) return "সাধারণ (General)";
+            const s = String(raw).trim();
+            const lower = s.toLowerCase();
+            if (lower === 'general' || lower === 'subject' || lower === 'chapter' || lower === 'অধ্যায়' || lower === 'undefined' || lower === 'null' || lower === '') {
+                return "সাধারণ (General)";
+            }
+            if (lower.includes('physic') || lower.includes('পদার্থ')) return 'পদার্থবিজ্ঞান (Physics)';
+            if (lower.includes('chem') || lower.includes('রসায়') || lower.includes('রসায')) return 'রসায়ন (Chemistry)';
+            if (lower.includes('math') || lower.includes('গণিত') || lower.includes('ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
+            if (lower.includes('eng') || lower.includes('ইংরেজ')) return 'ইংরেজি (English)';
+            if (lower.includes('bio') || lower.includes('জীব')) return 'জীববিজ্ঞান (Biology)';
+            if (lower.includes('bang') || lower.includes('বাংলা')) return 'বাংলা (Bangla)';
+            return s;
+        }
+
         function prepareChapterTable() {
-            const analysis = resultData.analysis || {};
             let subjectAnalysis = {};
-            for (const [ch, data] of Object.entries(analysis)) {
-                let sub = data.subject || "General";
-                if (!subjectAnalysis[sub]) subjectAnalysis[sub] = { correct: 0, total: 0 };
-                subjectAnalysis[sub].correct += data.correct;
-                subjectAnalysis[sub].total += data.total;
+            const questions = window.currentExamQuestions || [];
+            const userAnsMap = (resultData && resultData.userAnswers) || {};
+
+            // 1. Calculate directly from loaded questions + user answers
+            if (Array.isArray(questions) && questions.length > 0) {
+                questions.forEach(q => {
+                    const rawSub = q["Subject"] || q["বিষয়"] || "General";
+                    const sub = getCleanSubjectName(rawSub);
+                    if (!subjectAnalysis[sub]) {
+                        subjectAnalysis[sub] = { correct: 0, wrong: 0, skipped: 0, total: 0 };
+                    }
+                    subjectAnalysis[sub].total++;
+
+                    const qIdx = q.originalIndex;
+                    const myAns = userAnsMap[qIdx];
+                    const isMCQ = (q["অপশন A"] || (q["উত্তর"] && String(q["উত্তর"]).trim().length === 1));
+                    const rightAns = isMCQ ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
+
+                    if (myAns !== null && myAns !== undefined && String(myAns).trim() !== "" && String(myAns).trim().toLowerCase() !== "null") {
+                        if (rightAns && String(myAns).trim().toUpperCase() === rightAns) {
+                            subjectAnalysis[sub].correct++;
+                        } else {
+                            subjectAnalysis[sub].wrong++;
+                        }
+                    } else {
+                        subjectAnalysis[sub].skipped++;
+                    }
+                });
             }
-            let html = `<table style="width:100%"><thead><tr><th>বিষয়</th><th>স্কোর</th><th>অবস্থা</th></tr></thead><tbody>`;
+
+            // 2. Fallback to resultData.analysis if questions were not available
+            if (Object.keys(subjectAnalysis).length === 0 && resultData && resultData.analysis) {
+                for (const [key, data] of Object.entries(resultData.analysis)) {
+                    const rawSub = data.subject || (key.includes(':::') ? key.split(':::')[0] : "General");
+                    const sub = getCleanSubjectName(rawSub);
+                    if (!subjectAnalysis[sub]) {
+                        subjectAnalysis[sub] = { correct: 0, wrong: 0, skipped: 0, total: 0 };
+                    }
+                    subjectAnalysis[sub].correct += (data.correct || 0);
+                    subjectAnalysis[sub].wrong += (data.wrong || 0);
+                    subjectAnalysis[sub].total += (data.total || 0);
+                    subjectAnalysis[sub].skipped += (data.skipped !== undefined ? data.skipped : Math.max(0, (data.total || 0) - (data.correct || 0) - (data.wrong || 0)));
+                }
+            }
+
+            const subKeys = Object.keys(subjectAnalysis);
+            const btn = document.getElementById('btnAnalysis');
+
+            // Dynamic Visibility:
+            // Single-subject/chapter test -> Hide "এনালাইসিস" button!
+            // Multi-subject (Model Test) -> Show "এনালাইসিস" button!
+            if (btn) {
+                if (subKeys.length <= 1) {
+                    btn.style.display = 'none';
+                } else {
+                    btn.style.display = 'inline-flex';
+                }
+            }
+
+            const container = document.getElementById('chapterTableContainer');
+            if (!container) return;
+
+            if (subKeys.length === 0) {
+                container.innerHTML = `
+                    <div style="padding:20px; color:#888; text-align:center;">
+                        <p>কোনো বিষয়ভিত্তিক তথ্য পাওয়া যায়নি।</p>
+                    </div>`;
+                return;
+            }
+
+            const subjectColors = {
+                'পদার্থবিজ্ঞান (Physics)': '#0984e3',
+                'রসায়ন (Chemistry)': '#00b894',
+                'উচ্চতর গণিত (Higher Math)': '#6c5ce7',
+                'ইংরেজি (English)': '#e17055',
+                'বাংলা (Bangla)': '#fdcb6e',
+                'জীববিজ্ঞান (Biology)': '#10b981',
+                'সাধারণ (General)': '#636e72'
+            };
+
+            let html = '<div class="subject-analysis-list">';
             for (const [sub, data] of Object.entries(subjectAnalysis)) {
-                let p = Math.round((data.correct / data.total) * 100);
-                html += `<tr><td>${sub}</td><td>${data.correct}/${data.total}</td><td>${p}%</td></tr>`;
+                const p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+                const color = subjectColors[sub] || '#6c5ce7';
+
+                html += `
+                    <div class="subject-card">
+                        <div class="sub-header-row">
+                            <span class="sub-name">
+                                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${color};"></span>
+                                ${sub}
+                            </span>
+                            <span class="sub-score-pill" style="color:${color}; background:${color}15;">
+                                ${data.correct} / ${data.total} (${p}%)
+                            </span>
+                        </div>
+                        <div class="sub-progress-bg">
+                            <div class="sub-progress-fill" style="width:${p}%; background:${color};"></div>
+                        </div>
+                        <div class="sub-details-grid">
+                            <span class="stat-pill-correct"><i class="fas fa-check-circle"></i> সঠিক: ${data.correct}</span>
+                            <span class="stat-pill-wrong"><i class="fas fa-times-circle"></i> ভুল: ${data.wrong}</span>
+                            <span class="stat-pill-skip"><i class="fas fa-minus-circle"></i> স্কিপ: ${data.skipped}</span>
+                        </div>
+                    </div>`;
             }
-            document.getElementById('chapterTableContainer').innerHTML = html + `</tbody></table>`;
+            html += '</div>';
+
+            container.innerHTML = html;
         }
 
         // 🔴 অপ্টিমাইজড পিডিএফ কোড (Native Print) 🔴

@@ -700,10 +700,24 @@
                     
                     let rightAns = isMCQ(q) ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     
-                    const ch = q["Chapter"] || q["অধ্যায়"] || "General";
-                    const sub = q["Subject"] ? String(q["Subject"]).trim() : "General";
-                    if(!chapterAnalysis[ch]) chapterAnalysis[ch] = { correct: 0, total: 0, subject: sub };
-                    chapterAnalysis[ch].total++;
+                    const rawSub = q["Subject"] ? String(q["Subject"]).trim() : "General";
+                    const rawCh = q["Chapter"] || q["অধ্যায়"] || q["টপিক"] || q["Topic"] || "";
+                    const ch = rawCh.trim() !== "" ? rawCh.trim() : (rawSub !== "General" ? rawSub : "General");
+                    const sub = rawSub;
+
+                    // Composite key so different subjects never collide under 'General' or same chapter name!
+                    const key = `${sub}:::${ch}`;
+                    if(!chapterAnalysis[key]) {
+                        chapterAnalysis[key] = { 
+                            subject: sub, 
+                            chapter: ch, 
+                            correct: 0, 
+                            wrong: 0, 
+                            skipped: 0, 
+                            total: 0 
+                        };
+                    }
+                    chapterAnalysis[key].total++;
 
                     let selectedVal = null;
                     if(isMCQ(q)) {
@@ -724,7 +738,7 @@
                         if (String(selectedVal).trim().toUpperCase() === rightAns) {
                             secureScore += markPerQuestion; 
                             secureCorrect++; 
-                            chapterAnalysis[ch].correct++;
+                            chapterAnalysis[key].correct++;
                             if (isMistakeMode) {
                                 if (q.allDocIds && Array.isArray(q.allDocIds) && q.allDocIds.length > 0) {
                                     solvedMistakeIds.push(...q.allDocIds);
@@ -735,12 +749,13 @@
                         } else {
                             secureScore -= negativeMark; 
                             secureWrong++;
+                            chapterAnalysis[key].wrong++;
                             if (!isMistakeMode) {
                             mistakesToSave.push({
                                 examId: tabId,
                                 examName: examConfig.name || tabId,
                                 originalIndex: qIdx,
-                                subject: q["Subject"] || "General",
+                                subject: sub,
                                 chapter: ch,
                                 question: q["প্রশ্ন (LaTeX সহ)"] || "",
                                 optA: q["অপশন A"] || "",
@@ -754,6 +769,8 @@
                             });
                             }
                         }
+                    } else {
+                        chapterAnalysis[key].skipped++;
                     }
                 });
 

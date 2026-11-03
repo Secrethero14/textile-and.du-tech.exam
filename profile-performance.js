@@ -32,7 +32,7 @@ function renderSubjectPerformance(exams) {
             for (const [ch, chData] of Object.entries(exam.analysis)) {
                 if (!chData || typeof chData !== 'object') continue;
                 const sub = normalizeSubject(chData.subject);
-                const chName = normalizeChapter(ch);
+                const chName = normalizeChapter(chData.chapter || (ch.includes(':::') ? ch.split(':::')[1] : ch));
                 if (!sub || !chName) continue;
                 const cCount = Number(chData.correct || 0);
                 const tCount = Number(chData.total || 0);
