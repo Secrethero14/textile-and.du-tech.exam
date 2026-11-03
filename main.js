@@ -146,6 +146,10 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             dashboardView.style.display = 'block';
             setTimeout(() => dashboardView.style.opacity = '1', 50);
             updateNavBar(null, true);
+            const promoBanner = document.getElementById('promoBanner');
+            if (promoBanner) promoBanner.style.display = 'flex';
+            const successBanner = document.getElementById('successBanner');
+            if (successBanner) successBanner.style.display = 'none';
             loadExams();
         } 
         

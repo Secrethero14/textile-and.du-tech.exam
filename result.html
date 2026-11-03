@@ -88,6 +88,141 @@
             .q-card-full { display: block !important; page-break-inside: avoid !important; break-inside: avoid !important; border: 1px solid #ddd !important; box-shadow: none !important; margin-bottom: 15px !important; padding: 15px !important; }
             .explanation-box { background: transparent !important; border: 1px solid #eee !important; border-left: 3px solid #6c5ce7 !important; }
         }
+    
+        /* 🎯 রেজাল্ট সার্কেল পাশাপাশি রো 🎯 */
+        .result-circles-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin: 15px auto 10px auto;
+        }
+
+        .score-circle-wrap, .chart-circle-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-circle {
+            width: 110px !important;
+            height: 110px !important;
+            border: 6px solid var(--primary) !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            margin: 0 !important;
+            background: white !important;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.15) !important;
+            box-sizing: border-box !important;
+        }
+
+        .score-circle h1 {
+            margin: 0 !important;
+            font-size: 32px !important;
+            color: var(--primary) !important;
+            line-height: 1 !important;
+        }
+
+        .score-circle small {
+            font-size: 11px !important;
+            color: #636e72 !important;
+            font-weight: 600 !important;
+            margin-top: 3px !important;
+        }
+
+        .donut-box {
+            position: relative;
+            width: 110px;
+            height: 110px;
+        }
+
+        .donut-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .donut-inner-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .donut-inner-label span {
+            font-size: 22px;
+            font-weight: 800;
+            color: #2d3436;
+            line-height: 1;
+        }
+
+        .donut-inner-label small {
+            font-size: 11px;
+            color: #636e72;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        .chart-legend-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 8px auto 15px auto;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        @media (max-width: 600px) {
+            .result-circles-row {
+                gap: 16px !important;
+                margin: 12px auto 8px auto !important;
+            }
+            .score-circle {
+                width: 95px !important;
+                height: 95px !important;
+                border-width: 5px !important;
+            }
+            .score-circle h1 {
+                font-size: 26px !important;
+            }
+            .donut-box {
+                width: 95px !important;
+                height: 95px !important;
+            }
+            .donut-inner-label span {
+                font-size: 19px !important;
+            }
+            .chart-legend-row {
+                gap: 12px !important;
+                font-size: 11.5px !important;
+                margin-bottom: 12px !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -111,33 +246,44 @@
 
             <div id="feedbackContainer" class="feedback-msg">ফলাফল বিশ্লেষণ করা হচ্ছে...</div>
             
-            <div class="score-circle"><h1 id="scoreDisplay">0</h1><small>স্কোর</small></div>
+            <!-- 🎯 স্কোর ও পার্সেন্টেজ পাশাপাশি রো 🎯 -->
+            <div class="result-circles-row">
+                <!-- বামে: স্কোর গোল -->
+                <div class="score-circle-wrap">
+                    <div class="score-circle">
+                        <h1 id="scoreDisplay">0</h1>
+                        <small>স্কোর</small>
+                    </div>
+                </div>
+
+                <!-- ডানে: পার্সেন্টেজ ও ডোনাট গোল -->
+                <div class="chart-circle-wrap" id="chartSection">
+                    <div class="donut-box">
+                        <svg viewBox="0 0 36 36" class="donut-svg">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#edf2f7" stroke-width="4"/>
+                            <path id="donutCorrect" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--success)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
+                            <path id="donutWrong" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--danger)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
+                            <path id="donutSkip" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--warning)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
+                        </svg>
+                        <div class="donut-inner-label">
+                            <span id="accuracyDisplay">0%</span>
+                            <small>অ্যাকিউরেসি</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- লিজেন্ড: সঠিক, ভুল, স্কিপ -->
+            <div class="chart-legend-row">
+                <span class="legend-item"><span class="legend-dot" style="background:var(--success);"></span> সঠিক</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--danger);"></span> ভুল</span>
+                <span class="legend-item"><span class="legend-dot" style="background:var(--warning);"></span> স্কিপ</span>
+            </div>
             
             <div id="meritSection" style="background: linear-gradient(135deg, #f1f2f6, #ffffff); padding: 18px; border-radius: 15px; margin: 15px 0; border: 1px solid #dcdde1;">
                 <i class="fas fa-trophy" style="color:#fdcb6e; font-size:24px; margin-bottom:10px;"></i>
                 <div id="rankLoading"><i class="fas fa-spinner fa-spin"></i> র‍্যাঙ্ক চেক করা হচ্ছে...</div>
                 <div id="rankContent" style="display:none; font-size:16px; line-height:1.6; color:#2d3436;"></div>
-            </div>
-
-                        <!-- 🟢 চর্চা-স্টাইল ডোনাট গ্রাফ (সঠিক, ভুল, স্কিপ) 🟢 -->
-            <div id="chartSection" style="margin: 20px auto 15px auto; max-width: 320px; display: flex; flex-direction: column; align-items: center;">
-                <div style="position: relative; width: 145px; height: 145px;">
-                    <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#edf2f7" stroke-width="4"/>
-                        <path id="donutCorrect" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--success)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
-                        <path id="donutWrong" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--danger)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
-                        <path id="donutSkip" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--warning)" stroke-width="4" stroke-dasharray="0 100" style="transition: all 1s ease;"/>
-                    </svg>
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none;">
-                        <span id="accuracyDisplay" style="font-size: 22px; font-weight: 800; color: #2d3436;">0%</span>
-                        <small style="font-size: 11px; color: #636e72; font-weight: 600;">অ্যাকিউরেসি</small>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 14px; margin-top: 10px; font-size: 13px; font-weight: 600;">
-                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:var(--success);"></span> সঠিক</span>
-                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:var(--danger);"></span> ভুল</span>
-                    <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px; height:10px; border-radius:50%; background:var(--warning);"></span> স্কিপ</span>
-                </div>
             </div>
             <div class="stats-container">
                 <div class="stat-box s-correct">সঠিক: <span id="correct">0</span></div>
