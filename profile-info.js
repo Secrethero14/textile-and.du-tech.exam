@@ -22,38 +22,7 @@ async function loadUserProfile(email) {
                 el.querySelector('span').innerText = data.phone;
                 document.getElementById('inpPhone').value = data.phone;
             }
-            if(data.mentalSupport) {
-                if (typeof renderMentalChat === 'function') {
-                    renderMentalChat(data.mentalSupport);
-                }
-
-                let latestReply = data.mentalSupport.reply || null;
-                let replyTime = data.mentalSupport.repliedAt || null;
-
-                if (Array.isArray(data.mentalSupport.messages) && data.mentalSupport.messages.length > 0) {
-                    const adminMsgs = data.mentalSupport.messages.filter(m => m.sender === 'admin');
-                    if (adminMsgs.length > 0) {
-                        const lastAdmin = adminMsgs[adminMsgs.length - 1];
-                        latestReply = lastAdmin.text;
-                        replyTime = lastAdmin.timestamp;
-                    }
-                }
-
-                if(latestReply) {
-                    const banner = document.getElementById('adminReplyBanner');
-                    if (banner) {
-                        banner.style.display = 'block';
-                        document.getElementById('adminReplyText').innerText = latestReply;
-                        let dStr = "সাম্প্রতিক";
-                        if (replyTime) {
-                            const rDate = parseDate(replyTime);
-                            if (rDate) dStr = rDate.toLocaleDateString("bn-BD", { day: 'numeric', month: 'short', year: 'numeric' });
-                        }
-                        document.getElementById('adminReplyDate').innerText = dStr;
-                    }
-                }
             }
-        }
     } catch (e) { console.error("Profile load error:", e); }
 }
 
