@@ -114,6 +114,21 @@
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge-user:hover {
+            background: #e0e7ff;
+            color: var(--primary-dark);
+            transform: translateY(-1px);
         }
 
         /* Container */
@@ -473,6 +488,42 @@
         }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+        /* Mobile Navbar Optimizations */
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 8px 12px;
+                gap: 6px;
+            }
+            .nav-left {
+                gap: 8px;
+                min-width: 0;
+                flex: 1;
+            }
+            .btn-back {
+                padding: 6px 9px;
+                font-size: 12px;
+                gap: 4px;
+                flex-shrink: 0;
+            }
+            .nav-title {
+                font-size: 14.5px;
+                gap: 5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .nav-right {
+                flex-shrink: 0;
+            }
+            .badge-user {
+                padding: 5px 9px;
+                font-size: 12px;
+                max-width: 110px;
+                gap: 4px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -480,17 +531,17 @@
     <!-- Navbar -->
     <div class="navbar">
         <div class="nav-left">
-            <a href="index.html" class="btn-back">
-                <i class="fas fa-arrow-left"></i> হোমপেজ
+            <a href="index.html" class="btn-back" title="হোমপেজে ফিরে যান">
+                <i class="fas fa-arrow-left"></i> <span>হোমপেজ</span>
             </a>
             <div class="nav-title">
-                <i class="fas fa-book-open"></i> ভুল ব্যাংক (Mistake Bank)
+                <i class="fas fa-book-open"></i> <span>ভুল ব্যাংক</span>
             </div>
         </div>
         <div class="nav-right">
-            <span class="badge-user" id="userBadge">
-                <i class="fas fa-circle-notch fa-spin"></i> লোডিং...
-            </span>
+            <a href="index.html" class="badge-user" id="userBadge" title="হোমপেজে যান">
+                <i class="fas fa-circle-notch fa-spin"></i> <span>লোড হচ্ছে...</span>
+            </a>
         </div>
     </div>
 
@@ -637,11 +688,22 @@
                 const badge = document.getElementById('userBadge');
                 if (user) {
                     currentUser = user;
-                    badge.innerHTML = `<i class="fas fa-user-check"></i> ${user.displayName || user.email}`;
+                    let nameDisplay = 'প্রোফাইল';
+                    if (user.displayName) {
+                        nameDisplay = user.displayName.trim().split(' ')[0];
+                    } else if (user.email) {
+                        nameDisplay = user.email.split('@')[0];
+                    }
+                    if (nameDisplay.length > 12) {
+                        nameDisplay = nameDisplay.substring(0, 10) + '..';
+                    }
+                    badge.innerHTML = `<i class="fas fa-user-circle"></i> <span>${nameDisplay}</span>`;
+                    badge.setAttribute('title', (user.displayName || user.email) + ' (হোমপেজে যান)');
                     loadMistakesFromFirestore(user.email);
                 } else {
                     currentUser = null;
-                    badge.innerHTML = `<i class="fas fa-user"></i> Guest Mode`;
+                    badge.innerHTML = `<i class="fas fa-user"></i> <span>Guest</span>`;
+                    badge.setAttribute('title', 'Guest Mode (হোমপেজে যান)');
                     loadMistakesFromLocalStorage();
                 }
             });
