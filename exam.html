@@ -688,7 +688,6 @@
                 let userAnswers = {};
                 let mistakesToSave = [];
                 let solvedMistakeIds = [];
-                let solvedQuestionsList = [];
                 
                 const timeTaken = Math.floor((new Date() - startTime) / 1000);
 
@@ -702,10 +701,10 @@
                     
                     let rightAns = isMCQ(q) ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     
-                    const rawSub = q["Subject"] ? String(q["Subject"]).trim() : "সকল বিষয়";
+                    const rawSub = q["Subject"] ? String(q["Subject"]).trim() : "General";
                     const rawCh = q["Chapter"] || q["অধ্যায়"] || q["টপিক"] || q["Topic"] || "";
-                    const ch = (rawCh && rawCh.trim() !== "" && rawCh.trim().toLowerCase() !== "general") ? rawCh.trim() : "সম্পূর্ণ প্রশ্নপত্র (Full Paper)";
-                    const sub = (rawSub.toLowerCase() === "general") ? "সকল বিষয়" : rawSub;
+                    const ch = rawCh.trim() !== "" ? rawCh.trim() : (rawSub !== "General" ? rawSub : "General");
+                    const sub = rawSub;
 
                     // Composite key so different subjects never collide under 'General' or same chapter name!
                     const key = `${sub}:::${ch}`;
@@ -741,8 +740,6 @@
                             secureScore += markPerQuestion; 
                             secureCorrect++; 
                             chapterAnalysis[key].correct++;
-                            
-                            // 🎯 অটোমেটিক ভুল ব্যাংক থেকে সমাধান/মুছে ফেলা (Re-Test ও Regular Exam উভয় মোডেই)
                             if (isMistakeMode) {
                                 if (q.allDocIds && Array.isArray(q.allDocIds) && q.allDocIds.length > 0) {
                                     solvedMistakeIds.push(...q.allDocIds);
@@ -750,12 +747,6 @@
                                     solvedMistakeIds.push(q._id);
                                 }
                             }
-                            solvedQuestionsList.push({
-                                examId: isMistakeMode ? (q.examId || tabId) : tabId,
-                                originalIndex: isMistakeMode ? (q.originalIndex !== undefined ? q.originalIndex : qIdx) : qIdx,
-                                questionText: (q["প্রশ্ন (LaTeX সহ)"] || "").trim(),
-                                docIds: (isMistakeMode && q.allDocIds) ? q.allDocIds : (q._id ? [q._id] : [])
-                            });
                         } else {
                             secureScore -= negativeMark; 
                             secureWrong++;
@@ -826,18 +817,17 @@
                         optD: q["অপশন D"] || "",
                         answer: q["উত্তর"] || "",
                         explanation: q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা (LaTeX সহ)"] || q["ব্যাখ্যা"] || "",
-                        subject: q["Subject"] || "সকল বিষয়",
-                        chapter: (q["Chapter"] || q["অধ্যায়"] || "").trim() || "সম্পূর্ণ প্রশ্নপত্র (Full Paper)"
+                        subject: q["Subject"] || "General",
+                        chapter: q["Chapter"] || q["অধ্যায়"] || "General"
                     }));
                 }
 
                 const finalRecord = { ...cleanData(rawData), timestamp: firebase.firestore.FieldValue.serverTimestamp() };
 
                 const docRef = await db.collection("exam_results").add(finalRecord);
-                // --- Save mistakes & auto-clean solved ones in Firestore & LocalStorage ---
+                // --- Save mistakes to Firestore & LocalStorage ---
                 try {
-                    // ১. নতুন ভুলগুলো সেভ করা (শুধু ভুল হলে)
-                    if (user && mistakesToSave.length > 0) {
+                    if (user) {
                         for (const m of mistakesToSave) {
                             const docId = (user.email + "_" + m.examId + "_" + m.originalIndex).replace(/[/\s#\?]/g, "_");
                             await db.collection("user_mistakes").doc(docId).set({
@@ -846,7 +836,10 @@
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             }, { merge: true });
                         }
-                    } else if (!user && mistakesToSave.length > 0) {
+                        for (const sId of solvedMistakeIds) {
+                            await db.collection("user_mistakes").doc(sId).delete().catch(console.error);
+                        }
+                    } else {
                         let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
                         mistakesToSave.forEach(m => {
                             if (!localList.some(lm => lm.examId === m.examId && lm.originalIndex === m.originalIndex)) {
@@ -855,41 +848,14 @@
                         });
                         localStorage.setItem("user_mistakes", JSON.stringify(localList));
                     }
-
-                    // ২. সঠিক উত্তর দেওয়া প্রশ্নগুলো ভুল ব্যাংক থেকে সম্পূর্ণ অটো-ক্লিয়ার করা
-                    const solvedDocIds = new Set(solvedMistakeIds);
-                    solvedQuestionsList.forEach(sq => {
-                        if (sq.docIds) sq.docIds.forEach(id => { if (id) solvedDocIds.add(id); });
-                        if (user && user.email) {
-                            const possibleId = (user.email + "_" + sq.examId + "_" + sq.originalIndex).replace(/[/\s#\?]/g, "_");
-                            solvedDocIds.add(possibleId);
-                        }
-                    });
-
-                    // Firestore থেকে ডিলিট
-                    if (user && solvedDocIds.size > 0) {
-                        for (const sId of solvedDocIds) {
-                            await db.collection("user_mistakes").doc(sId).delete().catch(console.error);
-                        }
-                    }
-
-                    // LocalStorage থেকে ডিলিট (যাতে রিলোড বা অফলাইনেও ভুল ফেরত না আসে)
-                    try {
-                        let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
-                        if (localList.length > 0) {
-                            localList = localList.filter(lm => {
-                                if (lm._id && solvedDocIds.has(lm._id)) return false;
-                                const match = solvedQuestionsList.some(sq => {
-                                    const matchExamIdx = (lm.examId === sq.examId && String(lm.originalIndex) === String(sq.originalIndex));
-                                    const matchText = sq.questionText && lm.question && (lm.question.trim() === sq.questionText);
-                                    return matchExamIdx || matchText;
-                                });
-                                return !match;
-                            });
+                    if (solvedMistakeIds.length > 0) {
+                        try {
+                            let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
+                            localList = localList.filter(lm => !solvedMistakeIds.includes(lm._id));
                             localStorage.setItem("user_mistakes", JSON.stringify(localList));
-                        }
-                    } catch(e) { console.error("LocalStorage clean error:", e); }
-                } catch (mistakeErr) { console.error("Mistake save/clean error:", mistakeErr); }
+                        } catch(e) {}
+                    }
+                } catch (mistakeErr) { console.error("Mistake save error:", mistakeErr); }
 
                 
                 
