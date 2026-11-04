@@ -1236,40 +1236,27 @@ body, button, input, select, textarea {
     box-sizing: border-box;
     pointer-events: none;
     border: 2.5px solid #10b981;
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(16, 185, 129, 0.08);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 .target-bkash {
-    top: 4%;
-    right: 2%;
-    width: 23%;
-    height: 92%;
+    top: 20%;
+    right: 3.5%;
+    width: 22.3%;
+    height: 74%;
 }
 .target-nagad {
-    top: 4%;
-    left: 2%;
-    width: 23%;
-    height: 92%;
+    top: 5.5%;
+    left: 3.3%;
+    width: 22.0%;
+    height: 91%;
 }
 .target-rocket {
-    top: 4%;
-    left: 2%;
-    width: 23%;
-    height: 92%;
-}
-.target-badge {
-    position: absolute;
-    top: -9px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #10b981;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 10px;
-    white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    top: 15.7%;
+    left: 2.4%;
+    width: 21.5%;
+    height: 76.4%;
 }
 
 /* Branded Instruction Cards */
