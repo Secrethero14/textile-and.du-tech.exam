@@ -100,10 +100,10 @@
                 </a>
             </div>
 
-            <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে ভর্তি ও পেমেন্টের নিয়ম দেখতে ক্লিক করুন">
+            <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে যুক্ত হতে ক্লিক করুন">
                 <div class="promo-content">
                     <h2 class="promo-title">Textile Engineering Admission Preparation</h2>
-                    <p class="promo-subtitle">সম্পূর্ণ কোর্স ফি মাত্র ১০০ টাকা • অধ্যায়ভিত্তিক প্রশ্নব্যাংক ও ফাইনাল মডেল টেস্ট</p>
+                    <p class="promo-subtitle">কোর্সে যুক্ত হতে ক্লিক করুন</p>
                 </div>
                 <div class="promo-actions">
                     <button onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay">
@@ -158,7 +158,7 @@
         </footer>
     </div>
 
-    <!-- 🔴 পেমেন্ট মডাল 🔴 -->
+    <!-- 🔴 নতুন মডার্ন ৩-ট্যাব পেমেন্ট মডাল 🔴 -->
     <div id="paymentModal" class="modal-overlay" onclick="if(event.target === this) closePaymentModal()">
         <div class="payment-modal-content">
             <!-- Modal Header -->
@@ -170,69 +170,127 @@
                 <button class="pay-modal-close" onclick="closePaymentModal()" title="বন্ধ করুন">&times;</button>
             </div>
 
-            <!-- ১. বিকাশ মার্চেন্ট পেমেন্ট -->
-            <div class="pay-method-card">
-                <div class="pay-method-title">
-                    <i class="fas fa-wallet" style="color:#d81b60;"></i> বিকাশ (bKash) পেমেন্ট
-                </div>
+            <!-- ৩টি পেমেন্ট মেথড ট্যাব -->
+            <div class="pay-method-tabs">
+                <button type="button" class="pay-tab-btn active" id="tabBtn-bkash" onclick="switchPayTab('bkash')">
+                    <span class="tab-indicator dot-bkash"></span> বিকাশ
+                </button>
+                <button type="button" class="pay-tab-btn" id="tabBtn-nagad" onclick="switchPayTab('nagad')">
+                    <span class="tab-indicator dot-nagad"></span> নগদ
+                </button>
+                <button type="button" class="pay-tab-btn" id="tabBtn-rocket" onclick="switchPayTab('rocket')">
+                    <span class="tab-indicator dot-rocket"></span> রকেট
+                </button>
+            </div>
 
-                <div class="pay-num-display">
-                    <div class="num-wrap">
-                        <span class="num-label">মার্চেন্ট নম্বর:</span>
-                        <span class="num-digits" id="bkashNum">01522102384</span>
+            <!-- ট্যাব ১: বিকাশ মার্চেন্ট পেমেন্ট -->
+            <div id="payTab-bkash" class="pay-tab-pane active">
+                <div class="pay-guide-preview">
+                    <div class="guide-img-box">
+                        <img src="assets/payment/bkash_guide.jpg" alt="bKash Services" class="pay-guide-img">
+                        <div class="guide-target-box target-bkash">
+                            <span class="target-badge">👈 পেমেন্ট</span>
+                        </div>
                     </div>
-                    <button class="btn-copy-num" onclick="copyPaymentNumber('01522102384', this)">
-                        <i class="fas fa-copy"></i> কপি করুন
-                    </button>
                 </div>
 
-                <div class="pay-alert-warning">
-                    ⚠️ <strong>সতর্কতা:</strong> এটি মার্চেন্ট অ্যাকাউন্ট, তাই Send Money হবে না। বিকাশ অ্যাপে গিয়ে <strong>"Payment" (মেক পেমেন্ট)</strong> অপশন থেকে টাকা পাঠাতে হবে।
-                </div>
+                <div class="pay-instruction-card card-bkash">
+                    <div class="pay-inst-header">
+                        <span class="badge-method-type">মার্চেন্ট পেমেন্ট</span>
+                        <span class="fee-pill">ফি: ১০০ টাকা</span>
+                    </div>
+                    
+                    <p class="pay-inst-note">
+                        ⚠️ <strong>সতর্কতা:</strong> এটি মার্চেন্ট অ্যাকাউন্ট, তাই সেন্ড মানি করবেন না (সেন্ড মানি হবে না)। বিকাশ অ্যাপের <strong>"Payment" (মেক পেমেন্ট)</strong> অপশন ব্যবহার করে ১০০ টাকা পেমেন্ট সম্পন্ন করুন।
+                    </p>
 
-                <div class="pay-alert-benefit">
-                    💡 <strong>০% খরচ সুবিধা:</strong> মার্চেন্ট পেমেন্টে আপনার কোনো সেন্ড মানি বা ক্যাশআউট চার্জ কাটবে না (সম্পূর্ণ ফ্রি)।
-                </div>
-
-                <div class="pay-steps">
-                    <div class="step-item"><span class="step-num">১</span> বিকাশ অ্যাপে ঢুকে <strong>Payment (পেমেন্ট)</strong> চাপুন</div>
-                    <div class="step-item"><span class="step-num">২</span> নম্বর দিন: <code>01522102384</code> এবং পরিমাণ: <code>১০০</code> টাকা</div>
-                    <div class="step-item"><span class="step-num">৩</span> পিন দিয়ে পেমেন্ট সফল করুন ও TrxID সংরক্ষণ করুন</div>
+                    <div class="pay-num-box">
+                        <div class="num-text-wrap">
+                            <span class="num-sub">BKASH MERCHANT NUMBER</span>
+                            <span class="num-val">01522102384</span>
+                        </div>
+                        <button type="button" class="btn-copy-action" onclick="copyPaymentData('01522102384', this)">
+                            <i class="fas fa-copy"></i> কপি করুন
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- ২. নগদ / রকেট সেন্ড মানি -->
-            <div class="pay-method-card">
-                <div class="pay-method-title">
-                    <i class="fas fa-mobile-alt" style="color:#ea580c;"></i> নগদ বা রকেট (Nagad / Rocket)
-                </div>
-
-                <div class="pay-num-display">
-                    <div class="num-wrap">
-                        <span class="num-label">পার্সোনাল নম্বর:</span>
-                        <span class="num-digits" id="personalNum">01873275283</span>
+            <!-- ট্যাব ২: নগদ পার্সোনাল সেন্ড মানি -->
+            <div id="payTab-nagad" class="pay-tab-pane">
+                <div class="pay-guide-preview">
+                    <div class="guide-img-box">
+                        <img src="assets/payment/nagad_guide.jpg" alt="Nagad Services" class="pay-guide-img">
+                        <div class="guide-target-box target-nagad">
+                            <span class="target-badge">👈 সেন্ড মানি</span>
+                        </div>
                     </div>
-                    <button class="btn-copy-num" onclick="copyPaymentNumber('01873275283', this)">
-                        <i class="fas fa-copy"></i> কপি করুন
-                    </button>
                 </div>
 
-                <div class="pay-note-simple">
-                    📌 নগদ বা রকেটে ১০০ টাকা <strong>Send Money (সেন্ড মানি)</strong> করুন।
+                <div class="pay-instruction-card card-nagad">
+                    <div class="pay-inst-header">
+                        <span class="badge-method-type">পার্সোনাল সেন্ড মানি</span>
+                        <span class="fee-pill">ফি: ১০০ টাকা</span>
+                    </div>
+
+                    <p class="pay-inst-note">
+                        📌 আপনার নগদ অ্যাপ অথবা *167# ডায়াল করে <strong>"সেন্ড মানি (Send Money)"</strong> অপশনে গিয়ে ১০০ টাকা পাঠিয়ে দিন।
+                    </p>
+
+                    <div class="pay-num-box">
+                        <div class="num-text-wrap">
+                            <span class="num-sub">NAGAD PERSONAL NUMBER</span>
+                            <span class="num-val">01873275283</span>
+                        </div>
+                        <button type="button" class="btn-copy-action" onclick="copyPaymentData('01873275283', this)">
+                            <i class="fas fa-copy"></i> কপি করুন
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- ৩. পেমেন্ট তথ্য সাবমিট বাটন -->
-            <div class="pay-action-section">
-                <p class="pay-action-instruction">
-                    টাকা পাঠানোর পর নিচের ফর্মে গিয়ে আপনার তথ্য সাবমিট করুন:
-                </p>
+            <!-- ট্যাব ৩: রকেট পার্সোনাল সেন্ড মানি -->
+            <div id="payTab-rocket" class="pay-tab-pane">
+                <div class="pay-guide-preview">
+                    <div class="guide-img-box">
+                        <img src="assets/payment/rocket_guide.jpg" alt="Rocket Services" class="pay-guide-img">
+                        <div class="guide-target-box target-rocket">
+                            <span class="target-badge">👈 Send Money</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pay-instruction-card card-rocket">
+                    <div class="pay-inst-header">
+                        <span class="badge-method-type">পার্সোনাল সেন্ড মানি</span>
+                        <span class="fee-pill">ফি: ১০০ টাকা</span>
+                    </div>
+
+                    <p class="pay-inst-note">
+                        📌 আপনার রকেট অ্যাপ অথবা *322# ডায়াল করে <strong>"Send Money (সেন্ড মানি)"</strong> অপশনে গিয়ে ১০০ টাকা পাঠিয়ে দিন।
+                    </p>
+
+                    <div class="pay-num-box">
+                        <div class="num-text-wrap">
+                            <span class="num-sub">ROCKET PERSONAL NUMBER</span>
+                            <span class="num-val">01925251621</span>
+                        </div>
+                        <button type="button" class="btn-copy-action" onclick="copyPaymentData('01925251621', this)">
+                            <i class="fas fa-copy"></i> কপি করুন
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- কনফার্মেশন ও ফর্ম সাবমিট -->
+            <div class="pay-submit-footer">
+                <p class="pay-submit-notice">টাকা পাঠানোর পর নিচের ফর্মে গিয়ে আপনার তথ্য সাবমিট করুন:</p>
                 <a href="give_access.html" class="btn-submit-payment">
                     <i class="fas fa-file-invoice"></i> কোর্সে ভর্তির তথ্য সাবমিট করুন (ফর্ম)
                 </a>
             </div>
 
-            <!-- ৪. সাপোর্ট ও বন্ধ -->
+            <!-- সাপোর্ট বার -->
             <div class="pay-support-bar">
                 <span>যেকোনো সমস্যায় WhatsApp করুন:</span>
                 <a href="https://wa.me/8801873275283" target="_blank" rel="noopener noreferrer" class="btn-pay-wa">

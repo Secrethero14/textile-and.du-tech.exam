@@ -1,3 +1,35 @@
+
+// 🔴 পেমেন্ট মোডাল হেল্পার (ট্যাব ও কপি) 🔴
+function switchPayTab(tab) {
+    ['bkash', 'nagad', 'rocket'].forEach(t => {
+        const btn = document.getElementById('tabBtn-' + t);
+        const pane = document.getElementById('payTab-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (pane) pane.classList.toggle('active', t === tab);
+    });
+}
+
+function copyPaymentData(text, btn) {
+    if (!navigator.clipboard) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    } else {
+        navigator.clipboard.writeText(text);
+    }
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> ✓ কপি হয়েছে!';
+    btn.style.background = '#10b981';
+    btn.style.color = '#ffffff';
+    setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.style.background = '';
+        btn.style.color = '';
+    }, 2000);
+}
 const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
 
@@ -364,19 +396,23 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             if (hasMaster) {
                 if (!currentMaster) {
                     // লেভেল ০: হোম পেজ (মাস্টার ক্যাটাগরি ফোল্ডারগুলো দেখাবে)
+                    const navHeader = document.querySelector('.nav-header');
+                    if (navHeader) navHeader.style.display = 'none';
                     backBtn.style.display = 'none';
-                    pathTitle.innerText = "Textile Engineering Admission Preparation";
-                    container.className = "exam-grid";
+                    container.className = "master-folders-list";
 
                     const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
                     let html = "";
                     masterCats.forEach(mCat => {
                         const count = allExams.filter(e => e['Master Category'] === mCat).length;
                         html += `
-                            <div class="item-card folder-card" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
-                                <div class="icon-box folder-icon"><i class="fas fa-layer-group"></i></div>
-                                <h3 style="margin:0;">${mCat}</h3>
-                                <p style="font-size:12px; color:#888; margin-top:5px;">${count} Items</p>
+                            <div class="folder-card-modern" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
+                                <div class="folder-icon-wrap"><i class="fas fa-layer-group"></i></div>
+                                <div class="folder-info">
+                                    <h3 class="folder-title">${mCat}</h3>
+                                    <span class="folder-meta">${count} Items • অধ্যায়ভিত্তিক পরীক্ষা</span>
+                                </div>
+                                <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
                             </div>`;
                     });
                     container.innerHTML = html;
@@ -391,6 +427,8 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
 
                     if (categories.length > 0) {
                         // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ ফোল্ডার দেখাও
+                        const navHeader = document.querySelector('.nav-header');
+                        if (navHeader) navHeader.style.display = 'flex';
                         backBtn.style.display = 'block';
                         pathTitle.innerText = currentMaster;
                         container.className = "category-grid"; // ২ কলাম গ্রিড
