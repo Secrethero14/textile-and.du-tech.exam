@@ -155,15 +155,52 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         });
 
         function handleGoogleLogin() {
+            const googleBtn = document.querySelector('.btn-google');
+            const originalText = googleBtn ? googleBtn.innerHTML : '';
+            if (googleBtn) {
+                googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> কানেক্ট হচ্ছে...';
+                googleBtn.style.pointerEvents = 'none';
+                googleBtn.style.opacity = '0.7';
+            }
+
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+
             auth.signInWithPopup(provider)
-                .then((result) => { console.log("Logged in:", result.user); })
+                .then((result) => { 
+                    console.log("Logged in:", result.user); 
+                })
                 .catch((error) => {
                     console.error("Login Error:", error);
                     document.getElementById('system-loader').style.display = 'none';
+                    if (googleBtn) {
+                        googleBtn.innerHTML = originalText;
+                        googleBtn.style.pointerEvents = 'auto';
+                        googleBtn.style.opacity = '1';
+                    }
+                    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+                        return;
+                    }
+                    if (error.code === 'auth/popup-blocked') {
+                        auth.signInWithRedirect(provider);
+                        return;
+                    }
+                    if (error.code === 'auth/network-request-failed') {
+                        alert("ইন্টারনেট সংযোগে সমস্যা দেখা দিয়েছে। দয়া করে আপনার মোবাইল ডেটা/ওয়াইফাই চেক করে আবার চেষ্টা করুন।");
+                        return;
+                    }
                     alert("লগইন সমস্যা: " + error.message);
                 });
         }
+
+        // Handle redirect result if redirect login occurred on mobile
+        auth.getRedirectResult().then((result) => {
+            if (result && result.user) {
+                console.log("Redirect login successful:", result.user);
+            }
+        }).catch(err => {
+            console.error("Redirect login error:", err);
+        });
 
         function handleGuestWithWarning() {
             if(confirm('লগইন ছাড়া এক্সাম দিলে আপনার মেরিট পজিশন সেভ হবে না।\nআপনি কি নিশ্চিত?')) {
@@ -400,26 +437,117 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
 
             if (hasMaster) {
                 if (!currentMaster) {
-                    // লেভেল ০: হোম পেজ (মাস্টার ক্যাটাগরি ফোল্ডারগুলো দেখাবে)
+                    // লেভেল ০: আকর্ষণীয় ড্যাশবোর্ড ও ২x২ গ্রিড হোম পেজ
                     const navHeader = document.querySelector('.nav-header');
                     if (navHeader) navHeader.style.display = 'none';
                     backBtn.style.display = 'none';
-                    container.className = "master-folders-list";
+                    container.className = "home-dashboard-wrapper";
 
-                    const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
-                    let html = "";
-                    masterCats.forEach(mCat => {
-                        const count = allExams.filter(e => e['Master Category'] === mCat).length;
-                        html += `
-                            <div class="folder-card-modern" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
-                                <div class="folder-icon-wrap"><i class="fas fa-layer-group"></i></div>
-                                <div class="folder-info">
-                                    <h3 class="folder-title">${mCat}</h3>
-                                    <span class="folder-meta">${count} Items • অধ্যায়ভিত্তিক পরীক্ষা</span>
+                    const examItems = allExams.filter(e => e['Master Category'] === 'TEXTILE STANDARD EXAM');
+                    const examCount = examItems.length > 0 ? examItems.length : 117;
+                    const infoItems = allExams.filter(e => e['Master Category'] === 'About Textile Engineering');
+                    const infoCount = infoItems.length > 0 ? infoItems.length : 4;
+
+                    let html = `
+                        <!-- 🌟 Hero Section 🌟 -->
+                        <div class="home-hero-card">
+                            <div class="hero-brand-badge">
+                                <i class="fas fa-graduation-cap"></i> টেক্সটাইল ভর্তি প্রস্তুতি
+                            </div>
+                            <h1 class="hero-brand-title">Habib's Care</h1>
+                            <p class="hero-brand-tagline">Your Textile Engineering Journey Companion</p>
+                            <p class="hero-brand-desc">অধ্যায়ভিত্তিক পরীক্ষা, বিগত বছরের প্রশ্নব্যাংক এবং পূর্ণাঙ্গ প্রস্তুতি</p>
+                        </div>
+
+                        <!-- 🌟 2x2 Feature Dashboard Grid 🌟 -->
+                        <div class="home-dashboard-grid">
+                            <!-- Card 1: Standard Exams -->
+                            <div class="dash-card card-exam" onclick="openMaster('TEXTILE STANDARD EXAM')">
+                                <div class="dash-card-header">
+                                    <div class="dash-icon-box icon-exam">
+                                        <i class="fas fa-book-reader"></i>
+                                    </div>
+                                    <span class="dash-badge badge-exam">${examCount} Items</span>
                                 </div>
-                                <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
-                            </div>`;
-                    });
+                                <h3 class="dash-title">টেক্সটাইল স্ট্যান্ডার্ড এক্সাম</h3>
+                                <p class="dash-desc">অধ্যায়ভিত্তিক পরীক্ষা, মডেল টেস্ট ও পূর্ণাঙ্গ প্রশ্নব্যাংক</p>
+                                <div class="dash-action">
+                                    <span>প্রবেশ করুন</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: About Textile Engineering -->
+                            <div class="dash-card card-info" onclick="openMaster('About Textile Engineering')">
+                                <div class="dash-card-header">
+                                    <div class="dash-icon-box icon-info">
+                                        <i class="fas fa-university"></i>
+                                    </div>
+                                    <span class="dash-badge badge-info">${infoCount} Items</span>
+                                </div>
+                                <h3 class="dash-title">টেক্সটাইল ইঞ্জিনিয়ারিং তথ্য</h3>
+                                <p class="dash-desc">ভর্তি গাইডলাইন, ক্যাম্পাস পরিচিতি ও ক্যারিয়ার নির্দেশনা</p>
+                                <div class="dash-action">
+                                    <span>তথ্য দেখুন</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Mistake Bank -->
+                            <a href="mistakes.html" class="dash-card card-mistakes">
+                                <div class="dash-card-header">
+                                    <div class="dash-icon-box icon-mistakes">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <span class="dash-badge badge-mistakes">স্মার্ট রি-টেস্ট</span>
+                                </div>
+                                <h3 class="dash-title">ভুল প্রশ্ন ব্যাংক</h3>
+                                <p class="dash-desc">ভুলগুলো অনুশীলন করে দুর্বলতা দূর করুন</p>
+                                <div class="dash-action">
+                                    <span>অনুশীলন করুন</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+
+                            <!-- Card 4: Performance & Merit -->
+                            <a href="profile.html" class="dash-card card-analytics">
+                                <div class="dash-card-header">
+                                    <div class="dash-icon-box icon-analytics">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <span class="dash-badge badge-analytics">মেধা তালিকা</span>
+                                </div>
+                                <h3 class="dash-title">ফলাফল ও মেধা তালিকা</h3>
+                                <p class="dash-desc">আপনার স্কোর, মেরিট পজিশন ও পারফরম্যান্স ট্র্যাক করুন</p>
+                                <div class="dash-action">
+                                    <span>প্রোফাইল দেখুন</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+
+                    // If other master categories exist in the sheet
+                    const otherMasters = [...new Set(allExams.map(e => e['Master Category']))]
+                        .filter(m => m && m !== 'TEXTILE STANDARD EXAM' && m !== 'About Textile Engineering' && String(m).trim() !== "");
+                    
+                    if (otherMasters.length > 0) {
+                        html += `<div class="other-folders-wrap" style="margin-top:16px;">`;
+                        otherMasters.forEach(mCat => {
+                            const count = allExams.filter(e => e['Master Category'] === mCat).length;
+                            html += `
+                                <div class="folder-card-modern" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
+                                    <div class="folder-icon-wrap"><i class="fas fa-folder"></i></div>
+                                    <div class="folder-info">
+                                        <h3 class="folder-title">${mCat}</h3>
+                                        <span class="folder-meta">${count} Items</span>
+                                    </div>
+                                    <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
+                                </div>`;
+                        });
+                        html += `</div>`;
+                    }
+
                     container.innerHTML = html;
                 } 
                 else if (currentMaster && !currentCategory) {

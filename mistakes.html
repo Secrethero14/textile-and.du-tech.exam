@@ -635,6 +635,7 @@
         function normalizeSubject(raw) {
             if (!raw) return "অন্যান্য (Other)";
             const s = String(raw).trim().toLowerCase();
+            if (s === 'general') return 'সকল বিষয়';
             if (s.includes('physic') || s.includes('পদার্থ')) return 'পদার্থবিজ্ঞান (Physics)';
             if (s.includes('chem') || s.includes('রসায়') || s.includes('রসায')) return 'রসায়ন (Chemistry)';
             if (s.includes('math') || s.includes('গণিত') || s.includes('হায়ার ম্যাথ')) return 'উচ্চতর গণিত (Higher Math)';
@@ -644,10 +645,11 @@
         }
 
         function normalizeChapter(raw) {
-            if (!raw) return "সাধারণ (General)";
+            if (!raw) return "সম্পূর্ণ প্রশ্নপত্র (Full Paper)";
             let c = String(raw).trim();
+            if (c.toLowerCase() === 'general') return "সম্পূর্ণ প্রশ্নপত্র (Full Paper)";
             c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
-            return c || "সাধারণ (General)";
+            return c || "সম্পূর্ণ প্রশ্নপত্র (Full Paper)";
         }
 
         // --- Smart Deduplication & Grouping ---
@@ -996,7 +998,7 @@
             }
 
             // Remove from local memory & LocalStorage
-            allMistakes = allMistakes.filter(m => !(m.examId === item.examId && m.originalIndex === item.originalIndex));
+            allMistakes = allMistakes.filter(m => !((m.examId === item.examId && String(m.originalIndex) === String(item.originalIndex)) || (item.question && m.question && m.question.trim() === item.question.trim())));
             try {
                 localStorage.setItem('user_mistakes', JSON.stringify(allMistakes));
             } catch(e) {}
