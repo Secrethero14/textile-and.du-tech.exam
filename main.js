@@ -179,9 +179,9 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             setTimeout(() => dashboardView.style.opacity = '1', 50);
             updateNavBar(null, true);
             const promoBanner = document.getElementById('promoBanner');
-            if (promoBanner) promoBanner.style.display = 'flex';
+            if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important');
             const successBanner = document.getElementById('successBanner');
-            if (successBanner) successBanner.style.display = 'none';
+            if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
             loadExams();
         } 
         
@@ -347,12 +347,12 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                         
                         if (!snap.empty) {
                             userEnrollment = 'TextileFull';
-                            if (promoBanner) promoBanner.style.display = 'none'; 
-                            if (successBanner) successBanner.style.display = 'flex';
+                            if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
+                            if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
                         } else {
                             userEnrollment = null;
-                            if (promoBanner) promoBanner.style.display = 'flex'; 
-                            if (successBanner) successBanner.style.display = 'none';
+                            if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
+                            if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
                         }
 
                         // পরীক্ষাগুলো অলরেডি লোড করা থাকলে সাথে সাথে রি-রেন্ডার করে আনলক করা

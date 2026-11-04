@@ -963,7 +963,7 @@ body, button, input, select, textarea {
     padding: 20px 18px !important;
     border-radius: 18px !important;
     margin-bottom: 20px !important;
-    display: flex !important;
+    
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1411,4 +1411,18 @@ body, button, input, select, textarea {
     flex-direction: column;
     gap: 12px;
     margin-bottom: 25px;
+}
+
+/* Strict banner visibility overrides */
+.promo-banner[style*="display: none"],
+.promo-banner[style*="display:none"] {
+    display: none !important;
+}
+.success-banner[style*="display: none"],
+.success-banner[style*="display:none"] {
+    display: none !important;
+}
+.success-banner[style*="display: flex"],
+.success-banner[style*="display:flex"] {
+    display: flex !important;
 }
