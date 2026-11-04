@@ -391,6 +391,11 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             document.getElementById('loader').style.display = 'none';
             container.innerHTML = "";
 
+            // 🔴 60-120 FPS GPU-Accelerated Smooth Transition 🔴
+            container.classList.remove('view-transition-in');
+            void container.offsetWidth; // Force layout reflow to restart CSS animation
+            container.classList.add('view-transition-in');
+
             const hasMaster = allExams.some(e => e['Master Category'] && String(e['Master Category']).trim() !== "");
 
             if (hasMaster) {

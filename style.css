@@ -85,7 +85,7 @@
         .forgot-pass { margin-top: 10px; font-size: 13px; cursor: pointer; color: #e17055; text-decoration: underline; display: inline-block; }
         .remember-me { text-align: left; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; color: #666; }
 
-        #dashboard-view { display: none; opacity: 0; transition: opacity 0.5s ease-in; }
+        #dashboard-view { display: none; opacity: 0; transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         
         .top-nav {
@@ -135,8 +135,31 @@
         .btn-pay { background: white; color: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 12px; white-space: nowrap; }
         .btn-pay:hover { transform: scale(1.05); }
         
-        .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .btn-back { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: var(--primary); font-weight: bold; display: none; }
+        .nav-header { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .btn-back { 
+            background: white; 
+            border: 1px solid #ddd; 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            color: var(--primary); 
+            font-weight: bold; 
+            display: none;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+            will-change: transform;
+        }
+        .btn-back:hover {
+            background-color: #f8fafc;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .btn-back:active {
+            transform: scale(0.95);
+        }
         
         /* 🔴 গ্রিড লেআউট 🔴 */
         .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
@@ -1059,6 +1082,17 @@ body, button, input, select, textarea {
     border: 1px solid #e2e8f0 !important;
     border-radius: 14px !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
+    cursor: pointer !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
+    will-change: transform;
+}
+.folder-card-modern:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06) !important;
+    border-color: #cbd5e1 !important;
+}
+.folder-card-modern:active {
+    transform: scale(0.975) !important;
 }
 .folder-card-modern .folder-icon-wrap {
     width: 44px;
@@ -1112,6 +1146,18 @@ body, button, input, select, textarea {
     max-height: 88vh !important;
     overflow-y: auto !important;
     box-sizing: border-box !important;
+    animation: modalSpringIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: transform, opacity;
+}
+@keyframes modalSpringIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(14px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 .pay-modal-header {
     display: flex;
@@ -1208,10 +1254,11 @@ body, button, input, select, textarea {
 }
 .pay-tab-pane.active {
     display: block;
-    animation: fadeInTab 0.25s ease;
+    animation: fadeInTab 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: transform, opacity;
 }
 @keyframes fadeInTab {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1412,4 +1459,22 @@ body, button, input, select, textarea {
 .success-banner[style*="display: flex"],
 .success-banner[style*="display:flex"] {
     display: flex !important;
+}
+
+
+/* 🔴 60-120 FPS GPU-ACCELERATED VIEW TRANSITION ENGINE 🔴 */
+.view-transition-in {
+    animation: viewSlideFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: transform, opacity;
+}
+
+@keyframes viewSlideFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.995);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
