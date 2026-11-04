@@ -89,33 +89,84 @@ html { scroll-behavior: smooth; }
         #dashboard-view { display: none; opacity: 0; transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
         
+        /* 🌟 TOP NAVIGATION BAR (Apar's Classroom Style) 🌟 */
         .top-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 65px;
-            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: fixed; top: 0; left: 0; width: 100%; height: 62px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #edf2f7;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; z-index: 1000; box-sizing: border-box;
+            padding: 0 20px; z-index: 1000; box-sizing: border-box;
         }
         .home-link { 
-            text-decoration: none; color: var(--primary); font-weight: bold; font-size: 18px; 
-            display: flex; align-items: center; gap: 8px; min-width: 0;
+            text-decoration: none; display: flex; align-items: center; gap: 10px; min-width: 0;
+            cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease;
         }
-        .home-link .brand-title {
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;
+        .home-link:hover { opacity: 0.9; transform: translateY(-1px); }
+        .nav-brand-logo {
+            width: 42px; height: 42px; border-radius: 50%; object-fit: cover;
+            background: #ffffff; border: 1.5px solid #edf2f7;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-shrink: 0;
+        }
+        .nav-brand-text {
+            display: flex; flex-direction: column; justify-content: center; line-height: 1.15;
+        }
+        .nav-brand-title {
+            font-size: 15px; font-weight: 800; color: #1e293b; letter-spacing: 0.6px;
+            white-space: nowrap;
+        }
+        .nav-brand-sub {
+            font-size: 9.5px; font-weight: 600; color: var(--primary); letter-spacing: 0.8px;
+            text-transform: uppercase; white-space: nowrap;
         }
         
         .auth-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .nav-actions-wrap { display: flex; align-items: center; gap: 8px; }
+        .nav-icon-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            text-decoration: none; cursor: pointer; border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); font-family: inherit;
+            box-sizing: border-box;
+        }
+        .nav-icon-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .nav-icon-btn:active { transform: translateY(0); }
+        .nav-icon-btn i { font-size: 14px; }
+
+        /* Button color variants matching Apar's style */
+        .nav-mistake { background: #fff3ee; color: #d35400; border-color: #ffd8cc; }
+        .nav-mistake i { color: #e17055; }
+        .nav-mistake:hover { background: #ffe6db; border-color: #ffbeaa; box-shadow: 0 4px 12px rgba(225, 112, 85, 0.18); }
+
+        .nav-profile { background: #f3f0ff; color: #5641e5; border-color: #ded6fd; }
+        .nav-profile i { color: #6c5ce7; }
+        .nav-profile:hover { background: #eae4fe; border-color: #c9bbfb; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.18); }
+
+        .nav-logout { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .nav-logout i { color: #ef4444; }
+        .nav-logout:hover { background: #fee2e2; border-color: #fca5a5; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.18); }
+
+        .nav-exit { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+        .nav-exit:hover { background: #e2e8f0; }
+
+        .guest-pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+            border-radius: 20px; background: #f8fafc; border: 1px dashed #cbd5e1;
+            color: #64748b; font-size: 12px; font-weight: 600;
+        }
+
+        /* Fallbacks for older classes if needed */
         .profile-btn-highlight {
             background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white;
             text-decoration: none; padding: 8px 12px; border-radius: 8px;
             font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); transition: transform 0.2s;
         }
         .btn-logout-text {
             background: #ff7675; color: white; border: none; padding: 8px 12px; 
             border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; 
-            display: flex; align-items: center; gap: 6px; transition: 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
-        .btn-logout-text:hover { background: #d63031; }
 
         .promo-banner { 
             background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; 
@@ -174,35 +225,57 @@ html { scroll-behavior: smooth; }
 
         @media (max-width: 600px) {
             .top-nav {
-                height: 58px !important;
+                height: 56px !important;
+                min-height: 56px !important;
                 padding: 0 10px !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
             }
             body {
-                padding-top: 68px !important;
+                padding-top: 66px !important;
             }
             .home-link {
-                font-size: 13px !important;
-                gap: 6px !important;
-                max-width: calc(100vw - 160px) !important;
+                gap: 7px !important;
+                width: auto !important;
+                max-width: none !important;
             }
-            .home-link .brand-title {
+            .nav-brand-logo {
+                width: 35px !important;
+                height: 35px !important;
+            }
+            .nav-brand-title {
                 font-size: 13px !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
+            }
+            .nav-brand-sub {
+                font-size: 8px !important;
             }
             .auth-buttons {
-                gap: 5px !important;
+                gap: 6px !important;
+                flex-wrap: nowrap !important;
             }
-            .profile-btn-highlight {
-                padding: 6px 9px !important;
-                font-size: 11px !important;
-                gap: 4px !important;
+            .nav-actions-wrap {
+                gap: 6px !important;
             }
-            .btn-logout-text {
-                padding: 6px 9px !important;
-                font-size: 11px !important;
-                gap: 4px !important;
+            .nav-btn-label {
+                display: none !important;
+            }
+            .nav-icon-btn {
+                width: 36px !important;
+                height: 36px !important;
+                padding: 0 !important;
+                border-radius: 10px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 14.5px !important;
+            }
+            .guest-text {
+                display: none !important;
+            }
+            .guest-pill {
+                padding: 6px !important;
+                border-radius: 10px !important;
             }
             .nav-header {
                 gap: 10px !important;
@@ -904,50 +977,59 @@ body, input, button, select, textarea {
 
 /* MOBILE RESPONSIVE OVERRIDES (<= 600px) */
 @media (max-width: 600px) {
-    .top-nav {
-        height: auto !important;
-        min-height: 80px !important;
-        padding: 8px 12px 10px 12px !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 6px !important;
-    }
-    body {
-        padding-top: 96px !important;
-    }
-    .home-link {
-        font-size: 14.5px !important;
-        gap: 6px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        justify-content: center !important;
-        text-align: center !important;
-    }
-    .home-link .brand-title {
-        font-size: 14.5px !important;
-        white-space: normal !important;
-        overflow: visible !important;
-        text-overflow: clip !important;
-        text-align: center !important;
-        line-height: 1.25 !important;
-    }
-    .auth-buttons {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        flex-wrap: wrap !important;
-        gap: 6px !important;
-    }
-    .profile-btn-highlight {
-        padding: 5px 10px !important;
-        font-size: 11.5px !important;
-    }
-    .btn-logout-text {
-        padding: 5px 10px !important;
-        font-size: 11.5px !important;
-    }
+            .top-nav {
+                height: 56px !important;
+                min-height: 56px !important;
+                padding: 0 10px !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            body {
+                padding-top: 66px !important;
+            }
+            .home-link {
+                gap: 7px !important;
+                width: auto !important;
+                max-width: none !important;
+            }
+            .nav-brand-logo {
+                width: 35px !important;
+                height: 35px !important;
+            }
+            .nav-brand-title {
+                font-size: 13px !important;
+            }
+            .nav-brand-sub {
+                font-size: 8px !important;
+            }
+            .auth-buttons {
+                gap: 6px !important;
+                flex-wrap: nowrap !important;
+            }
+            .nav-actions-wrap {
+                gap: 6px !important;
+            }
+            .nav-btn-label {
+                display: none !important;
+            }
+            .nav-icon-btn {
+                width: 36px !important;
+                height: 36px !important;
+                padding: 0 !important;
+                border-radius: 10px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 14.5px !important;
+            }
+            .guest-text {
+                display: none !important;
+            }
+            .guest-pill {
+                padding: 6px !important;
+                border-radius: 10px !important;
+            }
     .promo-banner {
         padding: 14px 15px !important;
         flex-direction: column !important;

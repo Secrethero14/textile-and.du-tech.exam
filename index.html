@@ -26,7 +26,7 @@
     <div id="login-view">
         <div class="login-card">
             <i class="fas fa-times close-login-card" onclick="handleGuestWithWarning()" title="Close & Guest Mode"></i>
-            <i class="fas fa-graduation-cap app-logo" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i>
+            <img src="assets/logo.png" alt="Habib's Care" class="login-brand-logo" style="width:72px; height:72px; border-radius:50%; margin:0 auto 12px auto; display:block; box-shadow:0 4px 14px rgba(0,0,0,0.08);">
             <h2 style="color:#2d3436; margin:0 0 5px 0;">Textile Engineering Admission Preparation</h2>
             <p style="color:#666; margin-bottom:30px;">লগইন করুন</p>
             <button class="btn-login btn-email" onclick="showLoginModal()">
@@ -80,8 +80,12 @@
 
     <div id="dashboard-view">
         <div class="top-nav">
-            <a href="index.html" class="home-link">
-                <i class="fas fa-graduation-cap"></i> <span class="brand-title">Textile Engineering Admission Preparation</span>
+            <a href="index.html" class="home-link" title="হোমপেজ">
+                <img src="assets/logo.png" alt="Habib's Care" class="nav-brand-logo">
+                <div class="nav-brand-text">
+                    <span class="nav-brand-title">HABIB'S CARE</span>
+                    <span class="nav-brand-sub">ESTD 2021 • Textile Prep</span>
+                </div>
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>

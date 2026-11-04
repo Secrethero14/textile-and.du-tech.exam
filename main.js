@@ -319,20 +319,32 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         function updateNavBar(user, guest=false) {
             const container = document.getElementById('authContainer');
             if (guest) {
-                container.innerHTML = `<span style="font-weight:bold; color:gray; font-size:13px; margin-right:8px;">Guest</span> <button onclick="location.reload()" class="btn-logout-text" style="background:#b2bec3;">Exit</button>`;
+                container.innerHTML = `
+                    <div class="nav-actions-wrap">
+                        <span class="guest-pill" title="Guest Mode"><i class="fas fa-user-secret"></i> <span class="guest-text">Guest</span></span>
+                        <button onclick="location.reload()" class="nav-icon-btn nav-exit" title="লগইন করুন">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span class="nav-btn-label">লগইন</span>
+                        </button>
+                    </div>`;
             } else {
                 container.innerHTML = `
-                    <a href="mistakes.html" class="profile-btn-highlight" style="background:#e17055; margin-right:4px;" title="ভুল ব্যাংক">
-                        <i class="fas fa-times-circle"></i> ভুল ব্যাংক
-                    </a>
-                    <a href="profile.html" class="profile-btn-highlight">
-                        <i class="fas fa-user"></i> প্রোফাইল
-                    </a>
-                    <button onclick="logout()" class="btn-logout-text" title="Logout">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                    <div class="nav-actions-wrap">
+                        <a href="mistakes.html" class="nav-icon-btn nav-mistake" title="ভুল প্রশ্ন ব্যাংক">
+                            <i class="fas fa-book-open"></i>
+                            <span class="nav-btn-label">ভুল ব্যাংক</span>
+                        </a>
+                        <a href="profile.html" class="nav-icon-btn nav-profile" title="আমার প্রোফাইল">
+                            <i class="fas fa-user"></i>
+                            <span class="nav-btn-label">প্রোফাইল</span>
+                        </a>
+                        <button onclick="logout()" class="nav-icon-btn nav-logout" title="লগআউট">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="nav-btn-label">লগআউট</span>
+                        </button>
+                    </div>
                 `;
-        }
+            }
         }
 
         function checkEnrollment(email) {
@@ -474,23 +486,16 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     pathTitle.innerText = currentMaster;
 
                     const masterExams = allExams.filter(e => e['Master Category'] === currentMaster);
-                    const bannerImg = getMasterBanner(currentMaster);
                     
                     // সাব-ক্যাটাগরি আছে কি না পরীক্ষা করা
                     const categories = [...new Set(masterExams.map(e => e['Category']))]
                         .filter(cat => cat && String(cat).trim() !== "" && cat !== "General" && cat !== currentMaster);
 
                     if (categories.length > 0) {
-                        // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ হিরো ব্যানার সহ ফোল্ডার গ্রিড দেখাও
+                        // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ ফোল্ডার গ্রিড দেখাও (ভেতরে কোনো ডুপ্লিকেট ব্যানার থাকবে না)
                         container.className = "category-grid";
 
                         let html = "";
-                        if (bannerImg) {
-                            html += `
-                                <div class="section-hero-banner" style="grid-column: 1 / -1;">
-                                    <img src="${bannerImg}" alt="${currentMaster}" class="section-banner-img" loading="lazy">
-                                </div>`;
-                        }
                         categories.forEach(cat => {
                             const count = masterExams.filter(e => e['Category'] === cat).length;
                             html += `
@@ -502,21 +507,14 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                         });
                         container.innerHTML = html;
                     } else {
-                        // সাব-ক্যাটাগরি নেই (যেমন About Textile Engineering) ➡️ হিরো ব্যানার সহ ভিডিও কার্ড দেখাও!
+                        // সাব-ক্যাটাগরি নেই (যেমন About Textile Engineering) ➡️ সরাসরি ভিডিও কার্ড দেখাও!
                         // 🔴 ব্যাক বাটন নিশ্চিত অন করা
                         if (navHeader) navHeader.style.display = 'flex';
                         backBtn.style.display = 'block';
                         pathTitle.innerText = currentMaster;
                         container.className = "category-grid";
 
-                        let bannerHtml = "";
-                        if (bannerImg) {
-                            bannerHtml = `
-                                <div class="section-hero-banner" style="grid-column: 1 / -1;">
-                                    <img src="${bannerImg}" alt="${currentMaster}" class="section-banner-img" loading="lazy">
-                                </div>`;
-                        }
-                        renderItems(masterExams, container, bannerHtml);
+                        renderItems(masterExams, container);
                     }
                 } 
                 else {
