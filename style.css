@@ -87,27 +87,27 @@ html { scroll-behavior: smooth; }
         .remember-me { text-align: left; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; color: #666; }
 
         #dashboard-view { display: none; opacity: 0; transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
-        .container { max-width: 1000px; margin: 0 auto; padding: 4px 20px 30px 20px; box-sizing: border-box; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 12px 20px 50px 20px; box-sizing: border-box; }
         
-        /* 🌟 TOP NAVIGATION BAR (Apar's Classroom Style - Zero Gap, Prominent Brand) 🌟 */
+        /* 🌟 TOP NAVIGATION BAR (Bigger Prominent Brand, Zero Gap) 🌟 */
         .top-nav {
-            position: fixed; top: 0; left: 0; width: 100%; height: 58px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 64px;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid #edf2f7;
             box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 16px; z-index: 1000; box-sizing: border-box;
+            padding: 0 18px; z-index: 1000; box-sizing: border-box;
         }
-        body { padding-top: 58px !important; }
+        body { padding-top: 64px !important; }
 
         .home-link { 
-            text-decoration: none; display: flex; align-items: center; gap: 10px; min-width: 0;
+            text-decoration: none; display: flex; align-items: center; gap: 11px; min-width: 0;
             cursor: pointer; transition: opacity 0.2s ease;
         }
         .home-link:hover { opacity: 0.92; }
         .nav-brand-logo {
-            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+            width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
             background: #ffffff; border: 1.5px solid #edf2f7;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); flex-shrink: 0;
         }
@@ -115,26 +115,26 @@ html { scroll-behavior: smooth; }
             display: flex; flex-direction: column; justify-content: center; line-height: 1.1;
         }
         .nav-brand-title {
-            font-size: 17px; font-weight: 900; color: #1e293b; letter-spacing: 0.6px;
+            font-size: 19px; font-weight: 900; color: #1e293b; letter-spacing: 0.6px;
             white-space: nowrap; text-transform: uppercase;
         }
         .nav-brand-sub {
-            font-size: 9.5px; font-weight: 700; color: var(--primary); letter-spacing: 0.8px;
-            text-transform: uppercase; white-space: nowrap; margin-top: 1px;
+            font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.8px;
+            text-transform: uppercase; white-space: nowrap; margin-top: 2px;
         }
         
         .auth-buttons { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .nav-actions-wrap { display: flex; align-items: center; gap: 8px; }
         .nav-icon-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 6px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+            padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
             text-decoration: none; cursor: pointer; border: 1px solid transparent;
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); font-family: inherit;
             box-sizing: border-box;
         }
         .nav-icon-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); }
         .nav-icon-btn:active { transform: translateY(0); }
-        .nav-icon-btn i { font-size: 13.5px; }
+        .nav-icon-btn i { font-size: 14px; }
 
         .nav-mistake { background: #fff3ee; color: #d35400; border-color: #ffd8cc; }
         .nav-mistake i { color: #e17055; }
@@ -226,35 +226,36 @@ html { scroll-behavior: smooth; }
 
         @media (max-width: 600px) {
             .top-nav {
-                height: 54px !important;
-                min-height: 54px !important;
-                padding: 0 10px !important;
+                height: 60px !important;
+                min-height: 60px !important;
+                padding: 0 12px !important;
                 flex-direction: row !important;
                 justify-content: space-between !important;
                 align-items: center !important;
             }
             body {
-                padding-top: 54px !important;
+                padding-top: 60px !important;
             }
             .container {
-                padding: 4px 10px 24px 10px !important;
+                padding: 4px 14px 40px 14px !important;
             }
             .home-link {
-                gap: 8px !important;
+                gap: 9px !important;
                 width: auto !important;
                 max-width: none !important;
             }
             .nav-brand-logo {
-                width: 36px !important;
-                height: 36px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
             .nav-brand-title {
-                font-size: 15px !important;
+                font-size: 16.5px !important;
                 font-weight: 900 !important;
-                letter-spacing: 0.4px !important;
+                letter-spacing: 0.5px !important;
             }
             .nav-brand-sub {
-                font-size: 8.5px !important;
+                font-size: 9.5px !important;
+                font-weight: 700 !important;
             }
             .auth-buttons {
                 gap: 6px !important;
@@ -267,14 +268,14 @@ html { scroll-behavior: smooth; }
                 display: none !important;
             }
             .nav-icon-btn {
-                width: 35px !important;
-                height: 35px !important;
+                width: 36px !important;
+                height: 36px !important;
                 padding: 0 !important;
                 border-radius: 9px !important;
                 display: inline-flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                font-size: 14px !important;
+                font-size: 15px !important;
             }
             .guest-text {
                 display: none !important;
@@ -285,72 +286,30 @@ html { scroll-behavior: smooth; }
                 font-size: 11px !important;
             }
             .nav-header {
-                margin-bottom: 8px !important;
-                gap: 8px !important;
+                margin-bottom: 12px !important;
+                gap: 10px !important;
             }
             .promo-banner {
-                padding: 7px 10px !important;
-                gap: 8px !important;
-                border-radius: 7px !important;
-                margin-bottom: 6px !important;
+                padding: 12px 14px !important;
+                gap: 10px !important;
+                border-radius: 10px !important;
+                margin-bottom: 14px !important;
                 flex-direction: row !important;
                 align-items: center !important;
                 justify-content: space-between !important;
             }
-            .promo-icon-badge {
-                width: 28px !important;
-                height: 28px !important;
-                font-size: 12px !important;
-            }
             .promo-title {
-                font-size: 12.5px !important;
+                font-size: 14px !important;
             }
             .promo-subtitle {
-                font-size: 10px !important;
+                font-size: 11.5px !important;
             }
             .btn-pay {
-                padding: 6px 11px !important;
-                font-size: 11.5px !important;
-                border-radius: 5px !important; /* চারকোনা */
-            }
-            .nav-header {
-                gap: 10px !important;
-                margin-bottom: 15px !important;
-            }
-            .nav-header h3 {
-                font-size: 15px !important;
-                white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-            }
-            .btn-back {
-                padding: 6px 10px !important;
+                padding: 7px 14px !important;
                 font-size: 12px !important;
-                flex-shrink: 0 !important;
+                border-radius: 6px !important; /* চারকোনা */
             }
-            .category-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 10px !important;
-            }
-            .compact-folder {
-                padding: 16px 8px !important;
-                border-radius: 12px !important;
-            }
-            .compact-folder .icon-box {
-                font-size: 32px !important;
-                margin-bottom: 6px !important;
-            }
-            .compact-folder h3 {
-                font-size: 13px !important;
-                margin: 0 !important;
-                line-height: 1.25 !important;
-            }
-            .compact-folder p {
-                font-size: 11px !important;
-                margin-top: 4px !important;
-                color: #888 !important;
-            }
-        }
+}
         
         /* 🔴 অ্যানিমেটেড নিয়ন গ্লোয়িং বর্ডার (Border Beam) 🔴 */
         .item-card { 
@@ -1014,35 +973,36 @@ body, input, button, select, textarea {
 /* MOBILE RESPONSIVE OVERRIDES (<= 600px) */
 @media (max-width: 600px) {
             .top-nav {
-                height: 54px !important;
-                min-height: 54px !important;
-                padding: 0 10px !important;
+                height: 60px !important;
+                min-height: 60px !important;
+                padding: 0 12px !important;
                 flex-direction: row !important;
                 justify-content: space-between !important;
                 align-items: center !important;
             }
             body {
-                padding-top: 54px !important;
+                padding-top: 60px !important;
             }
             .container {
-                padding: 4px 10px 24px 10px !important;
+                padding: 4px 14px 40px 14px !important;
             }
             .home-link {
-                gap: 8px !important;
+                gap: 9px !important;
                 width: auto !important;
                 max-width: none !important;
             }
             .nav-brand-logo {
-                width: 36px !important;
-                height: 36px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
             .nav-brand-title {
-                font-size: 15px !important;
+                font-size: 16.5px !important;
                 font-weight: 900 !important;
-                letter-spacing: 0.4px !important;
+                letter-spacing: 0.5px !important;
             }
             .nav-brand-sub {
-                font-size: 8.5px !important;
+                font-size: 9.5px !important;
+                font-weight: 700 !important;
             }
             .auth-buttons {
                 gap: 6px !important;
@@ -1055,14 +1015,14 @@ body, input, button, select, textarea {
                 display: none !important;
             }
             .nav-icon-btn {
-                width: 35px !important;
-                height: 35px !important;
+                width: 36px !important;
+                height: 36px !important;
                 padding: 0 !important;
                 border-radius: 9px !important;
                 display: inline-flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                font-size: 14px !important;
+                font-size: 15px !important;
             }
             .guest-text {
                 display: none !important;
@@ -1073,56 +1033,29 @@ body, input, button, select, textarea {
                 font-size: 11px !important;
             }
             .nav-header {
-                margin-bottom: 8px !important;
-                gap: 8px !important;
+                margin-bottom: 12px !important;
+                gap: 10px !important;
             }
             .promo-banner {
-                padding: 7px 10px !important;
-                gap: 8px !important;
-                border-radius: 7px !important;
-                margin-bottom: 6px !important;
+                padding: 12px 14px !important;
+                gap: 10px !important;
+                border-radius: 10px !important;
+                margin-bottom: 14px !important;
                 flex-direction: row !important;
                 align-items: center !important;
                 justify-content: space-between !important;
             }
-            .promo-icon-badge {
-                width: 28px !important;
-                height: 28px !important;
-                font-size: 12px !important;
-            }
             .promo-title {
-                font-size: 12.5px !important;
+                font-size: 14px !important;
             }
             .promo-subtitle {
-                font-size: 10px !important;
+                font-size: 11.5px !important;
             }
             .btn-pay {
-                padding: 6px 11px !important;
-                font-size: 11.5px !important;
-                border-radius: 5px !important; /* চারকোনা */
+                padding: 7px 14px !important;
+                font-size: 12px !important;
+                border-radius: 6px !important; /* চারকোনা */
             }
-    .promo-banner {
-        padding: 14px 15px !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-    }
-    .promo-content .promo-title {
-        font-size: 16.5px !important;
-    }
-    .promo-content .promo-subtitle {
-        font-size: 12.5px !important;
-    }
-    .btn-pay {
-        align-self: flex-start !important;
-        width: auto !important;
-        padding: 7px 15px !important;
-        font-size: 12.5px !important;
-    }
-    .payment-modal-content {
-        padding: 16px 14px;
-        border-radius: 12px;
-    }
 }
 
 /* ========================================================
@@ -1133,20 +1066,20 @@ body, button, input, select, textarea {
     font-family: 'SolaimanLipi', 'Solaiman Lipi', 'Josefin Sans', sans-serif !important;
 }
 
-/* 1. MODERN & COMPACT PROMO STRIP (Tight Gaps, Rectangular Button) */
+/* 1. MODERN PROMO STRIP (Full Text Visible, Rectangular Pay Now Button) */
 .promo-banner {
     background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%) !important;
     color: #ffffff !important;
-    padding: 10px 16px !important;
-    border-radius: 8px !important;
-    margin-bottom: 8px !important;
+    padding: 14px 18px !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
     display: none;
     align-items: center !important;
     justify-content: space-between !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 12px !important;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.18) !important;
+    flex-wrap: wrap !important;
+    gap: 14px !important;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2) !important;
     cursor: pointer !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease !important;
@@ -1155,69 +1088,49 @@ body, button, input, select, textarea {
 }
 .promo-banner:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.25) !important;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.28) !important;
 }
 .promo-banner:active {
     transform: scale(0.995) !important;
 }
-.promo-banner-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.promo-content {
     flex: 1;
-    min-width: 0;
-}
-.promo-icon-badge {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fcd34d;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-.promo-text-wrap {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    min-width: 220px;
     text-align: left !important;
 }
 .promo-title {
-    font-size: 14px !important;
+    font-size: 15.5px !important;
     font-weight: 700 !important;
     color: #ffffff !important;
-    margin: 0 !important;
-    line-height: 1.25 !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.35 !important;
     text-align: left !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }
 .promo-subtitle {
-    font-size: 11.5px !important;
+    font-size: 12.5px !important;
     color: #e0e7ff !important;
-    margin: 2px 0 0 0 !important;
-    line-height: 1.2 !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
     text-align: left !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
     font-weight: 400 !important;
 }
-.promo-banner-right {
+.promo-actions {
     flex-shrink: 0;
 }
 .btn-pay {
     background: #ffffff !important;
     color: #4338ca !important;
     border: none !important;
-    padding: 8px 16px !important;
-    border-radius: 5px !important; /* চারকোনা / crisp rectangular */
+    padding: 8px 18px !important;
+    border-radius: 6px !important; /* চারকোনা / crisp rectangular */
     font-weight: 800 !important;
-    font-size: 12.5px !important;
+    font-size: 13px !important;
     cursor: pointer !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -1676,19 +1589,20 @@ body, button, input, select, textarea {
 }
 
 
-/* 🌟 10-COLLEGES OVERALL HOME BANNER (ACS Style - Attached to Navbar, Zero Gap) 🌟 */
+/* 🌟 10-COLLEGES OVERALL HOME BANNER (Attached Flush to Navbar, Zero Gap) 🌟 */
 .overall-home-banner {
     width: 100%;
-    margin: 0 0 8px 0;
+    margin: 0 0 16px 0;
     background: #ffffff;
     display: block;
+    line-height: 0;
 }
 .overall-banner-inner {
     max-width: 1000px;
     margin: 0 auto;
-    border-radius: 0 0 14px 14px;
+    border-radius: 0 0 16px 16px;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
     border-top: none;
     background: #ffffff;
@@ -1700,21 +1614,21 @@ body, button, input, select, textarea {
     object-fit: cover;
 }
 
-/* 🌟 COURSE BANNER CARDS ON HOMEPAGE (Tight Gaps) 🌟 */
+/* 🌟 COURSE BANNER CARDS ON HOMEPAGE (Floating Cards with Space, Elongated Banner "ছোট লম্বাটে") 🌟 */
 .course-banner-card {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    margin-bottom: 8px;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.2s ease;
+    margin-bottom: 20px;
     will-change: transform;
 }
 .course-banner-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     border-color: #cbd5e1;
 }
 .course-banner-card:active {
@@ -1722,25 +1636,27 @@ body, button, input, select, textarea {
 }
 .course-card-banner-wrap {
     width: 100%;
+    height: 180px;
     position: relative;
     overflow: hidden;
     background: #f1f5f9;
 }
 .course-card-banner-img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: cover;
+    object-position: center;
     transition: transform 0.3s ease;
 }
 .course-banner-card:hover .course-card-banner-img {
-    transform: scale(1.015);
+    transform: scale(1.02);
 }
 .course-card-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
+    padding: 13px 18px;
     background: #ffffff;
 }
 .course-card-info {
@@ -1748,16 +1664,16 @@ body, button, input, select, textarea {
     min-width: 0;
 }
 .course-card-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: #1e293b;
-    margin: 0 0 2px 0;
+    margin: 0 0 3px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 .course-card-meta {
-    font-size: 12px;
+    font-size: 12.5px;
     color: #64748b;
     font-weight: 500;
     display: flex;
@@ -1767,15 +1683,15 @@ body, button, input, select, textarea {
 .course-card-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 7px 12px;
+    gap: 6px;
+    padding: 8px 14px;
     border-radius: 6px;
     background: #eef2ff;
     color: #4f46e5;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
     flex-shrink: 0;
-    margin-left: 10px;
+    margin-left: 12px;
     transition: background 0.2s ease, color 0.2s ease;
 }
 .course-banner-card:hover .course-card-btn {
@@ -1786,11 +1702,11 @@ body, button, input, select, textarea {
 /* 🌟 SECTION HERO BANNER 🌟 */
 .section-hero-banner {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
     background: #ffffff;
 }
 .section-banner-img {
@@ -1803,7 +1719,7 @@ body, button, input, select, textarea {
 /* 📱 MOBILE RESPONSIVE OVERRIDES (<= 600px) 📱 */
 @media (max-width: 600px) {
     .overall-home-banner {
-        margin: 0 0 6px 0 !important;
+        margin: 0 0 14px 0 !important;
     }
     .overall-banner-inner {
         max-width: 100% !important;
@@ -1819,17 +1735,21 @@ body, button, input, select, textarea {
         height: auto !important;
     }
     .course-banner-card {
-        border-radius: 10px !important;
-        margin-bottom: 6px !important;
+        border-radius: 12px !important;
+        margin-bottom: 16px !important;
+    }
+    .course-card-banner-wrap {
+        height: 140px !important;
     }
     .course-card-body {
-        padding: 9px 12px !important;
+        padding: 11px 14px !important;
     }
     .course-card-title {
-        font-size: 14px !important;
+        font-size: 15px !important;
     }
     .course-card-meta {
-        font-size: 11px !important;}
+        font-size: 11.5px !important;
+    }
     .course-card-btn {
         padding: 6px 10px !important;
         font-size: 11px !important;
