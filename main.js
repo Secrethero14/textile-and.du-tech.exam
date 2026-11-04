@@ -478,8 +478,13 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 else if (currentMaster && !currentCategory) {
                     // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (TEXTILE STANDARD EXAM বা About Textile Engineering)
                     if (overallBanner) overallBanner.style.display = 'none';
-                    if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
-                    if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    if (userEnrollment === 'TextileFull') {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    } else {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    }
 
                     if (navHeader) navHeader.style.display = 'flex';
                     backBtn.style.display = 'block';
@@ -520,8 +525,13 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 else {
                     // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সাম/ভিডিও)
                     if (overallBanner) overallBanner.style.display = 'none';
-                    if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
-                    if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    if (userEnrollment === 'TextileFull') {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    } else {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    }
 
                     if (navHeader) navHeader.style.display = 'flex';
                     backBtn.style.display = 'block';

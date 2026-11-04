@@ -84,50 +84,58 @@
                 <img src="assets/logo.png" alt="Habib's Care" class="nav-brand-logo">
                 <div class="nav-brand-text">
                     <span class="nav-brand-title">HABIB'S CARE</span>
-                    <span class="nav-brand-sub">ESTD 2021 • Textile Prep</span>
+                    <span class="nav-brand-sub">ESTD 2021</span>
                 </div>
             </a>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
 
-        <div class="container">
-            <!-- 🌟 ১০টি টেক্সটাইল ইঞ্জিনিয়ারিং কলেজ ওভারঅল ব্যানার 🌟 -->
-            <div id="overallHomeBanner" class="overall-home-banner">
+        <!-- 🌟 ১০টি টেক্সটাইল ইঞ্জিনিয়ারিং কলেজ ওভারঅল হিরো ব্যানার (ACS Style - Full Width, Zero Gap) 🌟 -->
+        <div id="overallHomeBanner" class="overall-home-banner">
+            <div class="overall-banner-inner">
                 <img src="assets/banners/home_banner.jpg" alt="Habib's Care - Textile Engineering Preparation" class="overall-banner-img">
             </div>
+        </div>
 
-            <div id="successBanner" class="success-banner">
-                <div style="font-size: 24px; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 50%;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div style="flex:1;">
-                    <h2 style="margin:0; font-size:16px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
-                    <p style="margin:5px 0 0 0; font-size:13px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
-                </div>
-                <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" style="background:white; color:#00b894; padding:8px 15px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:12px;">
-                    <i class="fab fa-telegram-plane"></i> Join
-                </a>
-            </div>
-
-            <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে যুক্ত হতে ক্লিক করুন">
-                <div class="promo-content">
-                    <h2 class="promo-title">Textile Engineering Admission Preparation</h2>
-                    <p class="promo-subtitle">কোর্সে যুক্ত হতে ক্লিক করুন</p>
-                </div>
-                <div class="promo-actions">
-                    <button onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay">
-                        <i class="fas fa-credit-card"></i> Pay Now • ১০০ টাকা
-                    </button>
-                </div>
-            </div>
-
+        <div class="container">
             <div class="nav-header">
                 <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
                 <h3 id="currentPathTitle" style="margin:0;">Textile Engineering Admission Preparation</h3>
             </div>
 
-            <div id="loader" style="text-align: center; padding: 50px;">
-                <i class="fas fa-spinner fa-spin fa-3x" style="color:var(--primary)"></i><br>লোড হচ্ছে...
+            <!-- 🌟 আধুনিক ও কমপ্যাক্ট পেমেন্ট/প্রোমো স্ট্রিপ (চারকোনা পে-বাটন সহ) 🌟 -->
+            <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে ভর্তি হতে ক্লিক করুন">
+                <div class="promo-banner-left">
+                    <div class="promo-icon-badge">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="promo-text-wrap">
+                        <div class="promo-title">ফুল কোর্স ও সকল মডেল টেস্ট</div>
+                        <div class="promo-subtitle">মাত্র ১০০ টাকায় সব পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন</div>
+                    </div>
+                </div>
+                <div class="promo-banner-right">
+                    <button type="button" onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay" title="পেমেন্ট করুন">
+                        <i class="fas fa-bolt"></i> Pay Now • ১০০৳
+                    </button>
+                </div>
+            </div>
+
+            <div id="successBanner" class="success-banner">
+                <div style="font-size: 20px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div style="flex:1;">
+                    <h2 style="margin:0; font-size:15px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
+                    <p style="margin:3px 0 0 0; font-size:12.5px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
+                </div>
+                <a href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" style="background:white; color:#00b894; padding:6px 14px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:12px;">
+                    <i class="fab fa-telegram-plane"></i> Join
+                </a>
+            </div>
+
+            <div id="loader" style="text-align: center; padding: 35px 20px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br><span style="font-size:13px; color:#64748b; margin-top:8px; display:inline-block;">লোড হচ্ছে...</span>
             </div>
             <div id="examContainer" class="exam-grid"></div>
         </div>
