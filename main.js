@@ -383,6 +383,18 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             } catch (e) { console.error(e); }
         }
 
+                function getMasterBanner(mCat) {
+            if (!mCat) return null;
+            const clean = String(mCat).trim().toLowerCase();
+            if (clean.includes('exam') || clean.includes('standard') || clean.includes('টেক্সটাইল')) {
+                return 'assets/banners/exam_banner.jpg';
+            }
+            if (clean.includes('about') || clean.includes('video') || clean.includes('গাইডলাইন')) {
+                return 'assets/banners/guideline_banner.jpg';
+            }
+            return null;
+        }
+
         // 🔴 ফ্ল্যাক্সিবল ও ডাইনামিক রেন্ডারিং ইঞ্জিন 🔴
         function renderView() {
             const container = document.getElementById('examContainer');
@@ -396,49 +408,89 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             void container.offsetWidth; // Force layout reflow to restart CSS animation
             container.classList.add('view-transition-in');
 
+            const overallBanner = document.getElementById('overallHomeBanner');
+            const promoBanner = document.getElementById('promoBanner');
+            const successBanner = document.getElementById('successBanner');
+            const navHeader = document.querySelector('.nav-header');
+
             const hasMaster = allExams.some(e => e['Master Category'] && String(e['Master Category']).trim() !== "");
 
             if (hasMaster) {
                 if (!currentMaster) {
-                    // লেভেল ০: হোম পেজ (মাস্টার ক্যাটাগরি ফোল্ডারগুলো দেখাবে)
-                    const navHeader = document.querySelector('.nav-header');
+                    // লেভেল ০: হোম পেজ (১০টি কলেজ ওভারঅল ব্যানার ও কোর্স অপশন)
+                    if (overallBanner) overallBanner.style.display = 'block';
                     if (navHeader) navHeader.style.display = 'none';
                     backBtn.style.display = 'none';
+
+                    // হোম পেজের ব্যানার ডিসপ্লে নিয়ন্ত্রণ
+                    if (userEnrollment === 'TextileFull') {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
+                    } else {
+                        if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important');
+                        if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                    }
+
                     container.className = "master-folders-list";
 
                     const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
                     let html = "";
                     masterCats.forEach(mCat => {
                         const count = allExams.filter(e => e['Master Category'] === mCat).length;
+                        const bannerImg = getMasterBanner(mCat);
+                        const isVideoMaster = mCat === 'About Textile Engineering';
+                        const subtext = isVideoMaster ? 'ক্যারিয়ার ও গাইডলাইন ভিডিও' : 'অধ্যায়ভিত্তিক পরীক্ষা ও মডেল টেস্ট';
+                        const actionText = isVideoMaster ? 'ভিডিও দেখুন' : 'প্রবেশ করুন';
+                        const actionIcon = isVideoMaster ? 'fa-play' : 'fa-chevron-right';
+
                         html += `
-                            <div class="folder-card-modern" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
-                                <div class="folder-icon-wrap"><i class="fas fa-layer-group"></i></div>
-                                <div class="folder-info">
-                                    <h3 class="folder-title">${mCat}</h3>
-                                    <span class="folder-meta">${count} Items • অধ্যায়ভিত্তিক পরীক্ষা</span>
+                            <div class="course-banner-card" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
+                                ${bannerImg ? `
+                                <div class="course-card-banner-wrap">
+                                    <img src="${bannerImg}" alt="${mCat}" class="course-card-banner-img" loading="lazy">
+                                </div>` : ''}
+                                <div class="course-card-body">
+                                    <div class="course-card-info">
+                                        <h3 class="course-card-title">${mCat}</h3>
+                                        <span class="course-card-meta"><i class="${isVideoMaster ? 'fas fa-video' : 'fas fa-layer-group'}"></i> ${count} Items • ${subtext}</span>
+                                    </div>
+                                    <div class="course-card-btn">
+                                        <span>${actionText}</span>
+                                        <i class="fas ${actionIcon}"></i>
+                                    </div>
                                 </div>
-                                <div class="folder-arrow"><i class="fas fa-chevron-right"></i></div>
                             </div>`;
                     });
                     container.innerHTML = html;
                 } 
                 else if (currentMaster && !currentCategory) {
-                    // লেভেল ১: মাস্টার ফোল্ডারের ভেতর
+                    // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (TEXTILE STANDARD EXAM বা About Textile Engineering)
+                    if (overallBanner) overallBanner.style.display = 'none';
+                    if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
+                    if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+
+                    if (navHeader) navHeader.style.display = 'flex';
+                    backBtn.style.display = 'block';
+                    pathTitle.innerText = currentMaster;
+
                     const masterExams = allExams.filter(e => e['Master Category'] === currentMaster);
+                    const bannerImg = getMasterBanner(currentMaster);
                     
-                    // সাব-ক্যাটাগরি আছে কি না পরীক্ষা করা (যদি ক্যাটাগরি ফাঁকা থাকে বা মাস্টারের সমান হয়, তবে সরাসরি আইটেম দেখাবে)
+                    // সাব-ক্যাটাগরি আছে কি না পরীক্ষা করা
                     const categories = [...new Set(masterExams.map(e => e['Category']))]
                         .filter(cat => cat && String(cat).trim() !== "" && cat !== "General" && cat !== currentMaster);
 
                     if (categories.length > 0) {
-                        // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ ফোল্ডার দেখাও
-                        const navHeader = document.querySelector('.nav-header');
-                        if (navHeader) navHeader.style.display = 'flex';
-                        backBtn.style.display = 'block';
-                        pathTitle.innerText = currentMaster;
-                        container.className = "category-grid"; // ২ কলাম গ্রিড
+                        // সাব-ক্যাটাগরি ফোল্ডার আছে ➡️ হিরো ব্যানার সহ ফোল্ডার গ্রিড দেখাও
+                        container.className = "category-grid";
 
                         let html = "";
+                        if (bannerImg) {
+                            html += `
+                                <div class="section-hero-banner" style="grid-column: 1 / -1;">
+                                    <img src="${bannerImg}" alt="${currentMaster}" class="section-banner-img" loading="lazy">
+                                </div>`;
+                        }
                         categories.forEach(cat => {
                             const count = masterExams.filter(e => e['Category'] === cat).length;
                             html += `
@@ -450,15 +502,30 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                         });
                         container.innerHTML = html;
                     } else {
-                        // সাব-ক্যাটাগরি নেই (ফাঁকা) ➡️ সরাসরি ভিডিও ও এক্সাম কার্ড দেখাও!
+                        // সাব-ক্যাটাগরি নেই (যেমন About Textile Engineering) ➡️ হিরো ব্যানার সহ ভিডিও কার্ড দেখাও!
+                        // 🔴 ব্যাক বাটন নিশ্চিত অন করা
+                        if (navHeader) navHeader.style.display = 'flex';
                         backBtn.style.display = 'block';
                         pathTitle.innerText = currentMaster;
-                        container.className = "category-grid"; // ২ কলাম গ্রিড
-                        renderItems(masterExams, container);
+                        container.className = "category-grid";
+
+                        let bannerHtml = "";
+                        if (bannerImg) {
+                            bannerHtml = `
+                                <div class="section-hero-banner" style="grid-column: 1 / -1;">
+                                    <img src="${bannerImg}" alt="${currentMaster}" class="section-banner-img" loading="lazy">
+                                </div>`;
+                        }
+                        renderItems(masterExams, container, bannerHtml);
                     }
                 } 
                 else {
                     // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সাম/ভিডিও)
+                    if (overallBanner) overallBanner.style.display = 'none';
+                    if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
+                    if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+
+                    if (navHeader) navHeader.style.display = 'flex';
                     backBtn.style.display = 'block';
                     pathTitle.innerText = currentCategory;
                     container.className = "category-grid";
@@ -496,8 +563,8 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         }
 
         // 🔴 আইটেম (এক্সাম বনাম ভিডিও) কার্ড রেন্ডারার 🔴
-        function renderItems(filtered, container) {
-            let html = "";
+        function renderItems(filtered, container, prependHtml = "") {
+            let html = prependHtml;
             filtered.forEach(item => {
                 const link = getItemLink(item);
                 const itemType = (item['Type'] || '').trim().toLowerCase();
