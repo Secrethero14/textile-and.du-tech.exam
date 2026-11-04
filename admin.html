@@ -184,13 +184,27 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
                 <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-users-cog"></i> শিক্ষার্থী ডাটাবেস ও আবেদন লগ</h3>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <select id="sessionFilter" class="select-box" style="min-width:160px; padding:8px 12px;" onchange="filterStudentLogs()">
+                    <select id="sessionFilter" class="select-box" style="min-width:140px; padding:8px 12px;" onchange="filterStudentLogs()">
                         <option value="ALL">সকল সেশন</option>
                         <option value="2026-27">২০২৬-২৭ সেশন</option>
                         <option value="2025-26">২০২৫-২৬ সেশন</option>
                     </select>
-                    <input type="text" id="studentSearchInput" class="input-box" style="min-width:180px; padding:8px 12px;" placeholder="নাম বা ইমেইল দিয়ে খুঁজুন..." onkeyup="filterStudentLogs()">
+                    <select id="batchFilter" class="select-box" style="min-width:140px; padding:8px 12px;" onchange="filterStudentLogs()">
+                        <option value="ALL">সকল ব্যাচ</option>
+                        <option value="HSC 25">HSC 25 (১ম বার)</option>
+                        <option value="HSC 26">HSC 26</option>
+                        <option value="HSC 24">HSC 24 (২য় বার)</option>
+                        <option value="Other">অন্যান্য</option>
+                    </select>
+                    <input type="text" id="studentSearchInput" class="input-box" style="min-width:180px; padding:8px 12px;" placeholder="নাম, ইমেইল, কলেজ বা ব্যাচ..." onkeyup="filterStudentLogs()">
                 </div>
+            </div>
+
+            <div class="stats-bar" id="studentStatsBar" style="display:flex; margin-bottom:15px; background:#f8f9fa; padding:10px 15px; border-radius:10px; border:1px solid #eee; flex-wrap:wrap; gap:15px; font-size:13px;">
+                <span><i class="fas fa-users" style="color:var(--accent-purple);"></i> মোট শিক্ষার্থী: <strong id="statTotalStudents" style="color:var(--accent-purple);">0</strong> জন</span>
+                <span><i class="fas fa-user-graduate" style="color:#0984e3;"></i> HSC 25 (ফার্স্ট টাইমার): <strong id="statHsc25" style="color:#0984e3;">0</strong> জন</span>
+                <span><i class="fas fa-book-reader" style="color:#00b894;"></i> HSC 26: <strong id="statHsc26" style="color:#00b894;">0</strong> জন</span>
+                <span><i class="fas fa-history" style="color:#e17055;"></i> ২য় বার / অন্যান্য: <strong id="statOtherBatch" style="color:#e17055;">0</strong> জন</span>
             </div>
 
             <div class="table-container">
@@ -606,6 +620,30 @@
             }
         }
 
+        function updateStudentStats(logs) {
+            let total = logs.length;
+            let hsc25 = 0;
+            let hsc26 = 0;
+            let other = 0;
+
+            logs.forEach(log => {
+                const b = (log.hscBatch || '').toUpperCase();
+                if (b.includes('25')) hsc25++;
+                else if (b.includes('26')) hsc26++;
+                else other++;
+            });
+
+            const statTotal = document.getElementById('statTotalStudents');
+            const stat25 = document.getElementById('statHsc25');
+            const stat26 = document.getElementById('statHsc26');
+            const statOther = document.getElementById('statOtherBatch');
+
+            if (statTotal) statTotal.innerText = total;
+            if (stat25) stat25.innerText = hsc25;
+            if (stat26) stat26.innerText = hsc26;
+            if (statOther) statOther.innerText = other;
+        }
+
         async function loadStudentLogs() {
             const tbody = document.getElementById('studentLogBody');
             tbody.innerHTML = '<tr><td colspan="6" style="padding:25px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা লোড হচ্ছে...</td></tr>';
@@ -617,6 +655,7 @@
                 
                 logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 allStudentLogs = logs;
+                updateStudentStats(logs);
                 renderStudentLogs(logs);
             } catch(e) {
                 console.error(e);
@@ -626,21 +665,30 @@
 
         function filterStudentLogs() {
             const session = document.getElementById('sessionFilter').value;
+            const batch = document.getElementById('batchFilter') ? document.getElementById('batchFilter').value : 'ALL';
             const query = (document.getElementById('studentSearchInput').value || '').trim().toLowerCase();
 
             const filtered = allStudentLogs.filter(log => {
                 const s = log.session || "2025-26";
                 if(session !== 'ALL' && s !== session) return false;
 
+                if(batch !== 'ALL') {
+                    const b = (log.hscBatch || '').toUpperCase();
+                    if(!b.includes(batch.toUpperCase().replace('HSC ', '').trim()) && !b.includes(batch.toUpperCase())) return false;
+                }
+
                 if(query) {
                     const name = (log.name || '').toLowerCase();
                     const email = (log.email || '').toLowerCase();
                     const phone = (log.phone || '').toLowerCase();
-                    if(!name.includes(query) && !email.includes(query) && !phone.includes(query)) return false;
+                    const college = (log.college || '').toLowerCase();
+                    const hsc = (log.hscBatch || '').toLowerCase();
+                    if(!name.includes(query) && !email.includes(query) && !phone.includes(query) && !college.includes(query) && !hsc.includes(query)) return false;
                 }
                 return true;
             });
 
+            updateStudentStats(filtered);
             renderStudentLogs(filtered);
         }
 
@@ -663,6 +711,20 @@
                     ? '<span class="badge" style="background:#e8eaf6; color:#3949ab;">ম্যানুয়াল</span>'
                     : '<span class="badge" style="background:#e8f5e9; color:#2e7d32;">ফর্ম</span>';
 
+                let batchBadge = '-';
+                if(log.hscBatch && log.hscBatch !== 'N/A' && log.hscBatch !== '-') {
+                    const bStr = log.hscBatch.toString();
+                    if(bStr.includes('25')) {
+                        batchBadge = `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:bold;">${bStr} (১ম বার)</span>`;
+                    } else if(bStr.includes('26')) {
+                        batchBadge = `<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;">${bStr}</span>`;
+                    } else if(bStr.includes('24')) {
+                        batchBadge = `<span class="badge" style="background:#ffedd5; color:#c2410c; font-weight:bold;">${bStr} (২য় বার)</span>`;
+                    } else {
+                        batchBadge = `<span class="badge" style="background:#ede7f6; color:#5e35b1; font-weight:bold;">${bStr}</span>`;
+                    }
+                }
+
                 html += `<tr>
                     <td style="color:#636e72; font-size:13px;">${dStr}</td>
                     <td style="text-align:left;">
@@ -670,7 +732,10 @@
                         <span style="font-size:12px; color:#555;">${log.email || '-'}</span>
                     </td>
                     <td>${log.phone || '-'}<br><small style="color:var(--danger); font-weight:bold;">লাস্ট ৩: ${log.last3 || '-'}</small></td>
-                    <td style="text-align:left;">${log.college || '-'}<br><small style="color:#888;">ব্যাচ: ${log.hscBatch || '-'}</small></td>
+                    <td style="text-align:left;">
+                        <strong>${log.college || '-'}</strong><br>
+                        <small style="color:#666;">ব্যাচ: </small>${batchBadge}
+                    </td>
                     <td>${genderBadge}</td>
                     <td>${methodBadge}</td>
                 </tr>`;

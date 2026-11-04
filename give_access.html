@@ -70,8 +70,14 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>HSC ব্যাচ <span class="optional-text">(ঐচ্ছিক)</span></label>
-                <input type="text" id="sBatch" placeholder="যেমন: 2024">
+                <label>HSC ব্যাচ *</label>
+                <select id="sBatch" required>
+                    <option value="">নির্বাচন করুন</option>
+                    <option value="HSC 25">HSC 25 (এইচএসসি ২৫)</option>
+                    <option value="HSC 26">HSC 26 (এইচএসসি ২৬)</option>
+                    <option value="HSC 24">HSC 24 (এইচএসসি ২৪)</option>
+                    <option value="Other">অন্যান্য (Other)</option>
+                </select>
             </div>
         </div>
 
@@ -144,7 +150,7 @@
                 last3: document.getElementById('sLast3').value.trim(),
                 gender: document.getElementById('sGender').value,
                 college: document.getElementById('sCollege').value.trim(),
-                hscBatch: document.getElementById('sBatch').value.trim() || "N/A",
+                hscBatch: document.getElementById('sBatch').value,
                 weakSub: document.getElementById('sWeak').value.trim() || "N/A",
                 strongSub: document.getElementById('sStrong').value.trim() || "N/A",
                 package: "TextileFull", 
@@ -154,8 +160,8 @@
                 timestamp: new Date().toISOString()
             };
 
-            if (!data.name || !data.email || !data.phone || !data.last3 || !data.gender || !data.college) {
-                return Swal.fire('ভুল!', 'দয়া করে স্টার (*) মার্ক করা সব ঘর পূরণ করুন।', 'warning');
+            if (!data.name || !data.email || !data.phone || !data.last3 || !data.gender || !data.hscBatch || !data.college) {
+                return Swal.fire('ভুল!', 'দয়া করে স্টার (*) মার্ক করা সব ঘর পূরণ করুন (HSC ব্যাচ সহ)।', 'warning');
             }
 
             Swal.fire({ title: 'অপেক্ষা করুন...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
