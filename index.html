@@ -3,6 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Textile Engineering Admission Preparation | Home</title>
+    <script>
+        // 🚀 ফোল্ডারে থাকাকালীন রিলোড বা রিফ্রেশ দিলে হোম ব্যানার ব্লিংক হওয়া বন্ধ করার ইনস্ট্যান্ট ফিক্স
+        (function() {
+            try {
+                var rawHash = window.location.hash.replace(/^#/, '');
+                if (rawHash && rawHash.trim() !== '') {
+                    document.documentElement.classList.add('route-subpage');
+                    var parts = rawHash.split('/').map(decodeURIComponent);
+                    var title = parts[parts.length - 1];
+                    window.addEventListener('DOMContentLoaded', function() {
+                        var pathTitle = document.getElementById('currentPathTitle');
+                        var backBtn = document.getElementById('backBtn');
+                        var navHeader = document.querySelector('.nav-header');
+                        if (pathTitle && title) pathTitle.innerText = title;
+                        if (backBtn) backBtn.style.display = 'block';
+                        if (navHeader) navHeader.style.display = 'flex';
+                    });
+                }
+            } catch(e) {}
+        })();
+    </script>
+    <style>
+        html.route-subpage #overallHomeBanner,
+        html.route-subpage #siteAboutNote {
+            display: none !important;
+        }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>

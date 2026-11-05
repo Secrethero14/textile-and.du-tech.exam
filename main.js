@@ -88,6 +88,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 window.location.hash = encodeURIComponent(currentMaster);
             } else {
                 // মাস্টার ক্যাটাগরি থেকে সোজা হোমে ফিরবে
+
                 window.location.hash = '';
             }
         }
@@ -108,6 +109,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             if (!rawHash) {
                 currentMaster = "";
                 currentCategory = "";
+
             } else {
                 const parts = rawHash.split('/').map(decodeURIComponent);
                 if (parts.length > 1) {
@@ -118,6 +120,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     if (isMaster) {
                         currentMaster = parts[0];
                         currentCategory = "";
+
                     } else {
                         currentCategory = parts[0];
                     }
@@ -420,6 +423,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             void container.offsetWidth; // Force layout reflow to restart CSS animation
             container.classList.add('view-transition-in');
 
+            document.documentElement.classList.remove('route-subpage');
             const overallBanner = document.getElementById('overallHomeBanner');
             const promoBanner = document.getElementById('promoBanner');
             const successBanner = document.getElementById('successBanner');
