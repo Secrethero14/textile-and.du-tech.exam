@@ -1694,17 +1694,17 @@ body, button, input, select, textarea {
 }
 .course-card-banner-wrap {
     width: 100%;
-    height: 180px;
+    height: auto;
     position: relative;
     overflow: hidden;
     background: #f1f5f9;
+    line-height: 0;
 }
 .course-card-banner-img {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
-    object-fit: cover;
-    object-position: center;
+    object-fit: contain;
     transition: transform 0.3s ease;
 }
 .course-banner-card:hover .course-card-banner-img {
@@ -1797,7 +1797,11 @@ body, button, input, select, textarea {
         margin-bottom: 16px !important;
     }
     .course-card-banner-wrap {
-        height: 140px !important;
+        height: auto !important;
+    }
+    .course-card-banner-img {
+        width: 100% !important;
+        height: auto !important;
     }
     .course-card-body {
         padding: 11px 14px !important;
@@ -1837,183 +1841,241 @@ body, button, input, select, textarea {
 }
 
 
-/* 🌟 টেক্সটাইল এডমিশন ও হাবিবস কেয়ার পরিচিতি কার্ড (Site About Note) 🌟 */
-.site-about-note {
+/* 🌟 LUXURIOUS QUOTATION CARD (টেক্সটাইল ইঞ্জিনিয়ারিং কোটেশন কার্ড) 🌟 */
+.site-quote-section {
     max-width: 1000px;
-    margin: 30px auto 25px auto;
-    padding: 0 14px;
+    margin: 28px auto 24px auto;
+    padding: 0 16px;
     box-sizing: border-box;
 }
-.about-note-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 22px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+.quote-card-container {
     position: relative;
+    background: linear-gradient(145deg, #ffffff 0%, #f8faff 60%, #f0f4ff 100%);
+    border: 1.5px solid #e0e7ff;
+    border-radius: 20px;
+    padding: 30px 28px 24px 28px;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
+    text-align: center;
     overflow: hidden;
 }
-.about-note-card::before {
-    content: '';
+.quote-watermark {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(180deg, #4f46e5, #06b6d4);
+    bottom: -15px;
+    right: 15px;
+    font-size: 110px;
+    color: rgba(99, 102, 241, 0.06);
+    pointer-events: none;
+    line-height: 1;
+    font-family: serif;
 }
-.about-note-header {
-    margin-bottom: 12px;
+.quote-badge-wrap {
+    margin-bottom: 16px;
 }
-.about-note-pill {
+.quote-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 5px 14px;
+    border-radius: 30px;
     background: #eef2ff;
     color: #4f46e5;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
+    border: 1px solid #c7d2fe;
+    letter-spacing: 0.3px;
 }
-.about-note-text {
-    font-size: 14.5px;
-    line-height: 1.7;
-    color: #334155;
-    margin: 0 0 16px 0;
-    font-style: normal;
+.quote-mark-icon-top {
+    font-size: 26px;
+    color: #818cf8;
+    margin-bottom: 12px;
+    opacity: 0.85;
 }
-.about-note-text strong {
+.quote-statement {
+    font-family: 'SolaimanLipi', sans-serif;
+    font-size: 16.5px;
+    line-height: 1.8;
     color: #1e293b;
-    font-weight: 700;
+    margin: 0 auto 20px auto;
+    max-width: 780px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
 }
-.about-note-signature {
+.quote-statement strong {
+    color: #4338ca;
+    font-weight: 800;
+}
+.quote-divider-wrap {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-top: 12px;
-    border-top: 1px dashed #e2e8f0;
+    justify-content: center;
+    gap: 12px;
+    max-width: 200px;
+    margin: 0 auto 16px auto;
 }
-.about-sig-logo {
-    width: 36px;
-    height: 36px;
+.quote-line {
+    flex: 1;
+    height: 1px;
+    background: #cbd5e1;
+}
+.quote-star {
+    color: #6366f1;
+    font-size: 13px;
+}
+.quote-author-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.quote-avatar-wrap {
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1.5px solid #e2e8f0;
-    object-fit: cover;
+    padding: 2px;
+    background: linear-gradient(135deg, #6366f1, #06b6d4);
+    box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
+    flex-shrink: 0;
 }
-.about-sig-text {
+.quote-author-logo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #ffffff;
+    object-fit: cover;
+    display: block;
+}
+.quote-author-details {
     display: flex;
     flex-direction: column;
-    line-height: 1.25;
+    text-align: left;
 }
-.about-sig-name {
-    font-size: 13.5px;
-    font-weight: 800;
+.quote-author-name {
+    font-size: 15px;
+    font-weight: 900;
     color: #0f172a;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
+    margin: 0;
+    line-height: 1.2;
 }
-.about-sig-sub {
-    font-size: 11px;
+.quote-author-tag {
+    font-size: 11.5px;
     color: #64748b;
-    font-weight: 500;
+    font-weight: 600;
+    margin-top: 2px;
 }
 
-/* 🌟 এক লাইনের আধুনিক ও পরিপাটি ফুটার (Single-Row Inline Footer) 🌟 */
+/* 🌟 এক কলামে ফুটার ট্যাগ (Vertical One-Column Footer Tags) 🌟 */
 .site-footer {
     background: #0f172a !important;
     color: #94a3b8 !important;
-    padding: 16px 20px !important;
+    padding: 30px 20px 24px 20px !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    margin-top: 25px !important;
+    margin-top: 30px !important;
+    text-align: center !important;
 }
-.footer-inline-container {
-    max-width: 1000px;
+.footer-col-container {
+    max-width: 500px;
     margin: 0 auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-    font-size: 12.5px;
+    gap: 16px;
 }
-.footer-inline-brand {
+.footer-brand-block {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    color: #f1f5f9;
+    gap: 4px;
 }
-.footer-mini-logo {
-    width: 24px;
-    height: 24px;
+.footer-col-logo {
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     object-fit: cover;
+    margin-bottom: 4px;
 }
-.footer-brand-name {
+.footer-col-title {
+    font-size: 15px;
     font-weight: 800;
-    letter-spacing: 0.5px;
     color: #ffffff;
+    letter-spacing: 0.6px;
+    margin: 0;
 }
-.footer-estd {
-    font-size: 11px;
+.footer-col-sub {
+    font-size: 11.5px;
     color: #818cf8;
-    font-weight: 700;
+    margin: 0;
+    font-weight: 600;
 }
-.footer-dot {
-    color: #475569;
-    font-size: 12px;
-}
-.footer-inline-links {
+.footer-tags-column {
     display: flex;
+    flex-direction: column; /* 🌟 এক কলামে নিচে নিচে 🌟 */
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 280px;
+    margin: 6px 0;
 }
-.foot-item {
-    color: #cbd5e1;
-    text-decoration: none;
-    display: inline-flex;
+.foot-tag {
+    display: flex;
     align-items: center;
-    gap: 5px;
-    font-weight: 500;
-    transition: color 0.2s ease;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
-.foot-item:hover {
+.foot-tag:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
     color: #ffffff;
-    text-decoration: underline;
 }
-.foot-item.yt i { color: #ef4444; }
-.foot-item.tg i { color: #38bdf8; }
-.foot-item.fb i { color: #3b82f6; }
-.foot-item.fb-grp i { color: #f59e0b; }
+.foot-tag.yt i { color: #ef4444; font-size: 16px; }
+.foot-tag.tg i { color: #38bdf8; font-size: 16px; }
+.foot-tag.fb i { color: #3b82f6; font-size: 16px; }
+.foot-tag.fb-grp i { color: #f59e0b; font-size: 16px; }
 
-.footer-inline-copy {
-    color: #64748b;
+.footer-copy-text {
     font-size: 11.5px;
+    color: #64748b;
+    margin-top: 4px;
 }
 
 @media (max-width: 600px) {
-    .site-about-note {
-        margin: 20px auto 18px auto !important;
-        padding: 0 10px !important;
+    .site-quote-section {
+        margin: 20px auto 16px auto !important;
+        padding: 0 12px !important;
     }
-    .about-note-card {
-        padding: 16px 16px !important;
-        border-radius: 12px !important;
+    .quote-card-container {
+        padding: 22px 18px 18px 18px !important;
+        border-radius: 16px !important;
     }
-    .about-note-text {
-        font-size: 13.5px !important;
-        line-height: 1.6 !important;
-        margin-bottom: 12px !important;
+    .quote-statement {
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+        margin-bottom: 16px !important;
     }
-    .footer-inline-container {
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        text-align: center !important;
+    .quote-author-name {
+        font-size: 14px !important;
     }
-    .footer-inline-links {
-        justify-content: center !important;
+    .quote-author-tag {
+        font-size: 10.5px !important;
+    }
+    .footer-tags-column {
+        max-width: 260px !important;
         gap: 8px !important;
+    }
+    .foot-tag {
+        padding: 8px 14px !important;
+        font-size: 12.5px !important;
     }
 }
