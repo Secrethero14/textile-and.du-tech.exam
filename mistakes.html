@@ -259,6 +259,10 @@
             box-shadow: 0 4px 14px rgba(108, 92, 231, 0.35);
         }
 
+        
+        .tab-txt-mob { display: none; }
+        .tab-txt-full { display: inline; }
+
         .m-tab-btn.active .m-tab-badge {
             background: rgba(255, 255, 255, 0.25);
             color: #ffffff;
@@ -850,8 +854,30 @@
             .hero-info p { font-size: 12.5px; }
             .stat-chip { padding: 8px 12px; min-width: 80px; }
             .stat-chip .num { font-size: 19px; }
-            .mistake-main-tabs { padding: 5px; gap: 6px; }
-            .m-tab-btn { min-width: 140px; padding: 9px 12px; font-size: 12.5px; }
+            .tab-txt-mob { display: inline !important; }
+            .tab-txt-full { display: none !important; }
+            .mistake-main-tabs {
+                padding: 4px !important;
+                gap: 4px !important;
+                border-radius: 14px !important;
+                overflow: hidden !important;
+                display: flex !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .m-tab-btn {
+                flex: 1 1 0 !important;
+                min-width: 0 !important;
+                padding: 10px 4px !important;
+                font-size: 11px !important;
+                gap: 4px !important;
+                border-radius: 10px !important;
+                justify-content: center !important;
+                text-align: center !important;
+                white-space: nowrap !important;
+            }
+            .m-tab-btn i { font-size: 12px !important; }
+            .m-tab-btn .m-tab-badge { font-size: 10px !important; padding: 1px 5px !important; }
             .cards-grid { grid-template-columns: 1fr; }
             .category-action-bar { padding: 12px 14px; flex-direction: column; align-items: stretch; text-align: center; }
             .btn-category-retest { justify-content: center; }
@@ -907,17 +933,20 @@
         <div class="mistake-main-tabs">
             <button class="m-tab-btn active" id="tab-chapter" onclick="switchMistakeTab('chapter')">
                 <i class="fas fa-layer-group"></i>
-                <span>অধ্যায়ভিত্তিক পরীক্ষা</span>
+                <span class="tab-txt-full">অধ্যায়ভিত্তিক পরীক্ষা</span>
+                <span class="tab-txt-mob">অধ্যায়ভিত্তিক</span>
                 <span class="m-tab-badge" id="badge-chapter">0</span>
             </button>
             <button class="m-tab-btn" id="tab-model" onclick="switchMistakeTab('model')">
                 <i class="fas fa-file-signature"></i>
-                <span>মডেল টেস্ট ও প্রশ্নব্যাংক</span>
+                <span class="tab-txt-full">মডেল টেস্ট ও প্রশ্নব্যাংক</span>
+                <span class="tab-txt-mob">মডেল টেস্ট ও QB</span>
                 <span class="m-tab-badge" id="badge-model">0</span>
             </button>
             <button class="m-tab-btn" id="tab-all" onclick="switchMistakeTab('all')">
                 <i class="fas fa-list-check"></i>
-                <span>সকল ভুল প্রশ্ন</span>
+                <span class="tab-txt-full">সকল ভুল প্রশ্ন</span>
+                <span class="tab-txt-mob">সব ভুল</span>
                 <span class="m-tab-badge" id="badge-all">0</span>
             </button>
         </div>
@@ -1167,26 +1196,28 @@
         }
 
         // --- Init Window & Auth ---
-        window.onload = async function() {
-            // Load exam index for precise classification
-            try {
-                const res = await fetch("https://textile-du-tech-exam.vercel.app/public/questions/exam-index.json?v=" + new Date().getTime());
-                const examIndex = await res.json();
-                examIndex.forEach(item => {
-                    const id = (item['Tab ID'] || '').trim().toLowerCase();
-                    const name = (item['Exam Name'] || '').trim().toLowerCase();
-                    if (id) examIndexMap[id] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
-                    if (name) examIndexMap[name] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
-                });
-            } catch(e) {
-                console.warn("Exam index fetch skipped:", e);
-            }
+        window.onload = function() {
+            // 🌟 1. লোডিং শুরুর সাথে সাথেই exam-index এবং Auth প্যারালাল লোড করা 🌟
+            const examIndexPromise = fetch("https://textile-du-tech-exam.vercel.app/public/questions/exam-index.json?v=" + new Date().getTime())
+                .then(res => res.json())
+                .then(examIndex => {
+                    examIndex.forEach(item => {
+                        const id = (item['Tab ID'] || '').trim().toLowerCase();
+                        const name = (item['Exam Name'] || '').trim().toLowerCase();
+                        if (id) examIndexMap[id] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
+                        if (name) examIndexMap[name] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
+                    });
+                    // যদি ভুলগুলো আগে লোড হয়ে থাকে, তবে ক্লাসিফিকেশন রি-ক্যালকুলেট করো
+                    if (allMistakes && allMistakes.length > 0) {
+                        refreshUI();
+                    }
+                })
+                .catch(e => console.warn("Exam index fetch skipped:", e));
 
             auth.onAuthStateChanged(user => {
                 const badge = document.getElementById('userBadge');
                 if (user) {
                     currentUser = user;
-                    // 🌟 একাউন্ট আইসোলেশন: আগের অন্য একাউন্ট বা গেস্টের ক্যাশ মুছে ফেলা 🌟
                     try { localStorage.removeItem('user_mistakes'); } catch(e) {}
                     let nameDisplay = 'প্রোফাইল';
                     if (user.displayName) {
@@ -1272,6 +1303,14 @@
             } else {
                 document.getElementById('zeroMistakeScreen').style.display = 'none';
             }
+
+            // 🌟 নিশ্চিত করা যে সক্রিয় ট্যাবের কনটেন্ট দৃশ্যমান আছে (প্রথম লোডেই) 🌟
+            ['chapter', 'model', 'all'].forEach(t => {
+                const view = document.getElementById('view-' + t);
+                const btn = document.getElementById('tab-' + t);
+                if (view) view.style.display = (t === currentTab) ? 'block' : 'none';
+                if (btn) btn.classList.toggle('active', t === currentTab);
+            });
 
             renderCurrentTab();
         }
