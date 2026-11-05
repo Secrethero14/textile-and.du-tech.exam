@@ -424,6 +424,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             const promoBanner = document.getElementById('promoBanner');
             const successBanner = document.getElementById('successBanner');
             const navHeader = document.querySelector('.nav-header');
+            const aboutNote = document.getElementById('siteAboutNote');
 
             const hasMaster = allExams.some(e => e['Master Category'] && String(e['Master Category']).trim() !== "");
 
@@ -431,6 +432,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 if (!currentMaster) {
                     // লেভেল ০: হোম পেজ (১০টি কলেজ ওভারঅল ব্যানার ও কোর্স অপশন)
                     if (overallBanner) overallBanner.style.display = 'block';
+                    if (aboutNote) aboutNote.style.display = 'block';
                     if (navHeader) navHeader.style.display = 'none';
                     backBtn.style.display = 'none';
 
@@ -478,6 +480,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 else if (currentMaster && !currentCategory) {
                     // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (TEXTILE STANDARD EXAM বা About Textile Engineering)
                     if (overallBanner) overallBanner.style.display = 'none';
+                    if (aboutNote) aboutNote.style.display = 'none';
                     if (userEnrollment === 'TextileFull') {
                         if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
@@ -525,6 +528,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                 else {
                     // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সাম/ভিডিও)
                     if (overallBanner) overallBanner.style.display = 'none';
+                    if (aboutNote) aboutNote.style.display = 'none';
                     if (userEnrollment === 'TextileFull') {
                         if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
