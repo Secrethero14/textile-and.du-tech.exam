@@ -1080,11 +1080,38 @@
             return 'Other';
         }
 
-        function normalizeChapter(raw) {
-            if (!raw) return "সাধারণ (General)";
+        // 🌟 স্মার্ট চ্যাপ্টার হ্যান্ডলার (আগের ভুল ডেটা থেকেও আসল নাম উদ্ধার করবে) 🌟
+        function getMistakeChapter(m) {
+            if (!m) return "সাধারণ";
+            let c = (m.chapter || "").trim();
+            // যদি অলরেডি আসল চ্যাপ্টার নাম থাকে
+            if (c && c.toLowerCase() !== "general" && c !== "সাধারণ" && c !== "সাধারণ (General)") {
+                return normalizeChapterName(c);
+            }
+            // শিটের exam-index থেকে নাম উদ্ধার
+            const exId = String(m.examId || '').trim().toLowerCase();
+            const exName = String(m.examName || '').trim();
+            const meta = examIndexMap[exId] || examIndexMap[exName.toLowerCase()] || null;
+            if (meta && meta.name) {
+                return normalizeChapterName(meta.name);
+            }
+            if (exName && exName.toLowerCase() !== "general" && exName !== "সাধারণ") {
+                return normalizeChapterName(exName);
+            }
+            // ফলব্যাক: বিষয়ের নাম
+            return normalizeSubject(m.subject).split(' ')[0];
+        }
+
+        function normalizeChapterName(raw) {
+            if (!raw) return "সাধারণ";
             let c = String(raw).trim();
             c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
-            return c || "সাধারণ (General)";
+            return c;
+        }
+
+        function normalizeChapter(raw, m) {
+            if (m) return getMistakeChapter(m);
+            return normalizeChapterName(raw);
         }
 
         // --- Smart Classifier: অধ্যায়ভিত্তিক বনাম মডেল টেস্ট/প্রশ্নব্যাংক ---
@@ -1304,7 +1331,7 @@
                 const subKey = getSubjectShortKey(m.subject);
                 if (selectedChapterSubject !== 'ALL' && subKey !== selectedChapterSubject) return;
 
-                const chName = normalizeChapter(m.chapter);
+                const chName = getMistakeChapter(m);
                 if (!chMap.has(chName)) {
                     chMap.set(chName, {
                         chapter: chName,
@@ -1441,7 +1468,7 @@
 
             allMistakes.forEach(m => {
                 const s = normalizeSubject(m.subject);
-                const c = normalizeChapter(m.chapter);
+                const c = getMistakeChapter(m);
                 subs[s] = (subs[s] || 0) + 1;
                 chs[c] = (chs[c] || 0) + 1;
             });
@@ -1462,7 +1489,7 @@
 
             const filtered = allMistakes.filter(m => {
                 const s = normalizeSubject(m.subject);
-                const c = normalizeChapter(m.chapter);
+                const c = getMistakeChapter(m);
                 if (selectedSub !== 'ALL' && s !== selectedSub) return false;
                 if (selectedCh !== 'ALL' && c !== selectedCh) return false;
                 if (query) {
@@ -1480,7 +1507,7 @@
         function viewQuestionsForScope(type, key, title) {
             let matched = [];
             if (type === 'chapter') {
-                matched = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && normalizeChapter(m.chapter) === key);
+                matched = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && getMistakeChapter(m) === key);
             } else {
                 matched = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam' && (m.examName === key || m.examId === key));
             }
@@ -1526,7 +1553,7 @@
             let cardsHtml = '';
             list.forEach((m, idx) => {
                 const sub = normalizeSubject(m.subject);
-                const ch = normalizeChapter(m.chapter);
+                const ch = getMistakeChapter(m);
                 const rightAns = String(m.rightAns || '').toUpperCase();
                 const userAns = String(m.userAns || '').toUpperCase();
 
@@ -1614,7 +1641,7 @@
 
         // --- ⚡ রি-টেস্ট এক্সিকিউশন লজিক ⚡ ---
         function startReExamForChapter(chName) {
-            const list = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && normalizeChapter(m.chapter) === chName);
+            const list = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && getMistakeChapter(m) === chName);
             startReExamExecution(list, 'অধ্যায় রি-টেস্ট: ' + chName);
         }
 

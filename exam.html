@@ -702,9 +702,14 @@
                     
                     let rightAns = isMCQ(q) ? normalizeMCQAns(q["উত্তর"]) : (q["উত্তর"] ? String(q["উত্তর"]).trim().toUpperCase() : null);
                     
-                    const rawSub = q["Subject"] ? String(q["Subject"]).trim() : "General";
-                    const rawCh = q["Chapter"] || q["অধ্যায়"] || q["টপিক"] || q["Topic"] || "";
-                    const ch = rawCh.trim() !== "" ? rawCh.trim() : (rawSub !== "General" ? rawSub : "General");
+                    // 🌟 স্মার্ট সাবজেক্ট ও চ্যাপ্টার ডিটেকশন (কখনো General হবে না) 🌟
+                    let detectedSub = q["Subject"] || (examConfig && examConfig.category ? examConfig.category : "General");
+                    let detectedCh = q["Chapter"] || q["অধ্যায়"] || q["অধ্যায়"] || q["Chapter Name"] || q["টপিক"] || q["Topic"] || "";
+                    if (!detectedCh || detectedCh.trim() === "" || detectedCh.toLowerCase() === "general") {
+                        detectedCh = examConfig && examConfig.name ? examConfig.name : (detectedSub !== "General" ? detectedSub : "General");
+                    }
+                    const sub = String(detectedSub).trim();
+                    const ch = String(detectedCh).trim();
                     const sub = rawSub;
 
                     // Composite key so different subjects never collide under 'General' or same chapter name!
