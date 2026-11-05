@@ -18,6 +18,7 @@ async function fetchStudentData(email) {
         if (snapshot.empty) {
             document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
             renderSubjectPerformance([]);
+            await updateMistakeBankStat(email);
             return;
         }
 
@@ -44,7 +45,9 @@ async function fetchStudentData(email) {
         // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong)
         document.getElementById('statExams').innerText = exams.length;
         document.getElementById('statCorrect').innerText = overallCorrect;
-        document.getElementById('statWrong').innerText = overallWrong;
+
+        // 🌟 ভুল ব্যাংকের সাথে ১০০% লাইভ সিঙ্ক (হুবহু একই ইউনিক প্রশ্ন সংখ্যা) 🌟
+        await updateMistakeBankStat(email);
 
         // বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স রেন্ডার
         renderSubjectPerformance(exams);
