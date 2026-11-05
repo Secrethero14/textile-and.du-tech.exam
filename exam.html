@@ -837,10 +837,10 @@
                 try {
                     if (user) {
                         for (const m of mistakesToSave) {
-                            const docId = (user.email + "_" + m.examId + "_" + m.originalIndex).replace(/[/\s#\?]/g, "_");
+                            const docId = (user.email.toLowerCase().trim() + "_" + m.examId + "_" + m.originalIndex).replace(/[/\s#\?]/g, "_");
                             await db.collection("user_mistakes").doc(docId).set({
                                 ...m,
-                                email: user.email,
+                                email: user.email.toLowerCase().trim(),
                                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             }, { merge: true });
                         }

@@ -185,7 +185,7 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             loadExams();
         } 
         
-        function logout() { isGuest = false; document.getElementById('system-loader').style.display = 'flex'; auth.signOut().then(() => location.reload()); }
+        function logout() { isGuest = false; try { localStorage.removeItem('user_mistakes'); sessionStorage.clear(); } catch(e) {} document.getElementById('system-loader').style.display = 'flex'; auth.signOut().then(() => location.reload()); }
 
         function showLoginModal() { 
             document.getElementById('authModal').style.display = 'flex'; 

@@ -1186,6 +1186,8 @@
                 const badge = document.getElementById('userBadge');
                 if (user) {
                     currentUser = user;
+                    // 🌟 একাউন্ট আইসোলেশন: আগের অন্য একাউন্ট বা গেস্টের ক্যাশ মুছে ফেলা 🌟
+                    try { localStorage.removeItem('user_mistakes'); } catch(e) {}
                     let nameDisplay = 'প্রোফাইল';
                     if (user.displayName) {
                         nameDisplay = user.displayName.trim().split(' ')[0];
@@ -1205,8 +1207,9 @@
         // --- Load from Firestore ---
         async function loadMistakesFromFirestore(email) {
             try {
+                const cleanEmail = String(email || '').trim().toLowerCase();
                 const snapshot = await db.collection("user_mistakes")
-                    .where("email", "==", email)
+                    .where("email", "==", cleanEmail)
                     .where("status", "==", "wrong")
                     .get();
 
@@ -1217,20 +1220,13 @@
                     firestoreList.push(data);
                 });
 
-                // Merge local guest mistakes if any
-                const localList = getLocalMistakes();
-                const combined = [...firestoreList];
-                localList.forEach(l => {
-                    if (!combined.some(c => c.examId === l.examId && c.originalIndex === l.originalIndex)) {
-                        combined.push(l);
-                    }
-                });
-
-                allMistakes = groupAndDeduplicateMistakes(combined);
+                // 🌟 শুধুমাত্র বর্তমান লগইন করা অ্যাকাউন্টের ভুলই দেখাবে (নো ক্রস-অ্যাকাউন্ট ক্যাশ) 🌟
+                allMistakes = groupAndDeduplicateMistakes(firestoreList);
                 refreshUI();
             } catch (err) {
                 console.error("Firestore Error:", err);
-                loadMistakesFromLocalStorage();
+                allMistakes = [];
+                refreshUI();
             }
         }
 
