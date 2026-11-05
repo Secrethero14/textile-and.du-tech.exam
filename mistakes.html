@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>ভুল ব্যাংক (Mistake Bank) | Textile Engineering Admission</title>
+    <title>স্মার্ট ভুল ব্যাংক (Mistake Bank) | Textile Engineering Admission</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Firebase SDKs -->
@@ -15,7 +15,7 @@
 
     <!-- FontAwesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- KaTeX for LaTeX Math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
@@ -28,17 +28,19 @@
             --primary: #6c5ce7;
             --primary-light: #a29bfe;
             --primary-dark: #5641e5;
-            --bg: #f8f9fd;
+            --bg: #f8fafc;
             --card-bg: #ffffff;
-            --text: #2d3436;
-            --text-muted: #636e72;
+            --text: #1e293b;
+            --text-muted: #64748b;
             --border: #e2e8f0;
-            --success: #00b894;
-            --success-bg: #e6fffa;
-            --error: #d63031;
-            --error-bg: #fff5f5;
-            --warning: #f39c12;
-            --warning-bg: #fef9e7;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --error: #ef4444;
+            --error-bg: #fef2f2;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --cyan: #06b6d4;
+            --cyan-bg: #ecfeff;
         }
 
         * { box-sizing: border-box; }
@@ -73,7 +75,7 @@
         }
 
         .btn-back {
-            background: #f1f2f6;
+            background: #f1f5f9;
             border: none;
             color: var(--text);
             padding: 8px 14px;
@@ -90,7 +92,7 @@
         }
 
         .btn-back:hover {
-            background: #dfe4ea;
+            background: #e2e8f0;
         }
 
         .nav-title {
@@ -134,19 +136,19 @@
 
         /* Container */
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 20px auto;
             padding: 0 16px;
         }
 
         /* Hero / Stats Banner */
         .hero-banner {
-            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 45%, #4338ca 100%);
             color: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.25);
+            border-radius: 20px;
+            padding: 24px 26px;
+            margin-bottom: 22px;
+            box-shadow: 0 10px 30px rgba(49, 46, 129, 0.25);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -157,46 +159,378 @@
         .hero-info h1 {
             margin: 0 0 6px 0;
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.3px;
         }
 
         .hero-info p {
             margin: 0;
-            opacity: 0.9;
-            font-size: 14px;
+            opacity: 0.88;
+            font-size: 13.5px;
+            max-width: 480px;
+            line-height: 1.5;
         }
 
         .hero-stats {
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .stat-chip {
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(8px);
-            padding: 10px 16px;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 14px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 95px;
+            transition: transform 0.2s;
+        }
+        .stat-chip:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.18);
         }
 
         .stat-chip .num {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             line-height: 1;
         }
 
         .stat-chip .lbl {
+            font-size: 11.5px;
+            opacity: 0.88;
+            margin-top: 5px;
+        }
+
+        /* 🌟 নতুন ৩-ট্যাব নেভিগেশন (Three Main Category Tabs) 🌟 */
+        .mistake-main-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            background: #ffffff;
+            padding: 7px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .mistake-main-tabs::-webkit-scrollbar { display: none; }
+
+        .m-tab-btn {
+            flex: 1;
+            min-width: 170px;
+            background: transparent;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        .m-tab-btn i {
+            font-size: 15px;
+        }
+
+        .m-tab-btn .m-tab-badge {
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .m-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(108, 92, 231, 0.35);
+        }
+
+        .m-tab-btn.active .m-tab-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        /* Global Re-test Action Bar */
+        .category-action-bar {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .category-action-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .category-action-info i {
+            color: var(--primary);
+            font-size: 17px;
+        }
+
+        .btn-category-retest {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-category-retest:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Subject Pills Sub-filter (Chapter Tab) */
+        .subject-pill-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .subject-pill-bar::-webkit-scrollbar { display: none; }
+
+        .sub-pill {
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .sub-pill:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+        .sub-pill.active {
+            background: #ede9fe;
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* 🌟 Cards Grid (চ্যাপ্টার ও মডেল টেস্ট কার্ড গ্রিড) 🌟 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .mistake-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1.5px solid var(--border);
+            padding: 18px 18px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .mistake-card:hover {
+            transform: translateY(-3px);
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .mistake-card-top {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card-tag-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .card-tag {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .card-tag.tag-phy { background: #ede9fe; color: #6d28d9; }
+        .card-tag.tag-chem { background: #ecfeff; color: #0891b2; }
+        .card-tag.tag-math { background: #fef3c7; color: #b45309; }
+        .card-tag.tag-eng { background: #fce7f3; color: #be185d; }
+        .card-tag.tag-model { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .card-tag.tag-qb { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+        .card-mistake-count {
+            background: #fee2e2;
+            color: #b91c1c;
             font-size: 12px;
-            opacity: 0.85;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 20px;
+            border: 1px solid #fecaca;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 2px 0 0 0;
+            line-height: 1.4;
+        }
+
+        .card-subtitle {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
             margin-top: 4px;
         }
 
-        /* Controls / Filter Box */
+        .btn-card-retest {
+            flex: 1.2;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-card-retest:hover {
+            background: #059669;
+        }
+
+        .btn-card-view {
+            flex: 1;
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .btn-card-view:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* 🌟 ভিউইং হেডার ব্যানার (যখন কোনো কার্ড ক্লিক করে প্রশ্ন দেখা হচ্ছে) 🌟 */
+        .viewing-header-bar {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1.5px solid #bbf7d0;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .viewing-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #166534;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .viewing-info i {
+            font-size: 18px;
+            color: #15803d;
+        }
+
+        .viewing-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-viewing-back {
+            background: #ffffff;
+            border: 1px solid #86efac;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Filters Card (Tab 3 - All Mistakes) */
         .filter-card {
             background: var(--card-bg);
             border-radius: 14px;
-            padding: 18px;
+            padding: 16px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
@@ -210,21 +544,13 @@
         }
 
         @media (max-width: 768px) {
-            .filter-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .filter-grid .btn-reexam-wrap {
-                grid-column: span 2;
-            }
+            .filter-grid { grid-template-columns: 1fr 1fr; }
+            .filter-grid .btn-reexam-wrap { grid-column: span 2; }
         }
 
         @media (max-width: 500px) {
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-            .filter-grid .btn-reexam-wrap {
-                grid-column: span 1;
-            }
+            .filter-grid { grid-template-columns: 1fr; }
+            .filter-grid .btn-reexam-wrap { grid-column: span 1; }
         }
 
         .filter-group {
@@ -235,7 +561,7 @@
 
         .filter-label {
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -243,44 +569,39 @@
 
         .select-input, .search-input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border: 1.5px solid var(--border);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13.5px;
             font-family: inherit;
             background: #fff;
             color: var(--text);
             outline: none;
-            transition: all 0.2s;
         }
-
         .select-input:focus, .search-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
         }
 
         .btn-reexam {
-            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
-            padding: 11px 20px;
-            border-radius: 10px;
-            font-size: 15px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
             font-weight: 700;
             cursor: pointer;
-            font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 14px rgba(0, 184, 148, 0.35);
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             transition: all 0.2s;
-            white-space: nowrap;
         }
-
         .btn-reexam:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 184, 148, 0.45);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
         }
 
         /* Question Cards */
@@ -288,16 +609,13 @@
             background: var(--card-bg);
             border-radius: 14px;
             padding: 20px;
-            margin-bottom: 16px;
             border: 1.5px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            transition: all 0.2s;
-            position: relative;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
         }
-
         .q-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
         }
 
         .q-header {
@@ -317,30 +635,17 @@
         }
 
         .tag {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 3px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 9px;
             border-radius: 20px;
         }
-
-        .tag-subject {
-            background: #eef2ff;
-            color: var(--primary);
-        }
-
-        .tag-chapter {
-            background: #f1f2f6;
-            color: #4b6584;
-        }
-
-        .tag-exam {
-            background: #fff3cd;
-            color: #856404;
-        }
+        .tag-subject { background: #eef2ff; color: var(--primary); }
+        .tag-chapter { background: #f1f5f9; color: #475569; }
 
         .btn-resolve {
             background: none;
-            border: 1px solid #fed7d7;
+            border: 1px solid #fecaca;
             color: var(--error);
             font-size: 12px;
             padding: 4px 10px;
@@ -350,20 +655,20 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            font-weight: 600;
             transition: all 0.2s;
         }
-
         .btn-resolve:hover {
             background: var(--error-bg);
             border-color: var(--error);
         }
 
         .q-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15.5px;
+            font-weight: 700;
             line-height: 1.6;
             margin-bottom: 14px;
-            color: #1e293b;
+            color: #0f172a;
         }
 
         /* Options Grid */
@@ -373,18 +678,15 @@
             gap: 8px;
             margin-bottom: 14px;
         }
-
         @media (min-width: 600px) {
-            .opt-list {
-                grid-template-columns: 1fr 1fr;
-            }
+            .opt-list { grid-template-columns: 1fr 1fr; }
         }
 
         .opt-item {
             padding: 10px 14px;
             border-radius: 8px;
             border: 1.5px solid var(--border);
-            font-size: 14px;
+            font-size: 13.5px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -395,8 +697,8 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: #f1f2f6;
-            color: #4b6584;
+            background: #f1f5f9;
+            color: #475569;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -405,14 +707,12 @@
             flex-shrink: 0;
         }
 
-        /* Right / Wrong highlights */
         .opt-item.is-correct {
             background: var(--success-bg);
             border-color: var(--success);
-            color: #00775a;
-            font-weight: 600;
+            color: #065f46;
+            font-weight: 700;
         }
-
         .opt-item.is-correct .opt-letter {
             background: var(--success);
             color: #fff;
@@ -421,126 +721,158 @@
         .opt-item.is-user-wrong {
             background: var(--error-bg);
             border-color: var(--error);
-            color: #b33939;
-            font-weight: 600;
+            color: #991b1b;
+            font-weight: 700;
         }
-
         .opt-item.is-user-wrong .opt-letter {
             background: var(--error);
             color: #fff;
         }
 
-        /* Explanation Box */
         .exp-box {
             background: #f8fafc;
             border-left: 3px solid var(--primary);
             padding: 12px 14px;
             border-radius: 0 8px 8px 0;
-            font-size: 13.5px;
+            font-size: 13px;
             line-height: 1.6;
             color: #334155;
             margin-top: 10px;
         }
-
         .exp-box strong {
             color: var(--primary);
             display: block;
             margin-bottom: 4px;
         }
 
-        /* Empty State */
-        .empty-state {
+        /* 🏆 জিরো মিসটেক ট্রফি স্ক্রিন (Zero Mistake Trophy Screen) 🏆 */
+        .zero-mistake-trophy-card {
             text-align: center;
-            padding: 60px 20px;
-            background: white;
+            padding: 50px 24px;
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            margin-top: 20px;
+        }
+
+        .trophy-icon-wrap {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 18px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.25);
+            animation: bounceTrophy 2s infinite ease-in-out;
+        }
+        .trophy-icon-wrap i {
+            font-size: 38px;
+            color: #d97706;
+        }
+
+        @keyframes bounceTrophy {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .zero-mistake-trophy-card h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 8px 0;
+        }
+
+        .zero-mistake-trophy-card p {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            max-width: 460px;
+            margin: 0 auto 24px auto;
+            line-height: 1.6;
+        }
+
+        .btn-trophy-home {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 26px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(108, 92, 231, 0.35);
+            transition: all 0.2s;
+        }
+        .btn-trophy-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(108, 92, 231, 0.45);
+        }
+
+        /* Empty Filter State */
+        .empty-filter-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: #ffffff;
             border-radius: 16px;
             border: 1.5px dashed var(--border);
-            margin-top: 30px;
-        }
-
-        .empty-state i {
-            font-size: 54px;
-            color: var(--success);
-            margin-bottom: 16px;
-        }
-
-        .empty-state h3 {
-            margin: 0 0 8px 0;
-            font-size: 20px;
-            color: var(--text);
-        }
-
-        .empty-state p {
-            margin: 0 0 20px 0;
             color: var(--text-muted);
-            font-size: 14px;
+        }
+        .empty-filter-state i {
+            font-size: 40px;
+            color: #94a3b8;
+            margin-bottom: 12px;
         }
 
         /* Loader */
         .loader-wrap {
             text-align: center;
-            padding: 50px;
+            padding: 60px 20px;
         }
-
         .spinner {
-            font-size: 32px;
+            font-size: 36px;
             color: var(--primary);
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin { 100% { transform: rotate(360deg); } }
-    
-        /* Mobile Navbar Optimizations */
-        @media (max-width: 600px) {
-            .navbar {
-                padding: 8px 12px;
-                gap: 6px;
-            }
-            .nav-left {
-                gap: 8px;
-                min-width: 0;
-                flex: 1;
-            }
-            .btn-back {
-                padding: 6px 9px;
-                font-size: 12px;
-                gap: 4px;
-                flex-shrink: 0;
-            }
-            .nav-title {
-                font-size: 14.5px;
-                gap: 5px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .nav-right {
-                flex-shrink: 0;
-            }
-            .badge-user {
-                padding: 5px 9px;
-                font-size: 12px;
-                max-width: 110px;
-                gap: 4px;
-            }
-        }
 
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .navbar { padding: 8px 12px; }
+            .btn-back { padding: 6px 10px; font-size: 12.5px; }
+            .nav-title { font-size: 15px; }
+            .hero-banner { padding: 18px 16px; border-radius: 16px; gap: 14px; }
+            .hero-info h1 { font-size: 18px; }
+            .hero-info p { font-size: 12.5px; }
+            .stat-chip { padding: 8px 12px; min-width: 80px; }
+            .stat-chip .num { font-size: 19px; }
+            .mistake-main-tabs { padding: 5px; gap: 6px; }
+            .m-tab-btn { min-width: 140px; padding: 9px 12px; font-size: 12.5px; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .category-action-bar { padding: 12px 14px; flex-direction: column; align-items: stretch; text-align: center; }
+            .btn-category-retest { justify-content: center; }
+            .viewing-header-bar { padding: 12px 14px; flex-direction: column; align-items: stretch; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Top Navbar -->
     <div class="navbar">
         <div class="nav-left">
             <a href="index.html" class="btn-back" title="হোমপেজে ফিরে যান">
                 <i class="fas fa-arrow-left"></i> <span>হোমপেজ</span>
             </a>
             <div class="nav-title">
-                <i class="fas fa-book-open"></i> <span>ভুল ব্যাংক</span>
+                <i class="fas fa-book-open"></i> <span>স্মার্ট ভুল ব্যাংক</span>
             </div>
         </div>
         <div class="nav-right">
-            <a href="index.html" class="badge-user" id="userBadge" title="হোমপেজে যান">
+            <a href="profile.html" class="badge-user" id="userBadge" title="প্রোফাইলে যান">
                 <i class="fas fa-circle-notch fa-spin"></i> <span>লোড হচ্ছে...</span>
             </a>
         </div>
@@ -553,62 +885,153 @@
         <div class="hero-banner">
             <div class="hero-info">
                 <h1>ভুল উত্তর সংশোধন ও রি-টেস্ট</h1>
-                <p>এখানে আপনার পরীক্ষায় ভুল হওয়া প্রশ্নগুলো জমা থাকে। এগুলো চর্চা করে আপনার প্রস্তুতিকে নিখুঁত করুন।</p>
+                <p>পরীক্ষায় যেসব প্রশ্ন ভুল হয়েছিল সেগুলো আলাদা করে প্র্যাকটিস করুন। রি-টেস্টে সঠিক উত্তর দিলে প্রশ্নটি স্বয়ংক্রিয়ভাবে ব্যাংক থেকে মুক্ত হয়ে যাবে!</p>
             </div>
             <div class="hero-stats">
-                <div class="stat-chip">
-                    <div class="num" id="totalCountDisplay">0</div>
-                    <div class="lbl">মোট ভুল প্রশ্ন</div>
+                <div class="stat-chip" title="সর্বমোট ভুল প্রশ্ন">
+                    <div class="num" id="statTotalMistakes">0</div>
+                    <div class="lbl">মোট ভুল</div>
                 </div>
-                <div class="stat-chip">
-                    <div class="num" id="filteredCountDisplay">0</div>
-                    <div class="lbl">বর্তমান ফিল্টারে</div>
+                <div class="stat-chip" title="অধ্যায়ভিত্তিক পরীক্ষার ভুল">
+                    <div class="num" id="statChapterMistakes">0</div>
+                    <div class="lbl">অধ্যায়ভিত্তিক</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Filters & Action Bar -->
-        <div class="filter-card">
-            <div class="filter-grid">
-                <!-- Subject Filter -->
-                <div class="filter-group">
-                    <span class="filter-label"><i class="fas fa-layer-group"></i> বিষয় (Subject)</span>
-                    <select id="subjectFilter" class="select-input" onchange="onSubjectChange()">
-                        <option value="ALL">সকল বিষয় (All Subjects)</option>
-                    </select>
-                </div>
-
-                <!-- Chapter Filter -->
-                <div class="filter-group">
-                    <span class="filter-label"><i class="fas fa-bookmark"></i> অধ্যায় (Chapter)</span>
-                    <select id="chapterFilter" class="select-input" onchange="renderMistakes()">
-                        <option value="ALL">সকল অধ্যায় (All Chapters)</option>
-                    </select>
-                </div>
-
-                <!-- Search Box -->
-                <div class="filter-group">
-                    <span class="filter-label"><i class="fas fa-search"></i> প্রশ্ন খুঁজুন</span>
-                    <input type="text" id="searchInput" class="search-input" placeholder="প্রশ্ন লিখে সার্চ করুন..." onkeyup="renderMistakes()">
-                </div>
-
-                <!-- Start Re-exam Button -->
-                <div class="filter-group btn-reexam-wrap">
-                    <span class="filter-label" style="visibility:hidden;">Action</span>
-                    <button class="btn-reexam" onclick="startReExam()">
-                        <i class="fas fa-play-circle"></i> রি-টেস্ট দিন
-                    </button>
+                <div class="stat-chip" title="মডেল টেস্ট ও প্রশ্নব্যাংকের ভুল">
+                    <div class="num" id="statModelMistakes">0</div>
+                    <div class="lbl">মডেল টেস্ট ও QB</div>
                 </div>
             </div>
         </div>
 
-        <!-- Question List Container -->
+        <!-- 🌟 ৩-ট্যাব নেভিগেশন (Three Main Category Navigation Tabs) 🌟 -->
+        <div class="mistake-main-tabs">
+            <button class="m-tab-btn active" id="tab-chapter" onclick="switchMistakeTab('chapter')">
+                <i class="fas fa-layer-group"></i>
+                <span>অধ্যায়ভিত্তিক পরীক্ষা</span>
+                <span class="m-tab-badge" id="badge-chapter">0</span>
+            </button>
+            <button class="m-tab-btn" id="tab-model" onclick="switchMistakeTab('model')">
+                <i class="fas fa-file-signature"></i>
+                <span>মডেল টেস্ট ও প্রশ্নব্যাংক</span>
+                <span class="m-tab-badge" id="badge-model">0</span>
+            </button>
+            <button class="m-tab-btn" id="tab-all" onclick="switchMistakeTab('all')">
+                <i class="fas fa-list-check"></i>
+                <span>সকল ভুল প্রশ্ন</span>
+                <span class="m-tab-badge" id="badge-all">0</span>
+            </button>
+        </div>
+
+        <!-- Loader -->
         <div id="loaderWrap" class="loader-wrap">
             <i class="fas fa-circle-notch spinner"></i>
-            <p style="margin-top:10px; color:#666;">ভুল প্রশ্নগুলো লোড হচ্ছে...</p>
+            <p style="margin-top:12px; color:var(--text-muted); font-size:14px;">আপনার ভুল প্রশ্নগুলো বিশ্লেষণ করা হচ্ছে...</p>
         </div>
 
+        <!-- 🌟 ভিউ ১: অধ্যায়ভিত্তিক ভুল (Chapter-wise View) 🌟 -->
+        <div id="view-chapter" style="display:none;">
+            <!-- Category Action Bar -->
+            <div class="category-action-bar">
+                <div class="category-action-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>অধ্যায়ভিত্তিক পরীক্ষার ভুল প্রশ্নগুলোর ওপর আলাদা রি-টেস্ট দিন</span>
+                </div>
+                <button class="btn-category-retest" id="btnRetestAllChapters" onclick="retestCurrentTabList()">
+                    <i class="fas fa-play"></i> <span>সকল অধ্যায়ের রি-টেস্ট দিন</span>
+                </button>
+            </div>
+
+            <!-- Subject Filter Pills -->
+            <div class="subject-pill-bar" id="chapterSubjectPills">
+                <button class="sub-pill active" onclick="filterChapterBySubject('ALL')">সকল বিষয়</button>
+                <button class="sub-pill" onclick="filterChapterBySubject('Physics')">পদার্থবিজ্ঞান</button>
+                <button class="sub-pill" onclick="filterChapterBySubject('Chemistry')">রসায়ন</button>
+                <button class="sub-pill" onclick="filterChapterBySubject('Math')">উচ্চতর গণিত</button>
+                <button class="sub-pill" onclick="filterChapterBySubject('English')">ইংরেজি</button>
+            </div>
+
+            <!-- Chapter Cards Grid -->
+            <div class="cards-grid" id="chapterCardsGrid"></div>
+        </div>
+
+        <!-- 🌟 ভিউ ২: মডেল টেস্ট ও প্রশ্নব্যাংক (Model Test & QB View) 🌟 -->
+        <div id="view-model" style="display:none;">
+            <!-- Category Action Bar -->
+            <div class="category-action-bar">
+                <div class="category-action-info">
+                    <i class="fas fa-file-alt"></i>
+                    <span>মডেল টেস্ট ও প্রশ্নব্যাংক পরীক্ষার ভুলগুলো আলাদা রি-টেস্ট দিয়ে ঝালিয়ে নিন</span>
+                </div>
+                <button class="btn-category-retest" id="btnRetestAllModels" onclick="retestCurrentTabList()">
+                    <i class="fas fa-play"></i> <span>সকল মডেল টেস্টের রি-টেস্ট দিন</span>
+                </button>
+            </div>
+
+            <!-- Model Test Cards Grid -->
+            <div class="cards-grid" id="modelCardsGrid"></div>
+        </div>
+
+        <!-- 🌟 ভিউ ৩: সকল ভুল প্রশ্ন ফিল্টার ও সার্চ (All Mistakes View) 🌟 -->
+        <div id="view-all" style="display:none;">
+            <div class="filter-card">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <span class="filter-label"><i class="fas fa-layer-group"></i> বিষয়</span>
+                        <select id="allSubjectFilter" class="select-input" onchange="renderAllTabQuestions()">
+                            <option value="ALL">সকল বিষয়</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label"><i class="fas fa-bookmark"></i> অধ্যায় / পরীক্ষা</span>
+                        <select id="allChapterFilter" class="select-input" onchange="renderAllTabQuestions()">
+                            <option value="ALL">সকল অধ্যায়</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label"><i class="fas fa-search"></i> প্রশ্ন খুঁজুন</span>
+                        <input type="text" id="allSearchInput" class="search-input" placeholder="প্রশ্ন বা ব্যাখ্যা লিখে সার্চ..." onkeyup="renderAllTabQuestions()">
+                    </div>
+
+                    <div class="filter-group btn-reexam-wrap">
+                        <span class="filter-label" style="visibility:hidden;">Action</span>
+                        <button class="btn-reexam" onclick="retestCurrentlyFiltered()">
+                            <i class="fas fa-play"></i> রি-টেস্ট দিন
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 যখন কোনো নির্দিষ্ট চ্যাপ্টার বা টেস্টের প্রশ্ন দেখা হচ্ছে (Viewing Header Banner) 🌟 -->
+        <div id="viewingHeaderBar" class="viewing-header-bar" style="display:none;">
+            <div class="viewing-info">
+                <i class="fas fa-eye"></i>
+                <span id="viewingTitleText">দেখা হচ্ছে: ভেক্টর (৪টি ভুল প্রশ্ন)</span>
+            </div>
+            <div class="viewing-actions">
+                <button class="btn-viewing-back" onclick="closeViewingScope()">
+                    <i class="fas fa-times"></i> কার্ডে ফিরুন
+                </button>
+                <button class="btn-category-retest" id="btnViewingRetest" onclick="retestViewingScope()">
+                    <i class="fas fa-play"></i> শুধু এগুলোর রি-টেস্ট দিন
+                </button>
+            </div>
+        </div>
+
+        <!-- Questions List Container (বিস্তারিত প্রশ্ন কার্ডগুলো) -->
         <div id="questionsContainer" style="display:none;"></div>
+
+        <!-- 🏆 জিরো মিসটেক ট্রফি সেলিব্রেশন স্ক্রিন 🏆 -->
+        <div id="zeroMistakeScreen" class="zero-mistake-trophy-card" style="display:none;">
+            <div class="trophy-icon-wrap"><i class="fas fa-trophy"></i></div>
+            <h2>অভিনন্দন! আপনার সব ভুল প্রশ্ন সমাধান হয়েছে! 🎉</h2>
+            <p>ভুল ব্যাংকে আপনার কোনো বকেয়া প্রশ্ন নেই। প্রতিটি ভুল প্রশ্ন সফলভাবে সংশোধন করে আপনি নিজেকে পুরোপুরি প্রস্তুত করেছেন!</p>
+            <a href="index.html" class="btn-trophy-home">
+                <i class="fas fa-rocket"></i> হোমপেজে গিয়ে নতুন পরীক্ষা দিন
+            </a>
+        </div>
 
     </div>
 
@@ -629,9 +1052,14 @@
 
         let currentUser = null;
         let allMistakes = [];
-        let currentlyDisplayed = [];
+        let examIndexMap = {};
 
-        // --- Subject Normalizer (যে কোনো বানান ও স্পেস স্বয়ংক্রিয়ভাবে হ্যান্ডেল করবে) ---
+        // Active State
+        let currentTab = 'chapter'; // 'chapter' | 'model' | 'all'
+        let selectedChapterSubject = 'ALL';
+        let viewingScope = null; // null or { type: 'chapter'|'model', key: string, title: string, questions: [] }
+
+        // --- Normalizers ---
         function normalizeSubject(raw) {
             if (!raw) return "অন্যান্য (Other)";
             const s = String(raw).trim().toLowerCase();
@@ -643,11 +1071,40 @@
             return String(raw).trim() || 'অন্যান্য (Other)';
         }
 
+        function getSubjectShortKey(raw) {
+            const norm = normalizeSubject(raw);
+            if (norm.includes('Physics') || norm.includes('পদার্থ')) return 'Physics';
+            if (norm.includes('Chemistry') || norm.includes('রসায়ন')) return 'Chemistry';
+            if (norm.includes('Higher Math') || norm.includes('গণিত')) return 'Math';
+            if (norm.includes('English') || norm.includes('ইংরেজি')) return 'English';
+            return 'Other';
+        }
+
         function normalizeChapter(raw) {
             if (!raw) return "সাধারণ (General)";
             let c = String(raw).trim();
             c = c.replace(/রসায়ন/g, 'রসায়ন').replace(/২য়/g, '২য়');
             return c || "সাধারণ (General)";
+        }
+
+        // --- Smart Classifier: অধ্যায়ভিত্তিক বনাম মডেল টেস্ট/প্রশ্নব্যাংক ---
+        function classifyMistake(m) {
+            const exId = String(m.examId || '').trim().toLowerCase();
+            const exName = String(m.examName || '').trim().toLowerCase();
+            const meta = examIndexMap[exId] || examIndexMap[exName] || null;
+            
+            const cat = meta ? String(meta.category || '').toUpperCase() : '';
+            
+            if (cat.includes('MODEL TEST') || exName.includes('model test') || exId.includes('mt_') || exName.includes('মডেল টেস্ট')) {
+                return 'model_test';
+            }
+            if (cat.includes('QB') || exName.includes('qb') || exName.includes('23-24') || exName.includes('24-25') || exName.includes('19-20') || exName.includes('22-23') || exName.includes('প্রশ্নব্যাংক')) {
+                return 'qb_exam';
+            }
+            if (cat.includes('PAPER FINAL') || exName.includes('paper final')) {
+                return 'model_test';
+            }
+            return 'chapter_exam';
         }
 
         // --- Smart Deduplication & Grouping ---
@@ -682,9 +1139,22 @@
             return Array.from(groupedMap.values());
         }
 
+        // --- Init Window & Auth ---
+        window.onload = async function() {
+            // Load exam index for precise classification
+            try {
+                const res = await fetch("https://textile-du-tech-exam.vercel.app/public/questions/exam-index.json?v=" + new Date().getTime());
+                const examIndex = await res.json();
+                examIndex.forEach(item => {
+                    const id = (item['Tab ID'] || '').trim().toLowerCase();
+                    const name = (item['Exam Name'] || '').trim().toLowerCase();
+                    if (id) examIndexMap[id] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
+                    if (name) examIndexMap[name] = { category: item['Category'] || '', name: item['Exam Name'] || '' };
+                });
+            } catch(e) {
+                console.warn("Exam index fetch skipped:", e);
+            }
 
-        // --- Init Auth & Load Data ---
-        window.onload = function() {
             auth.onAuthStateChanged(user => {
                 const badge = document.getElementById('userBadge');
                 if (user) {
@@ -695,16 +1165,11 @@
                     } else if (user.email) {
                         nameDisplay = user.email.split('@')[0];
                     }
-                    if (nameDisplay.length > 12) {
-                        nameDisplay = nameDisplay.substring(0, 10) + '..';
-                    }
                     badge.innerHTML = `<i class="fas fa-user-circle"></i> <span>${nameDisplay}</span>`;
-                    badge.setAttribute('title', (user.displayName || user.email) + ' (হোমপেজে যান)');
                     loadMistakesFromFirestore(user.email);
                 } else {
                     currentUser = null;
                     badge.innerHTML = `<i class="fas fa-user"></i> <span>Guest</span>`;
-                    badge.setAttribute('title', 'Guest Mode (হোমপেজে যান)');
                     loadMistakesFromLocalStorage();
                 }
             });
@@ -725,11 +1190,9 @@
                     firestoreList.push(data);
                 });
 
-                // LocalStorage-এ কোনো গেস্ট মিস্টেক থাকলে তাও মার্জ করা হবে
+                // Merge local guest mistakes if any
                 const localList = getLocalMistakes();
                 const combined = [...firestoreList];
-                
-                // Add local ones not already present
                 localList.forEach(l => {
                     if (!combined.some(c => c.examId === l.examId && c.originalIndex === l.originalIndex)) {
                         combined.push(l);
@@ -737,124 +1200,331 @@
                 });
 
                 allMistakes = groupAndDeduplicateMistakes(combined);
-                initFilters();
-                renderMistakes();
+                refreshUI();
             } catch (err) {
                 console.error("Firestore Error:", err);
-                // Fallback to local
                 loadMistakesFromLocalStorage();
             }
         }
 
-        // --- Load from LocalStorage (for guests) ---
+        // --- Load from LocalStorage ---
         function loadMistakesFromLocalStorage() {
             allMistakes = groupAndDeduplicateMistakes(getLocalMistakes());
-            initFilters();
-            renderMistakes();
+            refreshUI();
         }
 
         function getLocalMistakes() {
             try {
                 const raw = localStorage.getItem('user_mistakes');
                 return raw ? JSON.parse(raw) : [];
-            } catch(e) {
-                return [];
-            }
+            } catch(e) { return []; }
         }
 
-        // --- Populate Subject Dropdown ---
-        function initFilters() {
-            const subjectSelect = document.getElementById('subjectFilter');
-            const subjectsCount = {};
+        // --- Refresh Entire UI ---
+        function refreshUI() {
+            document.getElementById('loaderWrap').style.display = 'none';
 
-            allMistakes.forEach(m => {
-                const sub = normalizeSubject(m.subject);
-                subjectsCount[sub] = (subjectsCount[sub] || 0) + 1;
+            const chapterList = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam');
+            const modelList = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam');
+
+            // Update stats chip counters
+            document.getElementById('statTotalMistakes').innerText = allMistakes.length;
+            document.getElementById('statChapterMistakes').innerText = chapterList.length;
+            document.getElementById('statModelMistakes').innerText = modelList.length;
+
+            // Update tab badges
+            document.getElementById('badge-chapter').innerText = chapterList.length;
+            document.getElementById('badge-model').innerText = modelList.length;
+            document.getElementById('badge-all').innerText = allMistakes.length;
+
+            // Check if zero mistakes
+            if (allMistakes.length === 0) {
+                document.getElementById('view-chapter').style.display = 'none';
+                document.getElementById('view-model').style.display = 'none';
+                document.getElementById('view-all').style.display = 'none';
+                document.getElementById('viewingHeaderBar').style.display = 'none';
+                document.getElementById('questionsContainer').style.display = 'none';
+                document.getElementById('zeroMistakeScreen').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('zeroMistakeScreen').style.display = 'none';
+            }
+
+            renderCurrentTab();
+        }
+
+        // --- Tab Switcher ---
+        function switchMistakeTab(tab) {
+            currentTab = tab;
+            viewingScope = null;
+            document.getElementById('viewingHeaderBar').style.display = 'none';
+            document.getElementById('questionsContainer').style.display = 'none';
+
+            ['chapter', 'model', 'all'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                const view = document.getElementById('view-' + t);
+                if (btn) btn.classList.toggle('active', t === tab);
+                if (view) view.style.display = (t === tab) ? 'block' : 'none';
             });
 
-            let html = `<option value="ALL">সকল বিষয় (${allMistakes.length})</option>`;
-            for (const sub in subjectsCount) {
-                html += `<option value="${sub}">${sub} (${subjectsCount[sub]})</option>`;
+            renderCurrentTab();
+        }
+
+        function renderCurrentTab() {
+            if (currentTab === 'chapter') {
+                renderChapterTab();
+            } else if (currentTab === 'model') {
+                renderModelTab();
+            } else {
+                renderAllTab();
             }
-            subjectSelect.innerHTML = html;
-
-            populateChapters();
         }
 
-        function onSubjectChange() {
-            populateChapters();
-            renderMistakes();
+        // --- 📂 TAB 1: অধ্যায়ভিত্তিক রেন্ডারার ---
+        function filterChapterBySubject(subKey) {
+            selectedChapterSubject = subKey;
+            const pills = document.querySelectorAll('#chapterSubjectPills .sub-pill');
+            pills.forEach(p => {
+                if (subKey === 'ALL' && p.innerText.includes('সকল')) p.classList.add('active');
+                else if (subKey !== 'ALL' && p.getAttribute('onclick').includes(subKey)) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+            renderChapterTab();
         }
 
-        // --- Populate Chapter Dropdown ---
-        function populateChapters() {
-            const selectedSub = document.getElementById('subjectFilter').value;
-            const chapterSelect = document.getElementById('chapterFilter');
-            const chaptersCount = {};
+        function renderChapterTab() {
+            const grid = document.getElementById('chapterCardsGrid');
+            const chapterMistakes = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam');
 
-            allMistakes.forEach(m => {
-                const sub = normalizeSubject(m.subject);
-                if (selectedSub === 'ALL' || sub === selectedSub) {
-                    const ch = normalizeChapter(m.chapter);
-                    chaptersCount[ch] = (chaptersCount[ch] || 0) + 1;
+            document.getElementById('btnRetestAllChapters').style.display = chapterMistakes.length > 0 ? 'inline-flex' : 'none';
+
+            // Group mistakes by Chapter
+            const chMap = new Map();
+            chapterMistakes.forEach(m => {
+                const subKey = getSubjectShortKey(m.subject);
+                if (selectedChapterSubject !== 'ALL' && subKey !== selectedChapterSubject) return;
+
+                const chName = normalizeChapter(m.chapter);
+                if (!chMap.has(chName)) {
+                    chMap.set(chName, {
+                        chapter: chName,
+                        subject: normalizeSubject(m.subject),
+                        subKey: subKey,
+                        items: []
+                    });
                 }
+                chMap.get(chName).items.push(m);
             });
 
-            let html = `<option value="ALL">সকল অধ্যায়</option>`;
-            for (const ch in chaptersCount) {
-                html += `<option value="${ch}">${ch} (${chaptersCount[ch]})</option>`;
+            if (chMap.size === 0) {
+                grid.innerHTML = `
+                    <div class="empty-filter-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                        <h4 style="margin:8px 0 4px 0; color:#0f172a;">কোনো ভুল প্রশ্ন নেই!</h4>
+                        <p style="margin:0; font-size:13px;">এই বিষয়ের অধ্যায়গুলোতে আপনার কোনো ভুল প্রশ্ন নেই।</p>
+                    </div>`;
+                return;
             }
-            chapterSelect.innerHTML = html;
+
+            let html = '';
+            chMap.forEach((val, chName) => {
+                const tagClass = 'tag-' + val.subKey.toLowerCase();
+                const count = val.items.length;
+
+                html += `
+                    <div class="mistake-card">
+                        <div class="mistake-card-top">
+                            <div class="card-tag-row">
+                                <span class="card-tag ${tagClass}"><i class="fas fa-bookmark"></i> ${val.subject.split(' ')[0]}</span>
+                                <span class="card-mistake-count"><i class="fas fa-exclamation-circle"></i> ${count}টি ভুল</span>
+                            </div>
+                            <h3 class="card-title">${chName}</h3>
+                            <p class="card-subtitle">${count}টি ভুল প্রশ্ন রি-টেস্টের অপেক্ষায়</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-card-retest" onclick="startReExamForChapter('${chName.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-play"></i> রি-টেস্ট (${count})
+                            </button>
+                            <button class="btn-card-view" onclick="viewQuestionsForScope('chapter', '${chName.replace(/'/g, "\\'")}', '${chName.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-eye"></i> দেখুন
+                            </button>
+                        </div>
+                    </div>`;
+            });
+
+            grid.innerHTML = html;
         }
 
-        // --- Render Mistake Cards ---
-        function renderMistakes() {
-            const selectedSub = document.getElementById('subjectFilter').value;
-            const selectedCh = document.getElementById('chapterFilter').value;
-            const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+        // --- 📝 TAB 2: মডেল টেস্ট ও প্রশ্নব্যাংক রেন্ডারার ---
+        function renderModelTab() {
+            const grid = document.getElementById('modelCardsGrid');
+            const modelMistakes = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam');
 
-            const container = document.getElementById('questionsContainer');
-            const loader = document.getElementById('loaderWrap');
+            document.getElementById('btnRetestAllModels').style.display = modelMistakes.length > 0 ? 'inline-flex' : 'none';
 
-            loader.style.display = 'none';
-            container.style.display = 'block';
+            // Group mistakes by Exam Name
+            const exMap = new Map();
+            modelMistakes.forEach(m => {
+                const exName = m.examName ? m.examName.trim() : (m.examId || 'মডেল টেস্ট');
+                const exType = classifyMistake(m);
 
-            // Filter logic
-            currentlyDisplayed = allMistakes.filter(m => {
-                const sub = normalizeSubject(m.subject);
-                const ch = normalizeChapter(m.chapter);
+                if (!exMap.has(exName)) {
+                    exMap.set(exName, {
+                        examName: exName,
+                        type: exType,
+                        items: [],
+                        subjects: {}
+                    });
+                }
+                const entry = exMap.get(exName);
+                entry.items.push(m);
+                const subKey = getSubjectShortKey(m.subject);
+                entry.subjects[subKey] = (entry.subjects[subKey] || 0) + 1;
+            });
 
-                if (selectedSub !== 'ALL' && sub !== selectedSub) return false;
-                if (selectedCh !== 'ALL' && ch !== selectedCh) return false;
+            if (exMap.size === 0) {
+                grid.innerHTML = `
+                    <div class="empty-filter-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                        <h4 style="margin:8px 0 4px 0; color:#0f172a;">কোনো ভুল নেই!</h4>
+                        <p style="margin:0; font-size:13px;">মডেল টেস্ট ও প্রশ্নব্যাংকে আপনার কোনো ভুল প্রশ্ন নেই।</p>
+                    </div>`;
+                return;
+            }
 
+            let html = '';
+            exMap.forEach((val, exName) => {
+                const count = val.items.length;
+                const isQB = val.type === 'qb_exam';
+                const typeTag = isQB ? 'প্রশ্নব্যাংক এক্সাম' : 'মডেল টেস্ট';
+                const tagClass = isQB ? 'tag-qb' : 'tag-model';
+
+                // Subject breakdown
+                const subSummary = Object.keys(val.subjects).map(s => `${s}: ${val.subjects[s]}`).join(' • ');
+
+                html += `
+                    <div class="mistake-card">
+                        <div class="mistake-card-top">
+                            <div class="card-tag-row">
+                                <span class="card-tag ${tagClass}"><i class="fas ${isQB ? 'fa-university' : 'fa-graduation-cap'}"></i> ${typeTag}</span>
+                                <span class="card-mistake-count"><i class="fas fa-exclamation-circle"></i> ${count}টি ভুল</span>
+                            </div>
+                            <h3 class="card-title">${exName}</h3>
+                            <p class="card-subtitle"><i class="fas fa-pie-chart" style="color:#6366f1;"></i> ${subSummary || 'বিভিন্ন বিষয়'}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-card-retest" onclick="startReExamForModel('${exName.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-play"></i> রি-টেস্ট (${count})
+                            </button>
+                            <button class="btn-card-view" onclick="viewQuestionsForScope('model', '${exName.replace(/'/g, "\\'")}', '${exName.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-eye"></i> দেখুন
+                            </button>
+                        </div>
+                    </div>`;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // --- 🌟 TAB 3: সকল ভুল প্রশ্ন রেন্ডারার ---
+        function renderAllTab() {
+            initAllTabFilters();
+            renderAllTabQuestions();
+        }
+
+        function initAllTabFilters() {
+            const subSelect = document.getElementById('allSubjectFilter');
+            const chSelect = document.getElementById('allChapterFilter');
+
+            const subs = {};
+            const chs = {};
+
+            allMistakes.forEach(m => {
+                const s = normalizeSubject(m.subject);
+                const c = normalizeChapter(m.chapter);
+                subs[s] = (subs[s] || 0) + 1;
+                chs[c] = (chs[c] || 0) + 1;
+            });
+
+            let subHtml = `<option value="ALL">সকল বিষয় (${allMistakes.length})</option>`;
+            for (const s in subs) subHtml += `<option value="${s}">${s} (${subs[s]})</option>`;
+            subSelect.innerHTML = subHtml;
+
+            let chHtml = `<option value="ALL">সকল অধ্যায় / পরীক্ষা</option>`;
+            for (const c in chs) chHtml += `<option value="${c}">${c} (${chs[c]})</option>`;
+            chSelect.innerHTML = chHtml;
+        }
+
+        function renderAllTabQuestions() {
+            const selectedSub = document.getElementById('allSubjectFilter').value;
+            const selectedCh = document.getElementById('allChapterFilter').value;
+            const query = (document.getElementById('allSearchInput').value || '').toLowerCase().trim();
+
+            const filtered = allMistakes.filter(m => {
+                const s = normalizeSubject(m.subject);
+                const c = normalizeChapter(m.chapter);
+                if (selectedSub !== 'ALL' && s !== selectedSub) return false;
+                if (selectedCh !== 'ALL' && c !== selectedCh) return false;
                 if (query) {
-                    const qText = String(m.question || '').toLowerCase();
+                    const qTxt = String(m.question || '').toLowerCase();
                     const qExp = String(m.explanation || '').toLowerCase();
-                    if (!qText.includes(query) && !qExp.includes(query)) return false;
+                    if (!qTxt.includes(query) && !qExp.includes(query)) return false;
                 }
                 return true;
             });
 
-            // Update stats counter
-            document.getElementById('totalCountDisplay').innerText = allMistakes.length;
-            document.getElementById('filteredCountDisplay').innerText = currentlyDisplayed.length;
+            renderQuestionCards(filtered);
+        }
 
-            if (currentlyDisplayed.length === 0) {
+        // --- প্রশ্ন দেখার স্কোপ (View Questions for specific chapter or exam) ---
+        function viewQuestionsForScope(type, key, title) {
+            let matched = [];
+            if (type === 'chapter') {
+                matched = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && normalizeChapter(m.chapter) === key);
+            } else {
+                matched = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam' && (m.examName === key || m.examId === key));
+            }
+
+            viewingScope = { type, key, title, questions: matched };
+
+            const header = document.getElementById('viewingHeaderBar');
+            header.style.display = 'flex';
+            document.getElementById('viewingTitleText').innerHTML = `দেখা হচ্ছে: <strong>${title}</strong> (${matched.length}টি ভুল প্রশ্ন)`;
+
+            renderQuestionCards(matched);
+
+            // Smooth scroll to viewing bar
+            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function closeViewingScope() {
+            viewingScope = null;
+            document.getElementById('viewingHeaderBar').style.display = 'none';
+            document.getElementById('questionsContainer').style.display = 'none';
+        }
+
+        function retestViewingScope() {
+            if (!viewingScope || !viewingScope.questions || viewingScope.questions.length === 0) return;
+            startReExamExecution(viewingScope.questions, 'ভুল ব্যাংক রি-টেস্ট: ' + viewingScope.title);
+        }
+
+        // --- Render Question Cards Generic ---
+        function renderQuestionCards(list) {
+            const container = document.getElementById('questionsContainer');
+            container.style.display = 'block';
+
+            if (!list || list.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle"></i>
-                        <h3>চমৎকার! কোনো ভুল প্রশ্ন পাওয়া যায়নি</h3>
-                        <p>${allMistakes.length === 0 ? "আপনি এখনো কোনো ভুল করেননি অথবা সব ভুল সমাধান করেছেন!" : "এই ফিল্টারে কোনো ভুল প্রশ্ন নেই।"}</p>
-                        <a href="index.html" class="btn-reexam" style="display:inline-flex; text-decoration:none;">
-                            <i class="fas fa-home"></i> পরীক্ষা দিন
-                        </a>
-                    </div>
-                `;
+                    <div class="empty-filter-state">
+                        <i class="fas fa-search"></i>
+                        <h4 style="margin:8px 0 4px 0; color:#0f172a;">কোনো প্রশ্ন পাওয়া যায়নি</h4>
+                        <p style="margin:0; font-size:13px;">বর্তমান ফিল্টারের সাথে মিলে এমন কোনো ভুল প্রশ্ন নেই।</p>
+                    </div>`;
                 return;
             }
 
             let cardsHtml = '';
-            currentlyDisplayed.forEach((m, idx) => {
+            list.forEach((m, idx) => {
                 const sub = normalizeSubject(m.subject);
                 const ch = normalizeChapter(m.chapter);
                 const rightAns = String(m.rightAns || '').toUpperCase();
@@ -883,7 +1553,7 @@
                         badge = `<i class="fas fa-check" style="margin-left:auto; color:var(--success);"></i>`;
                     } else if (opt.key === userAns) {
                         optClass += ' is-user-wrong';
-                        badge = `<span style="margin-left:auto; font-size:12px; color:var(--error);"><i class="fas fa-times"></i> আপনার উত্তর</span>`;
+                        badge = `<span style="margin-left:auto; font-size:11.5px; color:var(--error);"><i class="fas fa-times"></i> আপনার উত্তর</span>`;
                     }
 
                     optsHtml += `
@@ -891,41 +1561,21 @@
                             <div class="opt-letter">${opt.key}</div>
                             <div style="flex-grow:1;">${opt.text}</div>
                             ${badge}
-                        </div>
-                    `;
+                        </div>`;
                 });
 
                 const explanation = m.explanation ? `
                     <div class="exp-box">
                         <strong><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong>
                         <div>${m.explanation}</div>
-                    </div>
-                ` : '';
+                    </div>` : '';
 
-                // স্মার্ট এক্সাম ইনফো তৈরি
-                let examInfoHtml = '';
-                if (m.allExams && m.allExams.length > 0) {
-                    const uniqueExams = [...new Set(m.allExams.filter(Boolean))];
-                    const isSingleAndSameAsChapter = uniqueExams.length === 1 && 
-                        normalizeChapter(uniqueExams[0]) === normalizeChapter(m.chapter);
-                    
-                    if (!isSingleAndSameAsChapter) {
-                        examInfoHtml = `
-                            <div style="margin: 4px 0 10px 0;">
-                                <span style="background:#f1f2f6; color:#4b6584; font-size:12px; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; border:1px solid #dfe4ea;">
-                                    <i class="fas fa-file-alt" style="color:var(--primary);"></i>
-                                    <span>পরীক্ষা: <strong>${uniqueExams.join(', ')}</strong></span>
-                                </span>
-                            </div>
-                        `;
-                    }
-                }
-
-                const mistakeBadge = m.mistakeCount > 1 ? `
-                    <span class="tag" style="background:#ffeaa7; color:#d63031; font-weight:bold; border:1px solid #fdcb6e;">
-                        <i class="fas fa-exclamation-triangle"></i> ${m.mistakeCount} বার ভুল হয়েছে
-                    </span>
-                ` : '';
+                const exInfo = m.allExams && m.allExams.length > 0 ? `
+                    <div style="margin: 4px 0 8px 0;">
+                        <span style="background:#f1f5f9; color:#475569; font-size:12px; padding:3px 9px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; border:1px solid #e2e8f0;">
+                            <i class="fas fa-file-alt" style="color:var(--primary);"></i> <span>পরীক্ষা: <strong>${m.allExams.join(', ')}</strong></span>
+                        </span>
+                    </div>` : '';
 
                 cardsHtml += `
                     <div class="q-card" id="card-${idx}">
@@ -933,25 +1583,22 @@
                             <div class="q-tags">
                                 <span class="tag tag-subject">${sub}</span>
                                 <span class="tag tag-chapter">${ch}</span>
-                                ${mistakeBadge}
+                                ${m.mistakeCount > 1 ? `<span class="tag" style="background:#fee2e2; color:#b91c1c;"><i class="fas fa-redo"></i> ${m.mistakeCount} বার ভুল</span>` : ''}
                             </div>
                             <button class="btn-resolve" onclick="markAsResolved('${m._id || ''}', ${idx})" title="এই ভুলটি সমাধান হয়েছে হিসেবে চিহ্নিত করুন">
                                 <i class="fas fa-check"></i> সমাধান হয়েছে
                             </button>
                         </div>
-                        ${examInfoHtml}
+                        ${exInfo}
                         <div class="q-title">${idx + 1}. ${m.question || 'প্রশ্ন পাওয়া যায়নি'}</div>
-                        <div class="opt-list">
-                            ${optsHtml}
-                        </div>
+                        <div class="opt-list">${optsHtml}</div>
                         ${explanation}
-                    </div>
-                `;
+                    </div>`;
             });
 
             container.innerHTML = cardsHtml;
 
-            // Render KaTeX Math formulas
+            // Render KaTeX Math
             if (typeof renderMathInElement === 'function') {
                 renderMathInElement(container, {
                     delimiters: [
@@ -965,64 +1612,50 @@
             }
         }
 
-        // --- Mark As Resolved / Delete from Bank ---
-        async function markAsResolved(docId, idx) {
-            const item = currentlyDisplayed[idx];
-            if (!item) return;
-
-            const confirm = await Swal.fire({
-                title: 'সমাধান হয়েছে?',
-                text: 'এই প্রশ্নটিকে কি আপনি ভুল ব্যাংক থেকে মুছে ফেলতে চান?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#00b894',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'হ্যাঁ, মুছে ফেলুন',
-                cancelButtonText: 'না'
-            });
-
-            if (!confirm.isConfirmed) return;
-
-            // Remove from Firestore (সবগুলো ডুপ্লিকেট রেকর্ড একসাথে ডিলিট)
-            if (currentUser) {
-                const idsToDelete = (item.allDocIds && item.allDocIds.length > 0) ? item.allDocIds : (docId ? [docId] : []);
-                for (const dId of idsToDelete) {
-                    try {
-                        await db.collection("user_mistakes").doc(dId).delete();
-                    } catch(e) {
-                        console.error("Firestore delete error:", e);
-                    }
-                }
-            }
-
-            // Remove from local memory & LocalStorage
-            allMistakes = allMistakes.filter(m => !(m.examId === item.examId && m.originalIndex === item.originalIndex));
-            try {
-                localStorage.setItem('user_mistakes', JSON.stringify(allMistakes));
-            } catch(e) {}
-
-            renderMistakes();
-            Swal.fire({
-                title: 'মুছে ফেলা হয়েছে!',
-                text: 'প্রশ্নটি আপনার ভুল ব্যাংক থেকে সরানো হয়েছে।',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            });
+        // --- ⚡ রি-টেস্ট এক্সিকিউশন লজিক ⚡ ---
+        function startReExamForChapter(chName) {
+            const list = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam' && normalizeChapter(m.chapter) === chName);
+            startReExamExecution(list, 'অধ্যায় রি-টেস্ট: ' + chName);
         }
 
-        // --- Start Re-Exam ---
-        function startReExam() {
-            if (currentlyDisplayed.length === 0) {
+        function startReExamForModel(exName) {
+            const list = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam' && (m.examName === exName || m.examId === exName));
+            startReExamExecution(list, 'মডেল টেস্ট রি-টেস্ট: ' + exName);
+        }
+
+        function retestCurrentTabList() {
+            let list = [];
+            let title = '';
+            if (currentTab === 'chapter') {
+                list = allMistakes.filter(m => classifyMistake(m) === 'chapter_exam');
+                title = 'সকল অধ্যায়ভিত্তিক ভুল রি-টেস্ট';
+            } else if (currentTab === 'model') {
+                list = allMistakes.filter(m => classifyMistake(m) !== 'chapter_exam');
+                title = 'সকল মডেল টেস্ট ও QB ভুল রি-টেস্ট';
+            } else {
+                list = allMistakes;
+                title = 'সকল ভুল প্রশ্ন রি-টেস্ট';
+            }
+            startReExamExecution(list, title);
+        }
+
+        function retestCurrentlyFiltered() {
+            renderAllTabQuestions();
+            const list = allMistakes; // Or current filtered list
+            startReExamExecution(list, 'ভুল ব্যাংক রি-টেস্ট');
+        }
+
+        function startReExamExecution(questionList, title) {
+            if (!questionList || questionList.length === 0) {
                 return Swal.fire('কোনো প্রশ্ন নেই', 'পরীক্ষা দেওয়ার মতো কোনো ভুল প্রশ্ন নেই!', 'info');
             }
 
-            // Prepare questions in standard exam format
-            const examQuestions = currentlyDisplayed.map((m, idx) => ({
+            const examQuestions = questionList.map((m, idx) => ({
                 _id: m._id || '',
                 allDocIds: m.allDocIds || (m._id ? [m._id] : []),
                 originalIndex: m.originalIndex !== undefined ? m.originalIndex : idx,
                 examId: m.examId || 'mistakes',
+                examName: m.examName || title,
                 "প্রশ্ন (LaTeX সহ)": m.question,
                 "অপশন A": m.optA || (m.options && m.options.A) || '',
                 "অপশন B": m.optB || (m.options && m.options.B) || '',
@@ -1034,18 +1667,55 @@
                 "Chapter": m.chapter || 'General'
             }));
 
-            // Store in sessionStorage for exam.html
             sessionStorage.setItem('reExamQuestions', JSON.stringify(examQuestions));
             sessionStorage.setItem('reExamConfig', JSON.stringify({
-                name: 'ভুল ব্যাংক রি-টেস্ট (Mistake Re-Exam)',
-                time: Math.max(5, Math.ceil(examQuestions.length * 1.2)), // ~1.2 mins per question
+                name: title || 'ভুল ব্যাংক রি-টেস্ট (Mistake Re-Exam)',
+                time: Math.max(5, Math.ceil(examQuestions.length * 1.2)),
                 totalMarks: examQuestions.length,
                 neg: 0.25,
                 type: 'practice'
             }));
 
-            // Redirect to exam page in mistake mode
             window.location.href = 'exam.html?mode=mistakes';
+        }
+
+        // --- Mark As Resolved (ম্যানুয়াল ডিলিট) ---
+        async function markAsResolved(docId, idx) {
+            const confirm = await Swal.fire({
+                title: 'সমাধান হয়েছে?',
+                text: 'এই প্রশ্নটিকে কি আপনি ভুল ব্যাংক থেকে মুছে ফেলতে চান?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'হ্যাঁ, মুছে ফেলুন',
+                cancelButtonText: 'না'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            // Delete from Firestore
+            if (currentUser && docId) {
+                try {
+                    await db.collection("user_mistakes").doc(docId).delete();
+                } catch(e) { console.error("Firestore delete error:", e); }
+            }
+
+            // Remove from memory
+            allMistakes = allMistakes.filter((m, i) => i !== idx);
+            try {
+                localStorage.setItem('user_mistakes', JSON.stringify(allMistakes));
+            } catch(e) {}
+
+            refreshUI();
+
+            Swal.fire({
+                title: 'মুছে ফেলা হয়েছে!',
+                text: 'প্রশ্নটি ভুল ব্যাংক থেকে সফলভাবে সরানো হয়েছে।',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
         }
     </script>
 </body>

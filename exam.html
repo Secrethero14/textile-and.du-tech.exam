@@ -688,6 +688,7 @@
                 let userAnswers = {};
                 let mistakesToSave = [];
                 let solvedMistakeIds = [];
+                let solvedQuestionTexts = [];
                 
                 const timeTaken = Math.floor((new Date() - startTime) / 1000);
 
@@ -746,6 +747,8 @@
                                 } else if (q._id) {
                                     solvedMistakeIds.push(q._id);
                                 }
+                                const qTxt = (q["প্রশ্ন (LaTeX সহ)"] || q.question || "").trim();
+                                if (qTxt) solvedQuestionTexts.push(qTxt);
                             }
                         } else {
                             secureScore -= negativeMark; 
@@ -848,10 +851,15 @@
                         });
                         localStorage.setItem("user_mistakes", JSON.stringify(localList));
                     }
-                    if (solvedMistakeIds.length > 0) {
+                    if (solvedMistakeIds.length > 0 || solvedQuestionTexts.length > 0) {
                         try {
                             let localList = JSON.parse(localStorage.getItem("user_mistakes") || "[]");
-                            localList = localList.filter(lm => !solvedMistakeIds.includes(lm._id));
+                            localList = localList.filter(lm => {
+                                if (lm._id && solvedMistakeIds.includes(lm._id)) return false;
+                                const lmTxt = (lm.question || "").trim();
+                                if (lmTxt && solvedQuestionTexts.includes(lmTxt)) return false;
+                                return true;
+                            });
                             localStorage.setItem("user_mistakes", JSON.stringify(localList));
                         } catch(e) {}
                     }
