@@ -845,7 +845,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Mobile Adjustments */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .navbar { padding: 8px 12px; }
             .btn-back { padding: 6px 10px; font-size: 12.5px; }
             .nav-title { font-size: 15px; }
@@ -882,6 +882,15 @@
             .category-action-bar { padding: 12px 14px; flex-direction: column; align-items: stretch; text-align: center; }
             .btn-category-retest { justify-content: center; }
             .viewing-header-bar { padding: 12px 14px; flex-direction: column; align-items: stretch; }
+        }
+        @media (max-width: 400px) {
+            .m-tab-btn {
+                font-size: 10.5px !important;
+                padding: 9px 2px !important;
+                gap: 3px !important;
+            }
+            .m-tab-btn i { display: none !important; }
+            .m-tab-btn .m-tab-badge { font-size: 9.5px !important; padding: 1px 4px !important; }
         }
     </style>
 </head>
@@ -940,13 +949,13 @@
             <button class="m-tab-btn" id="tab-model" onclick="switchMistakeTab('model')">
                 <i class="fas fa-file-signature"></i>
                 <span class="tab-txt-full">মডেল টেস্ট ও প্রশ্নব্যাংক</span>
-                <span class="tab-txt-mob">মডেল টেস্ট ও QB</span>
+                <span class="tab-txt-mob">মডেল টেস্ট</span>
                 <span class="m-tab-badge" id="badge-model">0</span>
             </button>
             <button class="m-tab-btn" id="tab-all" onclick="switchMistakeTab('all')">
                 <i class="fas fa-list-check"></i>
                 <span class="tab-txt-full">সকল ভুল প্রশ্ন</span>
-                <span class="tab-txt-mob">সব ভুল</span>
+                <span class="tab-txt-mob">সকল ভুল</span>
                 <span class="m-tab-badge" id="badge-all">0</span>
             </button>
         </div>
@@ -1056,7 +1065,7 @@
         <div id="zeroMistakeScreen" class="zero-mistake-trophy-card" style="display:none;">
             <div class="trophy-icon-wrap"><i class="fas fa-trophy"></i></div>
             <h2>অভিনন্দন! আপনার সব ভুল প্রশ্ন সমাধান হয়েছে! 🎉</h2>
-            <p>ভুল ব্যাংকে আপনার কোনো বকেয়া প্রশ্ন নেই। প্রতিটি ভুল প্রশ্ন সফলভাবে সংশোধন করে আপনি নিজেকে পুরোপুরি প্রস্তুত করেছেন!</p>
+            <p>ভুল ব্যাংকে আপনার কোনো ভুল প্রশ্ন নেই। প্রতিটি ভুল প্রশ্ন সফলভাবে সংশোধন করে আপনি নিজেকে পুরোপুরি প্রস্তুত করেছেন!</p>
             <a href="index.html" class="btn-trophy-home">
                 <i class="fas fa-rocket"></i> হোমপেজে গিয়ে নতুন পরীক্ষা দিন
             </a>

@@ -9,16 +9,55 @@ function parseDate(data) {
     return isNaN(date.getTime()) ? null : date;
 }
 
+// --- SYNC LIVE MISTAKE BANK STATS ---
+async function updateMistakeBankStat(email) {
+    try {
+        if (!email) return;
+        const cleanEmail = String(email).trim().toLowerCase();
+        
+        let snapshot = await db.collection("user_mistakes")
+            .where("email", "==", cleanEmail)
+            .where("status", "==", "wrong")
+            .get();
+
+        // ফলব্যাক: যদি লোয়ারকেসে কিছু না পায়, কিন্তু আসল email অন্য কেসিং-এ থাকে
+        if (snapshot.empty && email !== cleanEmail) {
+            snapshot = await db.collection("user_mistakes")
+                .where("email", "==", email)
+                .where("status", "==", "wrong")
+                .get();
+        }
+
+        const uniqueMistakes = new Set();
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const key = (data.question || '').trim().replace(/\s+/g, ' ');
+            if (key) {
+                uniqueMistakes.add(key);
+            }
+        });
+
+        const statWrongEl = document.getElementById('statWrong');
+        if (statWrongEl) {
+            statWrongEl.innerText = uniqueMistakes.size;
+        }
+    } catch (err) {
+        console.warn("Live mistake bank count error:", err);
+    }
+}
+
 // --- FETCH EXAM HISTORY & CALCULATE STATS ---
 async function fetchStudentData(email) {
     try {
+        // ১. ব্যাকগ্রাউন্ডে ভুল ব্যাংকের মোট ভুলের সংখ্যা সিঙ্ক শুরু করা
+        updateMistakeBankStat(email);
+
         const snapshot = await db.collection("exam_results").where("email", "==", email).get();
         document.getElementById('loader').style.display = 'none';
         
         if (snapshot.empty) {
             document.getElementById('historyList').innerHTML = `<div style='text-align:center; padding: 30px; color:#888'><p>আপনি এখনো কোনো এক্সাম দেননি।</p></div>`;
             renderSubjectPerformance([]);
-            await updateMistakeBankStat(email);
             return;
         }
 
@@ -42,12 +81,9 @@ async function fetchStudentData(email) {
             return dateB - dateA;
         });
 
-        // আপডেট স্ট্যাটস (Total Exams, Correct, Wrong)
+        // আপডেট স্ট্যাটস (Total Exams, Correct)
         document.getElementById('statExams').innerText = exams.length;
         document.getElementById('statCorrect').innerText = overallCorrect;
-
-        // 🌟 ভুল ব্যাংকের সাথে ১০০% লাইভ সিঙ্ক (হুবহু একই ইউনিক প্রশ্ন সংখ্যা) 🌟
-        await updateMistakeBankStat(email);
 
         // বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স রেন্ডার
         renderSubjectPerformance(exams);
@@ -58,7 +94,7 @@ async function fetchStudentData(email) {
         exams.forEach(exam => renderHistoryItem(exam, listContainer));
 
     } catch (e) {
-        console.error(e);
+        console.error("fetchStudentData error:", e);
         document.getElementById('loader').style.display = 'none';
         document.getElementById('historyList').innerHTML = "<p style='color:red; text-align:center'>ডাটা লোড করতে সমস্যা হয়েছে।</p>";
         renderSubjectPerformance([]);
@@ -98,4 +134,3 @@ function renderHistoryItem(data, container) {
     `;
     container.innerHTML += html;
 }
-
