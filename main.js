@@ -685,3 +685,25 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         }
 
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
+
+
+// 🌐 হাবিবস কেয়ার ফেসবুক পেজে রিডাইরেক্ট হ্যান্ডলার 🌐
+document.addEventListener('click', function(e) {
+    if (e.target.closest('button, input, textarea, select, .btn-login, .btn-pay-wa, .btn-copy-action, .btn-start')) return;
+
+    const link = e.target.closest('a');
+    if (link && link.href) return;
+
+    const text = (e.target.textContent || '').trim();
+    const hasHabibText = /হাবিবস\s*কেয়া?র|habib'?s\s*care/i.test(text);
+    const hasHabibAttr = /হাবিবস\s*কেয়া?র|habib'?s\s*care/i.test((e.target.title || '') + ' ' + (e.target.alt || ''));
+
+    if (hasHabibText || hasHabibAttr) {
+        const tagName = e.target.tagName ? e.target.tagName.toLowerCase() : '';
+        if (['span', 'strong', 'h4', 'h5', 'h3', 'p', 'img', 'b', 'div'].includes(tagName)) {
+            if (e.target.children.length <= 2) {
+                window.open('https://www.facebook.com/habibs.care.edu', '_blank', 'noopener,noreferrer');
+            }
+        }
+    }
+});
