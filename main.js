@@ -87,8 +87,7 @@ window.siteSettings = {
     telegram_helper: "https://t.me/Admissionhelper007",
     course_fee: "149",
     course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
-    course_subtitle: "মাত্র ১০০ টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন",
-    course_features: "১০০+ অধ্যায়ভিত্তিক পরীক্ষা, বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান, স্মার্ট ভুল ব্যাংক ও রি-টেস্ট, এক্সক্লুসিভ গাইডলাইন"
+        course_features: "১০০+ অধ্যায়ভিত্তিক পরীক্ষা, বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান, স্মার্ট ভুল ব্যাংক ও রি-টেস্ট, এক্সক্লুসিভ গাইডলাইন"
 };
 
 window.siteCourses = [
@@ -230,9 +229,7 @@ function applyDynamicSiteData() {
     const pFeatList = document.getElementById('promoFeaturesList');
 
     if (pTitle) pTitle.innerText = mainCourse.name || s.course_title;
-    if (pSub) {
-        pSub.innerText = "সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন";
-    }
+    if (pSub) pSub.style.display = "none";
     if (pBtnFee) {
         pBtnFee.innerText = `${toBanglaDigits(mainCourse.fee || s.course_fee)} টাকা`;
     }

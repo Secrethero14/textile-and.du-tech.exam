@@ -297,8 +297,7 @@ html { scroll-behavior: smooth; }
                 margin-bottom: 14px !important;
             }
             .promo-banner {
-                padding: 16px 14px !important;
-                gap: 12px !important;
+                padding: 10px 12px 8px 12px !important; gap: 6px !important;
                 text-align: center !important;
                 align-items: center !important;
             }
@@ -314,8 +313,7 @@ html { scroll-behavior: smooth; }
             .promo-title,
             .promo-content .promo-title,
             #promoCourseTitle {
-                font-size: 17px !important;
-                color: #064e3b !important;
+                font-size: 14.5px !important; color: #064e3b !important;
                 text-align: center !important;
                 margin-bottom: 5px !important;
             }
@@ -1161,8 +1159,7 @@ body, input, button, select, textarea {
                 margin-bottom: 14px !important;
             }
             .promo-banner {
-                padding: 16px 14px !important;
-                gap: 12px !important;
+                padding: 10px 12px 8px 12px !important; gap: 6px !important;
                 text-align: center !important;
                 align-items: center !important;
             }
@@ -1178,8 +1175,7 @@ body, input, button, select, textarea {
             .promo-title,
             .promo-content .promo-title,
             #promoCourseTitle {
-                font-size: 17px !important;
-                color: #064e3b !important;
+                font-size: 14.5px !important; color: #064e3b !important;
                 text-align: center !important;
                 margin-bottom: 5px !important;
             }
@@ -2309,16 +2305,16 @@ body, button, input, select, textarea {
  * 🌟 CLEAN, AUTHENTIC, EDITORIAL DESIGN SYSTEM (ZERO AI-SLOP) 🌟
  * ========================================================== */
 
-/* 1. পেমেন্ট কার্ড: সমতল সবুজ রঙ, সম্পূর্ণ সেন্ট্রাল ব্যালেন্সড ও হাই কনট্রাস্ট */
+/* 1. পেমেন্ট কার্ড: কমপ্যাক্ট, মিনিমাল ও স্পষ্ট সবুজ টোন */
 .promo-banner {
-    background: #ecfdf5 !important;
-    border: 1.5px solid #a7f3d0 !important;
+    background: #d1fae5 !important; /* সুস্পষ্ট ফ্রেশ গ্রিন ব্যাকগ্রাউন্ড - এতো হালকা বা ফ্যাকাসে নয় */
+    border: 1.5px solid #10b981 !important; /* লোগোর সাথে মেলানো স্পষ্ট এমারেল্ড বর্ডার */
     color: #064e3b !important;
-    border-radius: 14px !important;
-    padding: 22px 18px 20px 18px !important;
-    margin-top: 18px !important;
-    margin-bottom: 24px !important;
-    box-shadow: none !important;
+    border-radius: 12px !important;
+    padding: 12px 14px 10px 14px !important;
+    margin-top: 14px !important;
+    margin-bottom: 18px !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12) !important;
     display: none;
     flex-direction: column !important;
     align-items: center !important;
@@ -2335,9 +2331,9 @@ body, button, input, select, textarea {
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    gap: 10px !important;
-    border-bottom: 1px solid #d1fae5 !important;
-    padding-bottom: 16px !important;
+    gap: 6px !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.28) !important;
+    padding-bottom: 8px !important;
     width: 100% !important;
 }
 
@@ -2354,11 +2350,11 @@ body, button, input, select, textarea {
 .promo-content .promo-title,
 .promo-banner .promo-title,
 #promoCourseTitle {
-    margin: 0 0 6px 0 !important;
-    font-size: 20px !important;
+    margin: 0 0 2px 0 !important;
+    font-size: 16px !important; /* ছোট, কমপ্যাক্ট ও পরিচ্ছন্ন */
     font-weight: 800 !important;
-    color: #064e3b !important; /* ডিপ গাঢ় সবুজ - ১০০% স্পষ্ট ও হাই কনট্রাস্ট */
-    line-height: 1.35 !important;
+    color: #064e3b !important; /* ডিপ গাঢ় সবুজ */
+    line-height: 1.3 !important;
     text-align: center !important;
     width: 100% !important;
 }
@@ -2367,15 +2363,7 @@ body, button, input, select, textarea {
 .promo-content .promo-subtitle,
 .promo-banner .promo-subtitle,
 #promoCourseSubtitle {
-    margin: 0 auto !important;
-    font-size: 14px !important;
-    color: #047857 !important; /* মিডিয়াম ডিপ সবুজ - সম্পূর্ণ স্পষ্ট */
-    line-height: 1.45 !important;
-    font-weight: 500 !important;
-    text-align: center !important;
-    opacity: 1 !important;
-    max-width: 520px !important;
-    width: 100% !important;
+    display: none !important; /* সাবটাইটেল সম্পূর্ণ বাদ */
 }
 
 .promo-actions {
@@ -2383,7 +2371,7 @@ body, button, input, select, textarea {
     align-items: center !important;
     justify-content: center !important;
     width: 100% !important;
-    margin-top: 4px !important;
+    margin-top: 2px !important;
 }
 
 .btn-pay,
@@ -2391,13 +2379,13 @@ body, button, input, select, textarea {
     background: #059669 !important;
     color: #ffffff !important;
     border: none !important;
-    padding: 10px 22px !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
+    padding: 6px 16px !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
     cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25) !important;
+    transition: all 0.15s ease !important;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3) !important;
     transform: none !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -2408,37 +2396,38 @@ body, button, input, select, textarea {
 .btn-pay:hover,
 .promo-actions .btn-pay:hover {
     background: #047857 !important;
-    box-shadow: 0 5px 14px rgba(5, 150, 105, 0.35) !important;
-    transform: none !important;
+    box-shadow: 0 3px 10px rgba(5, 150, 105, 0.4) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* 2. ফিচার লিস্টের রেসপনসিভ গ্রিড (৭, ৮ বা ৯ ফিচারের নিখুঁত বিন্যাস) */
+/* 2. ফিচার লিস্টের রেসপনসিভ গ্রিড (কমপ্যাক্ট, মিনিমাল ও পরিষ্কার) */
 .promo-features-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-top: 14px;
+    gap: 6px !important;
+    margin-top: 8px !important;
     width: 100%;
     box-sizing: border-box;
 }
 .promo-features-grid .feature-item {
-    background: #ffffff;
-    border: 1px solid #d1fae5;
-    border-radius: 6px;
-    padding: 10px 12px;
+    background: #ffffff !important;
+    border: 1px solid #a7f3d0 !important;
+    border-radius: 6px !important;
+    padding: 5px 8px !important;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #065f46;
-    line-height: 1.35;
-    min-height: 44px;
+    gap: 5px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #065f46 !important;
+    line-height: 1.25 !important;
+    min-height: 28px !important;
     box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 .promo-features-grid .feature-check-icon {
     color: #059669 !important;
-    font-size: 13px;
+    font-size: 11px !important;
     flex-shrink: 0;
 }
 
