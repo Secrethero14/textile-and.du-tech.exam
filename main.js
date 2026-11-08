@@ -1,12 +1,26 @@
 
 // 🔴 পেমেন্ট মোডাল হেল্পার (ট্যাব ও কপি) 🔴
 function switchPayTab(tab) {
-    ['bkash', 'nagad', 'rocket'].forEach(t => {
-        const btn = document.getElementById('tabBtn-' + t);
+    const validTabs = ['bkash', 'nagad', 'rocket'];
+    const activeTab = validTabs.includes(tab) ? tab : 'bkash';
+
+    validTabs.forEach(t => {
         const pane = document.getElementById('payTab-' + t);
-        if (btn) btn.classList.toggle('active', t === tab);
-        if (pane) pane.classList.toggle('active', t === tab);
+        if (pane) pane.classList.toggle('active', t === activeTab);
+        const btn = document.getElementById('tabBtn-' + t);
+        if (btn) btn.classList.toggle('active', t === activeTab);
     });
+
+    const sel = document.getElementById('payMethodSelect');
+    if (sel && sel.value !== activeTab) {
+        sel.value = activeTab;
+    }
+
+    const wrapper = document.querySelector('.pay-select-wrapper');
+    if (wrapper) {
+        validTabs.forEach(t => wrapper.classList.remove('method-' + t));
+        wrapper.classList.add('method-' + activeTab);
+    }
 }
 
 function copyPaymentData(text, btn) {
@@ -966,6 +980,11 @@ if (document.readyState === 'loading') {
             document.querySelectorAll('.dyn-fee-text').forEach(el => {
                 el.innerText = bFee;
             });
+
+            // Keep currently selected method or default to bkash
+            const sel = document.getElementById('payMethodSelect');
+            const currentMethod = (sel && sel.value) ? sel.value : 'bkash';
+            switchPayTab(currentMethod);
 
             const payModal = document.getElementById('paymentModal');
             if (payModal) {

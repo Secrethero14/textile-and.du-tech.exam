@@ -294,17 +294,19 @@
                 <button class="pay-modal-close" onclick="closePaymentModal()" title="বন্ধ করুন">&times;</button>
             </div>
 
-            <!-- ৩টি পেমেন্ট মেথড ট্যাব -->
-            <div class="pay-method-tabs">
-                <button type="button" class="pay-tab-btn active" id="tabBtn-bkash" onclick="switchPayTab('bkash')">
-                    <span class="tab-indicator dot-bkash"></span> বিকাশ
-                </button>
-                <button type="button" class="pay-tab-btn" id="tabBtn-nagad" onclick="switchPayTab('nagad')">
-                    <span class="tab-indicator dot-nagad"></span> নগদ
-                </button>
-                <button type="button" class="pay-tab-btn" id="tabBtn-rocket" onclick="switchPayTab('rocket')">
-                    <span class="tab-indicator dot-rocket"></span> রকেট
-                </button>
+            <!-- 🌟 পেমেন্ট মেথড ড্রপডাউন সিলেক্টর 🌟 -->
+            <div class="pay-method-selector-box">
+                <label for="payMethodSelect" class="pay-selector-label">
+                    <i class="fas fa-wallet"></i> আপনি কোন পেমেন্ট মেথড দিয়ে পেমেন্ট করতে চান?
+                </label>
+                <div class="pay-select-wrapper method-bkash">
+                    <select id="payMethodSelect" class="pay-method-select" onchange="switchPayTab(this.value)">
+                        <option value="bkash">বিকাশ (bKash Merchant Payment)</option>
+                        <option value="nagad">নগদ (Nagad Personal Send Money)</option>
+                        <option value="rocket">রকেট (Rocket Personal Send Money)</option>
+                    </select>
+                    <i class="fas fa-chevron-down select-chevron"></i>
+                </div>
             </div>
 
             <!-- ট্যাব ১: বিকাশ মার্চেন্ট পেমেন্ট -->

@@ -1469,6 +1469,101 @@ body, button, input, select, textarea {
     color: #0f172a;
 }
 
+
+/* 🌟 PAYMENT METHOD DROPDOWN SELECTOR (CLEAN & MODERN) 🌟 */
+.pay-method-selector-box {
+    margin-bottom: 14px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    transition: all 0.25s ease;
+}
+.pay-selector-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 9px;
+    user-select: none;
+}
+.pay-selector-label i {
+    color: var(--primary);
+    font-size: 14px;
+}
+.pay-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+.pay-method-select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 11px 40px 11px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.pay-method-select:hover {
+    border-color: #94a3b8;
+}
+.pay-method-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+.pay-select-wrapper .select-chevron {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+    font-size: 13px;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+.pay-select-wrapper:hover .select-chevron {
+    color: #334155;
+}
+
+/* Method-specific brand accents */
+.pay-select-wrapper.method-bkash .pay-method-select {
+    border-color: #fbcfe8;
+    background-color: #fffafc;
+}
+.pay-select-wrapper.method-bkash .pay-method-select:focus {
+    border-color: #e2136e;
+    box-shadow: 0 0 0 3px rgba(226, 19, 110, 0.15);
+}
+
+.pay-select-wrapper.method-nagad .pay-method-select {
+    border-color: #fed7aa;
+    background-color: #fffbf7;
+}
+.pay-select-wrapper.method-nagad .pay-method-select:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.pay-select-wrapper.method-rocket .pay-method-select {
+    border-color: #e9d5ff;
+    background-color: #faf5ff;
+}
+.pay-select-wrapper.method-rocket .pay-method-select:focus {
+    border-color: #8c3494;
+    box-shadow: 0 0 0 3px rgba(140, 52, 148, 0.15);
+}
+
 /* Method Tabs */
 .pay-method-tabs {
     display: grid;
