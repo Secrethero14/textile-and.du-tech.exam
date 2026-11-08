@@ -125,21 +125,33 @@ async function fetchSheetData(fileName) {
 }
 
 async function loadSettingsAndCourses() {
+    let hasCustomCourses = false;
     try {
         // 1. Fetch settings.json
         const rawSettings = await fetchSheetData('settings.json');
         if (rawSettings) {
             if (Array.isArray(rawSettings)) {
                 rawSettings.forEach(row => {
-                    const key = (row.Key || row.key || row.KEY || row.name || '').trim().toLowerCase();
+                    let key = (row.Key || row.key || row.KEY || row.name || '').trim().toLowerCase();
                     const val = (row.Value || row.value || row.VALUE || row.val || '').trim();
                     if (key && val) {
+                        // Normalize underscores, spaces, hyphens
+                        key = key.replace(/[\s\-]+/g, '_');
+                        if (key === 'features') key = 'course_features';
+                        if (key === 'banner') key = 'banner_image';
+                        if (key === 'fee') key = 'course_fee';
+                        if (key === 'title') key = 'course_title';
                         window.siteSettings[key] = val;
                     }
                 });
             } else if (typeof rawSettings === 'object') {
                 Object.keys(rawSettings).forEach(k => {
-                    window.siteSettings[k.toLowerCase().trim()] = String(rawSettings[k]).trim();
+                    let key = k.toLowerCase().trim().replace(/[\s\-]+/g, '_');
+                    if (key === 'features') key = 'course_features';
+                    if (key === 'banner') key = 'banner_image';
+                    if (key === 'fee') key = 'course_fee';
+                    if (key === 'title') key = 'course_title';
+                    window.siteSettings[key] = String(rawSettings[k]).trim();
                 });
             }
         }
@@ -167,10 +179,23 @@ async function loadSettingsAndCourses() {
             });
             if (parsed.length > 0) {
                 window.siteCourses = parsed;
+                hasCustomCourses = true;
             }
         }
     } catch (err) {
         console.warn('Dynamic settings/courses load notice:', err);
+    }
+
+    // If courses.json was empty or not used, sync default course with settings.json
+    if (!hasCustomCourses) {
+        const s = window.siteSettings;
+        window.siteCourses = [{
+            name: s.course_title,
+            fee: s.course_fee,
+            banner: s.banner_image || "",
+            features: parseCourseFeatures(s.course_features),
+            status: "Active"
+        }];
     }
 
     applyDynamicSiteData();
