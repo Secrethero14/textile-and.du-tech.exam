@@ -30,8 +30,260 @@ function copyPaymentData(text, btn) {
         btn.style.color = '';
     }, 2000);
 }
+
+function copyDynamicPaymentData(method, btn) {
+    const s = window.siteSettings || {};
+    let num = '';
+    if (method === 'bkash') num = s.bkash_number || '01522102384';
+    else if (method === 'nagad') num = s.nagad_number || '01873275283';
+    else if (method === 'rocket') num = s.rocket_number || '01925251621';
+    else num = String(method);
+
+    const domEl = document.getElementById('numVal-' + method);
+    if (domEl && domEl.innerText.trim()) {
+        num = domEl.innerText.trim();
+    }
+
+    copyPaymentData(num, btn);
+}
 const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
+
+// ==========================================
+// 🌟 DYNAMIC SITE SETTINGS & COURSES (FROM GOOGLE SHEETS) 🌟
+// ==========================================
+window.siteSettings = {
+    bkash_number: "01522102384",
+    nagad_number: "01873275283",
+    rocket_number: "01925251621",
+    whatsapp_number: "01873275283",
+    telegram_link: "https://t.me/careforcandidates",
+    telegram_helper: "https://t.me/Admissionhelper007",
+    course_fee: "100",
+    course_title: "Textile Engineering Admission Full Course",
+    course_subtitle: "মাত্র ১০০ টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন",
+    course_features: "১০০+ অধ্যায়ভিত্তিক পরীক্ষা, বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান, স্মার্ট ভুল ব্যাংক ও রি-টেস্ট, এক্সক্লুসিভ গাইডলাইন"
+};
+
+window.siteCourses = [
+    {
+        name: "Textile Engineering Admission Full Course",
+        fee: "100",
+        banner: "",
+        features: [
+            "১০০+ অধ্যায়ভিত্তিক পরীক্ষা",
+            "বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান",
+            "স্মার্ট ভুল ব্যাংক ও রি-টেস্ট",
+            "এক্সক্লুসিভ গাইডলাইন"
+        ],
+        status: "Active"
+    }
+];
+
+window.activePaymentCourse = null;
+
+function parseCourseFeatures(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    return String(raw)
+        .split(/[\n,;•|]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+}
+
+function toBanglaDigits(num) {
+    if (num === null || num === undefined) return '';
+    const bDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/[0-9]/g, d => bDigits[d]);
+}
+
+async function fetchSheetData(fileName) {
+    const timestamp = Date.now();
+    try {
+        const res = await fetch(`public/questions/${fileName}?t=${timestamp}`).catch(() => null);
+        if (res && res.ok) return await res.json();
+    } catch (e) {}
+    try {
+        const res = await fetch(`${JSON_BASE}${fileName}?t=${timestamp}`).catch(() => null);
+        if (res && res.ok) return await res.json();
+    } catch (e) {}
+    return null;
+}
+
+async function loadSettingsAndCourses() {
+    try {
+        // 1. Fetch settings.json
+        const rawSettings = await fetchSheetData('settings.json');
+        if (rawSettings) {
+            if (Array.isArray(rawSettings)) {
+                rawSettings.forEach(row => {
+                    const key = (row.Key || row.key || row.KEY || row.name || '').trim().toLowerCase();
+                    const val = (row.Value || row.value || row.VALUE || row.val || '').trim();
+                    if (key && val) {
+                        window.siteSettings[key] = val;
+                    }
+                });
+            } else if (typeof rawSettings === 'object') {
+                Object.keys(rawSettings).forEach(k => {
+                    window.siteSettings[k.toLowerCase().trim()] = String(rawSettings[k]).trim();
+                });
+            }
+        }
+
+        // 2. Fetch courses.json
+        const rawCourses = await fetchSheetData('courses.json');
+        if (rawCourses && Array.isArray(rawCourses) && rawCourses.length > 0) {
+            const parsed = [];
+            rawCourses.forEach(c => {
+                const name = (c['Course Name'] || c['Course'] || c['name'] || c['Title'] || c['title'] || '').trim();
+                const fee = (c['Course Fee'] || c['Fee'] || c['fee'] || c['Price'] || c['price'] || window.siteSettings.course_fee || '100').trim();
+                const banner = (c['Banner'] || c['banner'] || c['Image'] || c['image'] || '').trim();
+                const rawFeat = c['Features'] || c['features'] || c['Feature'] || '';
+                const status = (c['Status'] || c['status'] || 'Active').trim();
+
+                if (name && status.toLowerCase() !== 'inactive') {
+                    parsed.push({
+                        name: name,
+                        fee: fee,
+                        banner: banner,
+                        features: parseCourseFeatures(rawFeat),
+                        status: status
+                    });
+                }
+            });
+            if (parsed.length > 0) {
+                window.siteCourses = parsed;
+            }
+        }
+    } catch (err) {
+        console.warn('Dynamic settings/courses load notice:', err);
+    }
+
+    applyDynamicSiteData();
+}
+
+function applyDynamicSiteData() {
+    const s = window.siteSettings;
+    const courses = window.siteCourses;
+    const mainCourse = courses[0] || {
+        name: s.course_title,
+        fee: s.course_fee,
+        banner: "",
+        features: parseCourseFeatures(s.course_features)
+    };
+
+    // 1. Update Promo Banner
+    const pTitle = document.getElementById('promoCourseTitle');
+    const pSub = document.getElementById('promoCourseSubtitle');
+    const pBtnFee = document.getElementById('promoBtnFee');
+    const pFeatList = document.getElementById('promoFeaturesList');
+
+    if (pTitle) pTitle.innerText = mainCourse.name || s.course_title;
+    if (pSub) {
+        const bFee = toBanglaDigits(mainCourse.fee || s.course_fee);
+        pSub.innerText = `মাত্র ${bFee} টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন`;
+    }
+    if (pBtnFee) {
+        pBtnFee.innerText = `${toBanglaDigits(mainCourse.fee || s.course_fee)} টাকা`;
+    }
+
+    // Green checkmark features list
+    if (pFeatList) {
+        const feats = (mainCourse.features && mainCourse.features.length > 0) 
+            ? mainCourse.features 
+            : parseCourseFeatures(s.course_features);
+        
+        pFeatList.innerHTML = feats.map(f => `
+            <span class="promo-feature-chip">
+                <i class="fas fa-check-circle feature-check-icon"></i> ${f}
+            </span>
+        `).join('');
+    }
+
+    // 2. Multi-course showcase (if > 1 courses)
+    const showcaseContainer = document.getElementById('coursesShowcaseContainer');
+    if (showcaseContainer) {
+        if (courses.length > 1) {
+            showcaseContainer.innerHTML = `
+                <div style="margin: 24px 0 14px 0; display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 4px; height: 18px; background: var(--primary); border-radius: 2px;"></div>
+                    <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">আমাদের সকল কোর্সসমূহ</h3>
+                </div>
+                <div class="courses-showcase-grid">
+                    ${courses.map((crs, idx) => {
+                        const bFee = toBanglaDigits(crs.fee);
+                        const bannerImg = crs.banner ? `<img src="${crs.banner}" alt="${crs.name}" class="course-showcase-banner">` : '';
+                        const featItems = (crs.features || []).map(ft => `
+                            <div class="course-feature-line">
+                                <i class="fas fa-check-circle"></i>
+                                <span>${ft}</span>
+                            </div>
+                        `).join('');
+
+                        return `
+                            <div class="course-showcase-card">
+                                ${bannerImg}
+                                <div class="course-showcase-body">
+                                    <h4 class="course-showcase-title">${crs.name}</h4>
+                                    <div class="course-showcase-features">
+                                        ${featItems}
+                                    </div>
+                                    <div class="course-showcase-footer">
+                                        <div class="course-showcase-price">${bFee} ৳</div>
+                                        <button type="button" class="btn-pay" style="padding: 6px 14px; font-size: 13px;" onclick="openPaymentModal(${idx})">
+                                            ভর্তি হন <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        } else {
+            showcaseContainer.innerHTML = '';
+        }
+    }
+
+    // 3. Update Payment Modal Numbers
+    const numBkash = document.getElementById('numVal-bkash');
+    if (numBkash && s.bkash_number) numBkash.innerText = s.bkash_number;
+
+    const numNagad = document.getElementById('numVal-nagad');
+    if (numNagad && s.nagad_number) numNagad.innerText = s.nagad_number;
+
+    const numRocket = document.getElementById('numVal-rocket');
+    if (numRocket && s.rocket_number) numRocket.innerText = s.rocket_number;
+
+    // 4. Update WhatsApp & Telegram support links
+    const cleanWa = (s.whatsapp_number || '').replace(/[^0-9]/g, '');
+    const waUrl = cleanWa ? `https://wa.me/88${cleanWa.startsWith('88') ? cleanWa.substring(2) : cleanWa}` : '';
+
+    const waLink = document.getElementById('paySupportWaLink');
+    const waText = document.getElementById('paySupportWaText');
+    if (waLink && waUrl) waLink.href = waUrl;
+    if (waText && s.whatsapp_number) waText.innerText = s.whatsapp_number;
+
+    const helpWa = document.getElementById('helpWidgetWaLink');
+    if (helpWa && waUrl) helpWa.href = waUrl;
+
+    const helpTg = document.getElementById('helpWidgetTgLink');
+    if (helpTg && (s.telegram_helper || s.telegram_link)) {
+        helpTg.href = s.telegram_helper || s.telegram_link;
+    }
+
+    const headerTg = document.getElementById('headerTgLink');
+    if (headerTg && s.telegram_link) headerTg.href = s.telegram_link;
+
+    const footerTg = document.getElementById('footerTgLink');
+    if (footerTg && s.telegram_link) footerTg.href = s.telegram_link;
+}
+
+// Auto-start dynamic settings & courses loader immediately
+loadSettingsAndCourses();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadSettingsAndCourses);
+}
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -441,12 +693,17 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     backBtn.style.display = 'none';
 
                     // হোম পেজের ব্যানার ডিসপ্লে নিয়ন্ত্রণ
+                    const showcaseContainer = document.getElementById('coursesShowcaseContainer');
                     if (userEnrollment === 'TextileFull') {
                         if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
+                        if (showcaseContainer) showcaseContainer.style.setProperty('display', 'none', 'important');
                     } else {
                         if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                        if (showcaseContainer && window.siteCourses && window.siteCourses.length > 1) {
+                            showcaseContainer.style.setProperty('display', 'block', 'important');
+                        }
                     }
 
                     container.className = "master-folders-list";
@@ -485,6 +742,8 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     // লেভেল ১: মাস্টার ফোল্ডারের ভেতর (TEXTILE STANDARD EXAM বা About Textile Engineering)
                     if (overallBanner) overallBanner.style.display = 'none';
                     if (aboutNote) aboutNote.style.display = 'none';
+                    const showcaseContainer = document.getElementById('coursesShowcaseContainer');
+                    if (showcaseContainer) showcaseContainer.style.setProperty('display', 'none', 'important');
                     if (userEnrollment === 'TextileFull') {
                         if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
@@ -533,6 +792,8 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
                     // লেভেল ২: সাব-ক্যাটাগরির ভেতর (আসল এক্সাম/ভিডিও)
                     if (overallBanner) overallBanner.style.display = 'none';
                     if (aboutNote) aboutNote.style.display = 'none';
+                    const showcaseContainer = document.getElementById('coursesShowcaseContainer');
+                    if (showcaseContainer) showcaseContainer.style.setProperty('display', 'none', 'important');
                     if (userEnrollment === 'TextileFull') {
                         if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important');
                         if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
@@ -674,9 +935,43 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
             copyPaymentNumber(num, event ? event.currentTarget : null);
         }
 
-        function openPaymentModal() { 
-            document.getElementById('paymentModal').style.display = 'flex';
-            history.pushState({ modal: 'payment' }, '');
+        function openPaymentModal(courseRef) { 
+            let course = null;
+            if (typeof courseRef === 'number' && window.siteCourses && window.siteCourses[courseRef]) {
+                course = window.siteCourses[courseRef];
+            } else if (typeof courseRef === 'object' && courseRef !== null) {
+                course = courseRef;
+            } else if (window.siteCourses && window.siteCourses.length > 0) {
+                course = window.siteCourses[0];
+            }
+
+            window.activePaymentCourse = course;
+
+            const fee = course ? (course.fee || (window.siteSettings && window.siteSettings.course_fee) || '100') : ((window.siteSettings && window.siteSettings.course_fee) || '100');
+            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'Textile Engineering Admission Full Course');
+            const bFee = toBanglaDigits(fee);
+
+            // Update modal title & subtitle
+            const mTitle = document.getElementById('modalPayTitle');
+            const mSub = document.getElementById('modalPaySubtitle');
+            if (mTitle) mTitle.innerText = `কোর্সে ভর্তি ও পেমেন্ট (${bFee} টাকা)`;
+            if (mSub) mSub.innerText = name;
+
+            // Update fee pills
+            document.querySelectorAll('.dyn-fee-pill').forEach(el => {
+                el.innerText = `ফি: ${bFee} টাকা`;
+            });
+
+            // Update fee inside instructional notes
+            document.querySelectorAll('.dyn-fee-text').forEach(el => {
+                el.innerText = bFee;
+            });
+
+            const payModal = document.getElementById('paymentModal');
+            if (payModal) {
+                payModal.style.display = 'flex';
+                history.pushState({ modal: 'payment' }, '');
+            }
         }
 
         function closePaymentModal() { 

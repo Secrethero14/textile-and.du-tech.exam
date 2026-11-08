@@ -108,10 +108,10 @@
             <b>প্রাইভেট গ্রুপে অ্যাড হতে আপনার নাম জানিয়ে নিচের যেকোনো লিংকে মেসেজ দিন:</b>
         </p>
         
-        <a href="https://wa.me/8801925251621" target="_blank" class="contact-btn btn-wa">
+        <a id="giveAccessWaLink" href="https://wa.me/8801925251621" target="_blank" class="contact-btn btn-wa">
             <i class="fab fa-whatsapp" style="font-size: 20px;"></i> WhatsApp -এ মেসেজ দিন
         </a>
-        <a href="https://t.me/Admissionhelper007" target="_blank" class="contact-btn btn-tg">
+        <a id="giveAccessTgLink" href="https://t.me/Admissionhelper007" target="_blank" class="contact-btn btn-tg">
             <i class="fab fa-telegram-plane" style="font-size: 20px;"></i> Telegram -এ মেসেজ দিন
         </a>
     </div>
@@ -123,6 +123,38 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+
+        // 🌟 ডাইনামিক সেটিংস (WhatsApp ও Telegram লিংক অটো-আপডেট) 🌟
+        (async function() {
+            try {
+                let res = await fetch(`public/questions/settings.json?t=${Date.now()}`).catch(() => null);
+                if (!res || !res.ok) {
+                    res = await fetch(`https://textile-du-tech-exam.vercel.app/public/questions/settings.json?t=${Date.now()}`).catch(() => null);
+                }
+                if (res && res.ok) {
+                    const raw = await res.json();
+                    const settings = {};
+                    if (Array.isArray(raw)) {
+                        raw.forEach(r => {
+                            const k = (r.Key || r.key || '').trim().toLowerCase();
+                            const v = (r.Value || r.value || '').trim();
+                            if (k && v) settings[k] = v;
+                        });
+                    }
+                    const wa = settings.whatsapp_number || settings.rocket_number || settings.bkash_number || '';
+                    const tg = settings.telegram_helper || settings.telegram_link || '';
+                    if (wa) {
+                        const clean = wa.replace(/[^0-9]/g, '');
+                        const waEl = document.getElementById('giveAccessWaLink');
+                        if (waEl) waEl.href = `https://wa.me/88${clean.startsWith('88') ? clean.substring(2) : clean}`;
+                    }
+                    if (tg) {
+                        const tgEl = document.getElementById('giveAccessTgLink');
+                        if (tgEl) tgEl.href = tg;
+                    }
+                }
+            } catch(e) {}
+        })();
 
         // লগইন করা থাকলে স্বয়ংক্রিয়ভাবে ইমেইল ও নাম পূরণ হবে
         auth.onAuthStateChanged(user => {
