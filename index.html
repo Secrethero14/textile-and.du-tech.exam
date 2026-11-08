@@ -130,14 +130,7 @@
                 <h3 id="currentPathTitle" style="margin:0;">টেক্সটাইল ইঞ্জিনিয়ারিং ভর্তি প্রস্তুতি</h3>
             </div>
 
-            <div id="loader" style="text-align: center; padding: 35px 20px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br><span style="font-size:13px; color:#64748b; margin-top:8px; display:inline-block;">লোড হচ্ছে...</span>
-            </div>
-
-            <!-- 🌟 পরীক্ষার এন্ট্রি (মাস্টার ক্যাটাগরি ও ফোল্ডার) 🌟 -->
-            <div id="examContainer" class="exam-grid"></div>
-
-            <!-- 🌟 সমতল ও পরিচ্ছন্ন কোর্স প্রাইসিং কার্ড (আগে ব্যানার ও পরীক্ষা, তারপর প্রাইসিং) 🌟 -->
+            <!-- 🌟 সমতল ও পরিচ্ছন্ন কোর্স প্রাইসিং কার্ড (মূল পেমেন্ট ব্যানার) 🌟 -->
             <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে ভর্তি হতে ক্লিক করুন">
                 <div class="promo-header-row">
                     <div class="promo-content">
@@ -165,38 +158,118 @@
                     টেলিগ্রামে যুক্ত হন
                 </a>
             </div>
+
+            <div id="loader" style="text-align: center; padding: 35px 20px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br><span style="font-size:13px; color:#64748b; margin-top:8px; display:inline-block;">লোড হচ্ছে...</span>
+            </div>
+
+            <!-- 🌟 পরীক্ষার এন্ট্রি (মাস্টার ক্যাটাগরি ও ফোল্ডার) 🌟 -->
+            <div id="examContainer" class="exam-grid"></div>
         </div>
 
-        <!-- 🌟 টেক্সটাইল ইঞ্জিনিয়ারিং পরিচিতি ও বার্তা (সহজ সাধারণ টেক্সট) 🌟 -->
-        <div id="siteAboutNote" class="site-about-simple">
-            <p>টেক্সটাইল ইঞ্জিনিয়ারিং নিয়ে আমরা হাবিবস কেয়ার কাজ করছি ২০২১ সাল থেকে। আশা করি আমাদের ওয়েবসাইটে থাকা পরীক্ষা এবং গাইডলাইন তোমার প্রস্তুতি নিতে সর্বোচ্চ সাহায্য করবে।</p>
+        <!-- 🌟 টেক্সটাইল ইঞ্জিনিয়ারিং কোটেশন ও বার্তা কার্ড (ভাইব্রেন্ট ব্লু কার্ড ডিজাইন) 🌟 -->
+        <div id="siteAboutNote" class="site-quote-section">
+            <div class="harmonious-quote-card blue-quote-card">
+                <!-- উপরের বাঁদিকের কোটেশন চিহ্ন -->
+                <div class="quote-mark quote-mark-left">
+                    <i class="fas fa-quote-left"></i>
+                </div>
+
+                <!-- মূল বার্তা টেকক্সট -->
+                <p class="quote-text">
+                    টেক্সটাইল ইঞ্জিনিয়ারিং নিয়ে আমরা <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="quote-brand-link" title="হাবিবস কেয়ার অফিসিয়াল ফেসবুক পেজে ভিজিট করুন">হাবিবস কেয়ার</a> কাজ করছি ২০২১ সাল থেকে। আশা করি আমাদের ওয়েবসাইটে থাকা পরীক্ষা, ইউটিউবে থাকা গাইডলাইন তোমার টেক্সটাইল ইঞ্জিনিয়ারিং এর প্রস্তুতি নিতে সর্বোচ্চ সাহায্য করবে।
+                </p>
+
+                <!-- নিচের ডানদিকের কোটেশন চিহ্ন -->
+                <div class="quote-mark quote-mark-right">
+                    <i class="fas fa-quote-right"></i>
+                </div>
+            </div>
         </div>
 
         <!-- 🔴 প্রিমিয়াম গ্লাসিয়ার ফুটার (স্ক্রিনশট-২ স্টাইল: এক কলামে, এক সাইডে সাজানো) 🔴 -->
-        <footer class="site-footer">
-            <div class="footer-simple-card">
-                <div class="footer-links-grid">
-                    <div class="footer-link-group">
-                        <span class="footer-group-title">গুরুত্বপূর্ণ লিঙ্ক</span>
-                        <ul class="footer-list">
-                            <li><a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer">YouTube চ্যানেল (ক্লাস ও গাইডলাইন)</a></li>
-                            <li><a id="footerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer">Telegram চ্যানেল (নোটিশ ও ম্যাটেরিয়ালস)</a></li>
-                            <li><a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer">Facebook পেজ (অফিসিয়াল আপডেট)</a></li>
-                            <li><a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer">Facebook গ্রুপ (কমিউনিটি ও প্রশ্নব্যাংক)</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-link-group">
-                        <span class="footer-group-title">শর্টকাট</span>
-                        <ul class="footer-list">
-                            <li><a href="index.html">হোম</a></li>
-                            <li><a href="mistakes.html">ভুল প্রশ্ন ব্যাংক</a></li>
-                            <li><a href="profile.html">আমার প্রোফাইল</a></li>
-                            <li><a href="javascript:void(0)" onclick="toggleHelp()">যোগাযোগ ও হেল্প</a></li>
-                        </ul>
+        <footer class="site-footer glacier-footer">
+            <div class="glacier-card">
+                <!-- ব্র্যান্ড সেকশন -->
+                <div class="glacier-brand">
+                    <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-logo-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">
+                        <img src="assets/logo.png" alt="Habib's Care" class="glacier-logo">
+                    </a>
+                    <div class="glacier-brand-text">
+                        <h4 class="glacier-brand-title">
+                            <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-title-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">HABIB'S CARE</a>
+                        </h4>
+                        <span class="glacier-brand-tag">ESTD 2021 • Your Textile Journey Companion</span>
                     </div>
                 </div>
-                <div class="footer-bottom-copy">
-                    &copy; 2026 Habib's Care. All Rights Reserved.
+
+                <!-- গুরুত্বপূর্ণ লিঙ্ক সেকশন (এক কলামে, এক সাইডে) -->
+                <div class="glacier-group">
+                    <h5 class="glacier-group-heading">গুরুত্বপূর্ণ লিঙ্ক</h5>
+                    <div class="glacier-accent-bar"></div>
+                    <ul class="glacier-list">
+                        <li>
+                            <a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer" class="glacier-link">
+                                <span class="glacier-arrow">→</span>
+                                <span class="glacier-link-text">YouTube চ্যানেল (ক্লাস ও গাইডলাইন)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="footerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="glacier-link">
+                                <span class="glacier-arrow">→</span>
+                                <span class="glacier-link-text">Telegram চ্যানেল (নোটিশ ও ম্যাটেরিয়ালস)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-link">
+                                <span class="glacier-arrow">→</span>
+                                <span class="glacier-link-text">Facebook পেজ (অফিসিয়াল আপডেট)</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer" class="glacier-link">
+                                <span class="glacier-arrow">→</span>
+                                <span class="glacier-link-text">Facebook গ্রুপ (কমিউনিটি ও প্রশ্নব্যাংক)</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- শর্টকাট সেকশন (একই কলামে নিচে নিচে, এক সাইডে) -->
+                <div class="glacier-group">
+                    <h5 class="glacier-group-heading">শর্টকাট</h5>
+                    <div class="glacier-accent-bar"></div>
+                    <ul class="glacier-list">
+                        <li>
+                            <a href="index.html" class="glacier-link">
+                                <i class="fas fa-home glacier-icon"></i>
+                                <span class="glacier-link-text">হোম</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="mistakes.html" class="glacier-link">
+                                <i class="fas fa-book-open glacier-icon"></i>
+                                <span class="glacier-link-text">ভুল প্রশ্ন ব্যাংক</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="profile.html" class="glacier-link">
+                                <i class="fas fa-user glacier-icon"></i>
+                                <span class="glacier-link-text">আমার প্রোফাইল</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" onclick="toggleHelp()" class="glacier-link">
+                                <i class="fas fa-envelope glacier-icon"></i>
+                                <span class="glacier-link-text">যোগাযোগ ও হেল্প</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- কপিরাইট ফুটনোট -->
+                <div class="glacier-bottom">
+                    <p class="glacier-copy">&copy; 2026 <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-copy-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">Habib's Care</a>. All Rights Reserved.</p>
                 </div>
             </div>
         </footer>
