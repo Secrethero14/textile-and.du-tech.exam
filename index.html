@@ -127,208 +127,126 @@
         <div class="container">
             <div class="nav-header">
                 <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
-                <h3 id="currentPathTitle" style="margin:0;">Textile Engineering Admission Preparation</h3>
+                <h3 id="currentPathTitle" style="margin:0;">টেক্সটাইল ইঞ্জিনিয়ারিং ভর্তি প্রস্তুতি</h3>
             </div>
 
-            <!-- 🌟 আধুনিক পেমেন্ট/প্রোমো স্ট্রিপ (সম্পূর্ণ লেখা দৃশ্যমান ও চারকোনা পে-বাটন) 🌟 -->
-            <!-- 🌟 আধুনিক পেমেন্ট/প্রোমো স্ট্রিপ (সবুজ টিকচিহ্ন ও গতিশীল ডাটা) 🌟 -->
+            <div id="loader" style="text-align: center; padding: 35px 20px;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br><span style="font-size:13px; color:#64748b; margin-top:8px; display:inline-block;">লোড হচ্ছে...</span>
+            </div>
+
+            <!-- 🌟 পরীক্ষার এন্ট্রি (মাস্টার ক্যাটাগরি ও ফোল্ডার) 🌟 -->
+            <div id="examContainer" class="exam-grid"></div>
+
+            <!-- 🌟 সমতল ও পরিচ্ছন্ন কোর্স প্রাইসিং কার্ড (আগে ব্যানার ও পরীক্ষা, তারপর প্রাইসিং) 🌟 -->
             <div id="promoBanner" class="promo-banner" onclick="openPaymentModal()" title="কোর্সে ভর্তি হতে ক্লিক করুন">
-                <div class="promo-content">
-                    <h3 id="promoCourseTitle" class="promo-title">Textile Engineering Admission Full Course</h3>
-                    <p id="promoCourseSubtitle" class="promo-subtitle">মাত্র ১০০ টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন</p>
-                    <div id="promoFeaturesList" class="promo-features-list">
-                        <span class="promo-feature-chip"><i class="fas fa-check-circle feature-check-icon"></i> ১০০+ অধ্যায়ভিত্তিক পরীক্ষা</span>
-                        <span class="promo-feature-chip"><i class="fas fa-check-circle feature-check-icon"></i> বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান</span>
-                        <span class="promo-feature-chip"><i class="fas fa-check-circle feature-check-icon"></i> স্মার্ট ভুল ব্যাংক ও রি-টেস্ট</span>
-                        <span class="promo-feature-chip"><i class="fas fa-check-circle feature-check-icon"></i> এক্সক্লুসিভ গাইডলাইন</span>
+                <div class="promo-header-row">
+                    <div class="promo-content">
+                        <h3 id="promoCourseTitle" class="promo-title">টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স</h3>
+                        <p id="promoCourseSubtitle" class="promo-subtitle">সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন</p>
+                    </div>
+                    <div class="promo-actions">
+                        <button type="button" onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay" title="পেমেন্ট করুন">
+                            কোর্সে ভর্তি হন • <span id="promoBtnFee">১৪৯ টাকা</span>
+                        </button>
                     </div>
                 </div>
-                <div class="promo-actions">
-                    <button type="button" onclick="event.stopPropagation(); openPaymentModal();" class="btn-pay" title="পেমেন্ট করুন">
-                        <i class="fas fa-credit-card"></i> Pay Now • <span id="promoBtnFee">১০০ টাকা</span>
-                    </button>
+                <div id="promoFeaturesList" class="promo-features-grid count-7">
+                    <!-- ফিচার লিস্ট অ্যারে থেকে রেন্ডার হবে -->
                 </div>
             </div>
 
             <!-- 🌟 মাল্টি-কোর্স শোকেস গ্রিড (যদি একাধিক কোর্স থাকে) 🌟 -->
             <div id="coursesShowcaseContainer" style="display:none;"></div>
 
+            <!-- 🌟 ধন্যবাদ ব্যানার (ইমোজি ও গ্র্যাডিয়েন্ট মুক্ত সমতল ব্যানার) 🌟 -->
             <div id="successBanner" class="success-banner">
-                <div style="font-size: 20px; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 50%;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div style="flex:1;">
-                    <h2 style="margin:0; font-size:15px;">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ! 🎉</h2>
-                    <p style="margin:3px 0 0 0; font-size:12.5px; opacity:0.9;">এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে জয়েন করুন।</p>
-                </div>
-                <a id="successBannerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" style="background:white; color:#00b894; padding:6px 14px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:12px;">
-                    <i class="fab fa-telegram-plane"></i> Join
+                <span class="success-banner-text">কোর্সে যুক্ত হওয়ার জন্য ধন্যবাদ। এক্সক্লুসিভ ম্যাটেরিয়ালস পেতে টেলিগ্রামে যুক্ত থাকুন।</span>
+                <a id="successBannerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="btn-success-join">
+                    টেলিগ্রামে যুক্ত হন
                 </a>
             </div>
-
-            <div id="loader" style="text-align: center; padding: 35px 20px;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i><br><span style="font-size:13px; color:#64748b; margin-top:8px; display:inline-block;">লোড হচ্ছে...</span>
-            </div>
-            <div id="examContainer" class="exam-grid"></div>
         </div>
 
-        <!-- 🌟 টেক্সটাইল ইঞ্জিনিয়ারিং কোটেশন ও বার্তা কার্ড (রেফারেন্স ইমেজ অনুযায়ী নতুন ব্লু কার্ড ডিজাইন) 🌟 -->
-        <div id="siteAboutNote" class="site-quote-section">
-            <div class="harmonious-quote-card blue-quote-card">
-                <!-- উপরের বাঁদিকের কোটেশন চিহ্ন -->
-                <div class="quote-mark quote-mark-left">
-                    <i class="fas fa-quote-left"></i>
-                </div>
-
-                <!-- মূল বার্তা টেক্সট -->
-                <p class="quote-text">
-                    টেক্সটাইল ইঞ্জিনিয়ারিং নিয়ে আমরা <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="quote-brand-link" title="হাবিবস কেয়ার অফিসিয়াল ফেসবুক পেজে ভিজিট করুন">হাবিবস কেয়ার</a> কাজ করছি ২০২১ সাল থেকে। আশা করি আমাদের ওয়েবসাইটে থাকা এক্সাম, ইউটিউবে থাকা গাইডলাইন তোমার টেক্সটাইল ইঞ্জিনিয়ারিং এর প্রস্তুতি নিতে সর্বোচ্চ সাহায্য করবে।
-                </p>
-
-                <!-- নিচের ডানদিকের কোটেশন চিহ্ন -->
-                <div class="quote-mark quote-mark-right">
-                    <i class="fas fa-quote-right"></i>
-                </div>
-            </div>
+        <!-- 🌟 টেক্সটাইল ইঞ্জিনিয়ারিং পরিচিতি ও বার্তা (সহজ সাধারণ টেক্সট) 🌟 -->
+        <div id="siteAboutNote" class="site-about-simple">
+            <p>টেক্সটাইল ইঞ্জিনিয়ারিং নিয়ে আমরা হাবিবস কেয়ার কাজ করছি ২০২১ সাল থেকে। আশা করি আমাদের ওয়েবসাইটে থাকা পরীক্ষা এবং গাইডলাইন তোমার প্রস্তুতি নিতে সর্বোচ্চ সাহায্য করবে।</p>
         </div>
 
         <!-- 🔴 প্রিমিয়াম গ্লাসিয়ার ফুটার (স্ক্রিনশট-২ স্টাইল: এক কলামে, এক সাইডে সাজানো) 🔴 -->
-        <footer class="site-footer glacier-footer">
-            <div class="glacier-card">
-                <!-- ব্র্যান্ড সেকশন -->
-                <div class="glacier-brand">
-                    <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-logo-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">
-                        <img src="assets/logo.png" alt="Habib's Care" class="glacier-logo">
-                    </a>
-                    <div class="glacier-brand-text">
-                        <h4 class="glacier-brand-title">
-                            <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-title-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">HABIB'S CARE</a>
-                        </h4>
-                        <span class="glacier-brand-tag">ESTD 2021 • Your Textile Journey Companion</span>
+        <footer class="site-footer">
+            <div class="footer-simple-card">
+                <div class="footer-links-grid">
+                    <div class="footer-link-group">
+                        <span class="footer-group-title">গুরুত্বপূর্ণ লিঙ্ক</span>
+                        <ul class="footer-list">
+                            <li><a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer">YouTube চ্যানেল (ক্লাস ও গাইডলাইন)</a></li>
+                            <li><a id="footerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer">Telegram চ্যানেল (নোটিশ ও ম্যাটেরিয়ালস)</a></li>
+                            <li><a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer">Facebook পেজ (অফিসিয়াল আপডেট)</a></li>
+                            <li><a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer">Facebook গ্রুপ (কমিউনিটি ও প্রশ্নব্যাংক)</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-link-group">
+                        <span class="footer-group-title">শর্টকাট</span>
+                        <ul class="footer-list">
+                            <li><a href="index.html">হোম</a></li>
+                            <li><a href="mistakes.html">ভুল প্রশ্ন ব্যাংক</a></li>
+                            <li><a href="profile.html">আমার প্রোফাইল</a></li>
+                            <li><a href="javascript:void(0)" onclick="toggleHelp()">যোগাযোগ ও হেল্প</a></li>
+                        </ul>
                     </div>
                 </div>
-
-                <!-- গুরুত্বপূর্ণ লিঙ্ক সেকশন (এক কলামে, এক সাইডে) -->
-                <div class="glacier-group">
-                    <h5 class="glacier-group-heading">গুরুত্বপূর্ণ লিঙ্ক</h5>
-                    <div class="glacier-accent-bar"></div>
-                    <ul class="glacier-list">
-                        <li>
-                            <a href="https://youtube.com/@habibscare?si=oNY9TZasgOQ-g_6l" target="_blank" rel="noopener noreferrer" class="glacier-link">
-                                <span class="glacier-arrow">→</span>
-                                <span class="glacier-link-text">YouTube চ্যানেল (ক্লাস ও গাইডলাইন)</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="footerTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="glacier-link">
-                                <span class="glacier-arrow">→</span>
-                                <span class="glacier-link-text">Telegram চ্যানেল (নোটিশ ও ম্যাটেরিয়ালস)</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-link">
-                                <span class="glacier-arrow">→</span>
-                                <span class="glacier-link-text">হাবিবস কেয়ার ফেসবুক পেজ (অফিসিয়াল আপডেট)</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="https://facebook.com/groups/489136275227144/" target="_blank" rel="noopener noreferrer" class="glacier-link">
-                                <span class="glacier-arrow">→</span>
-                                <span class="glacier-link-text">Facebook গ্রুপ (কমিউনিটি ও প্রশ্নব্যাংক)</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- শর্টকাট সেকশন (একই কলামে নিচে নিচে, এক সাইডে) -->
-                <div class="glacier-group">
-                    <h5 class="glacier-group-heading">শর্টকাট</h5>
-                    <div class="glacier-accent-bar"></div>
-                    <ul class="glacier-list">
-                        <li>
-                            <a href="index.html" class="glacier-link">
-                                <i class="fas fa-home glacier-icon"></i>
-                                <span class="glacier-link-text">হোম</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="mistakes.html" class="glacier-link">
-                                <i class="fas fa-book-open glacier-icon"></i>
-                                <span class="glacier-link-text">ভুল প্রশ্ন ব্যাংক</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="profile.html" class="glacier-link">
-                                <i class="fas fa-user glacier-icon"></i>
-                                <span class="glacier-link-text">আমার প্রোফাইল</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0)" onclick="toggleHelp()" class="glacier-link">
-                                <i class="fas fa-envelope glacier-icon"></i>
-                                <span class="glacier-link-text">যোগাযোগ ও হেল্প</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- কপিরাইট ফুটনোট -->
-                <div class="glacier-bottom">
-                    <p class="glacier-copy">&copy; 2026 <a href="https://www.facebook.com/habibs.care.edu" target="_blank" rel="noopener noreferrer" class="glacier-copy-link" title="হাবিবস কেয়ার ফেসবুক পেজে যান">Habib's Care</a>. All Rights Reserved.</p>
+                <div class="footer-bottom-copy">
+                    &copy; 2026 Habib's Care. All Rights Reserved.
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- 🔴 নতুন মডার্ন ৩-ট্যাব পেমেন্ট মডাল 🔴 -->
+    <!-- 🔴 সমতল ও পরিচ্ছন্ন পেমেন্ট মোডাল 🔴 -->
     <div id="paymentModal" class="modal-overlay" onclick="if(event.target === this) closePaymentModal()">
         <div class="payment-modal-content">
-            <!-- Modal Header -->
+            <!-- Modal Header (শুধু শিরোনামে ফি থাকবে, ইংরেজি সাবটাইটেল বাদ) -->
             <div class="pay-modal-header">
-                <div>
-                    <h3 id="modalPayTitle" class="pay-modal-title">কোর্সে ভর্তি ও পেমেন্ট (১০০ টাকা)</h3>
-                    <p id="modalPaySubtitle" class="pay-modal-subtitle">Textile Engineering Admission Preparation</p>
-                </div>
+                <h3 id="modalPayTitle" class="pay-modal-title">কোর্সে ভর্তি ও পেমেন্ট (১৪৯ টাকা)</h3>
                 <button class="pay-modal-close" onclick="closePaymentModal()" title="বন্ধ করুন">&times;</button>
             </div>
 
-            <!-- 🌟 পেমেন্ট মেথড ড্রপডাউন সিলেক্টর 🌟 -->
+            <!-- মেথড সিলেক্টর (বর্ডার ও ওয়ালেট আইকন ছাড়া শুধু প্রশ্ন ও ড্রপডাউন) -->
             <div class="pay-method-selector-box">
                 <label for="payMethodSelect" class="pay-selector-label">
-                    <i class="fas fa-wallet"></i> আপনি কোন পেমেন্ট মেথড দিয়ে পেমেন্ট করতে চান?
+                    আপনি কোন পেমেন্ট মেথড দিয়ে পেমেন্ট করতে চান?
                 </label>
                 <div class="pay-select-wrapper method-bkash">
                     <select id="payMethodSelect" class="pay-method-select" onchange="switchPayTab(this.value)">
-                        <option value="bkash">বিকাশ (bKash Merchant Payment)</option>
-                        <option value="nagad">নগদ (Nagad Personal Send Money)</option>
-                        <option value="rocket">রকেট (Rocket Personal Send Money)</option>
+                        <option value="bkash">বিকাশ মার্চেন্ট পেমেন্ট</option>
+                        <option value="nagad">নগদ পার্সোনাল সেন্ড মানি</option>
+                        <option value="rocket">রকেট পার্সোনাল সেন্ড মানি</option>
                     </select>
                     <i class="fas fa-chevron-down select-chevron"></i>
                 </div>
             </div>
 
-            <!-- ট্যাব ১: বিকাশ মার্চেন্ট পেমেন্ট -->
+            <!-- মেথড ১: বিকাশ মার্চেন্ট পেমেন্ট -->
             <div id="payTab-bkash" class="pay-tab-pane active">
                 <div class="pay-guide-preview">
                     <div class="guide-img-box">
-                        <img src="assets/payment/bkash_guide.jpg" alt="bKash Services" class="pay-guide-img">
+                        <img src="assets/payment/bkash_guide.jpg" alt="বিকাশ গাইড" class="pay-guide-img">
                         <div class="guide-target-box target-bkash"></div>
                     </div>
                 </div>
 
                 <div class="pay-instruction-card card-bkash">
                     <div class="pay-inst-header">
-                        <span class="badge-method-type">মার্চেন্ট পেমেন্ট</span>
-                        <span class="fee-pill dyn-fee-pill">ফি: ১০০ টাকা</span>
+                        <span class="method-title-text">বিকাশ মার্চেন্ট পেমেন্ট</span>
                     </div>
                     
                     <p class="pay-inst-note">
-                        ⚠️ <strong>সতর্কতা:</strong> এটি মার্চেন্ট অ্যাকাউন্ট, তাই সেন্ড মানি করবেন না (সেন্ড মানি হবে না)। বিকাশ অ্যাপ অথবা ডায়াল কোড <code>*247#</code> ডায়াল করে <strong>4 (Payment)</strong> সিলেক্ট করে <span class="dyn-fee-text">১০০</span> টাকা পেমেন্ট সম্পন্ন করুন।
+                        <strong>সতর্কতা:</strong> এটি মার্চেন্ট অ্যাকাউন্ট, তাই সেন্ড মানি করবেন না (সেন্ড মানি হবে না)। বিকাশ অ্যাপ অথবা ডায়াল কোড <code>*247#</code> ডায়াল করে <strong>4 (Payment)</strong> সিলেক্ট করে পেমেন্ট সম্পন্ন করুন।
                     </p>
 
                     <div class="pay-num-box">
                         <div class="num-text-wrap">
-                            <span class="num-sub">BKASH MERCHANT NUMBER</span>
+                            <span class="num-sub">বিকাশ মার্চেন্ট নম্বর</span>
                             <span id="numVal-bkash" class="num-val">01522102384</span>
                         </div>
                         <button type="button" class="btn-copy-action" onclick="copyDynamicPaymentData('bkash', this)">
@@ -338,28 +256,27 @@
                 </div>
             </div>
 
-            <!-- ট্যাব ২: নগদ পার্সোনাল সেন্ড মানি -->
+            <!-- মেথড ২: নগদ পার্সোনাল সেন্ড মানি -->
             <div id="payTab-nagad" class="pay-tab-pane">
                 <div class="pay-guide-preview">
                     <div class="guide-img-box">
-                        <img src="assets/payment/nagad_guide.jpg" alt="Nagad Services" class="pay-guide-img">
+                        <img src="assets/payment/nagad_guide.jpg" alt="নগদ গাইড" class="pay-guide-img">
                         <div class="guide-target-box target-nagad"></div>
                     </div>
                 </div>
 
                 <div class="pay-instruction-card card-nagad">
                     <div class="pay-inst-header">
-                        <span class="badge-method-type">পার্সোনাল সেন্ড মানি</span>
-                        <span class="fee-pill dyn-fee-pill">ফি: ১০০ টাকা</span>
+                        <span class="method-title-text">নগদ পার্সোনাল সেন্ড মানি</span>
                     </div>
 
                     <p class="pay-inst-note">
-                        📌 আপনার নগদ অ্যাপ অথবা ডায়াল কোড <code>*167#</code> ডায়াল করে <strong>"সেন্ড মানি (Send Money)"</strong> অপশনে গিয়ে <span class="dyn-fee-text">১০০</span> টাকা পাঠিয়ে দিন।
+                        আপনার নগদ অ্যাপ অথবা ডায়াল কোড <code>*167#</code> ডায়াল করে <strong>"সেন্ড মানি (Send Money)"</strong> অপশনে গিয়ে টাকা পাঠিয়ে দিন।
                     </p>
 
                     <div class="pay-num-box">
                         <div class="num-text-wrap">
-                            <span class="num-sub">NAGAD PERSONAL NUMBER</span>
+                            <span class="num-sub">নগদ পার্সোনাল নম্বর</span>
                             <span id="numVal-nagad" class="num-val">01873275283</span>
                         </div>
                         <button type="button" class="btn-copy-action" onclick="copyDynamicPaymentData('nagad', this)">
@@ -369,28 +286,27 @@
                 </div>
             </div>
 
-            <!-- ট্যাব ৩: রকেট পার্সোনাল সেন্ড মানি -->
+            <!-- মেথড ৩: রকেট পার্সোনাল সেন্ড মানি -->
             <div id="payTab-rocket" class="pay-tab-pane">
                 <div class="pay-guide-preview">
                     <div class="guide-img-box">
-                        <img src="assets/payment/rocket_guide.jpg" alt="Rocket Services" class="pay-guide-img">
+                        <img src="assets/payment/rocket_guide.jpg" alt="রকেট গাইড" class="pay-guide-img">
                         <div class="guide-target-box target-rocket"></div>
                     </div>
                 </div>
 
                 <div class="pay-instruction-card card-rocket">
                     <div class="pay-inst-header">
-                        <span class="badge-method-type">পার্সোনাল সেন্ড মানি</span>
-                        <span class="fee-pill dyn-fee-pill">ফি: ১০০ টাকা</span>
+                        <span class="method-title-text">রকেট পার্সোনাল সেন্ড মানি</span>
                     </div>
 
                     <p class="pay-inst-note">
-                        📌 আপনার রকেট অ্যাপ অথবা ডায়াল কোড <code>*322#</code> ডায়াল করে <strong>"Send Money (সেন্ড মানি)"</strong> অপশনে গিয়ে <span class="dyn-fee-text">১০০</span> টাকা পাঠিয়ে দিন।
+                        আপনার রকেট অ্যাপ অথবা ডায়াল কোড <code>*322#</code> ডায়াল করে <strong>"Send Money (সেন্ড মানি)"</strong> অপশনে গিয়ে টাকা পাঠিয়ে দিন।
                     </p>
 
                     <div class="pay-num-box">
                         <div class="num-text-wrap">
-                            <span class="num-sub">ROCKET PERSONAL NUMBER</span>
+                            <span class="num-sub">রকেট পার্সোনাল নম্বর</span>
                             <span id="numVal-rocket" class="num-val">01925251621</span>
                         </div>
                         <button type="button" class="btn-copy-action" onclick="copyDynamicPaymentData('rocket', this)">
@@ -400,24 +316,24 @@
                 </div>
             </div>
 
-            <!-- কনফার্মেশন ও ফর্ম সাবমিট -->
+            <!-- কনফার্মেশন ও ফর্ম সাবমিট (ছায়া ও ডক-আইকন ছাড়া, অ্যাকসেন্ট রঙ) -->
             <div class="pay-submit-footer">
                 <p class="pay-submit-notice">টাকা পাঠানোর পর নিচের ফর্মে গিয়ে আপনার তথ্য সাবমিট করুন:</p>
                 <a href="give_access.html" class="btn-submit-payment">
-                    <i class="fas fa-file-invoice"></i> কোর্সে ভর্তির তথ্য সাবমিট করুন (ফর্ম)
+                    কোর্সে ভর্তির তথ্য সাবমিট করুন (ফর্ম)
                 </a>
             </div>
 
-            <!-- সাপোর্ট বার -->
+            <!-- হোয়াটসঅ্যাপ সাপোর্ট বার (ড্যাশ বর্ডার ছাড়া এক লাইনের সারি) -->
             <div class="pay-support-bar">
-                <span>যেকোনো সমস্যায় WhatsApp করুন:</span>
+                <span>যেকোনো সমস্যায় হোয়াটসঅ্যাপ করুন:</span>
                 <a id="paySupportWaLink" href="https://wa.me/8801873275283" target="_blank" rel="noopener noreferrer" class="btn-pay-wa">
-                    <i class="fab fa-whatsapp"></i> <span id="paySupportWaText">01873275283</span>
+                    <span id="paySupportWaText">01873275283</span>
                 </a>
             </div>
 
             <button onclick="closePaymentModal()" class="btn-close-modal-link">
-                <i class="fas fa-times"></i> বন্ধ করুন
+                বন্ধ করুন
             </button>
         </div>
     </div>

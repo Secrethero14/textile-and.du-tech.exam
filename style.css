@@ -2,7 +2,7 @@ html { scroll-behavior: smooth; }
 @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
 @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap');
-:root { --primary: #6c5ce7; --bg: #f8f9fd; --text: #2d3436; --warning: #f9ca24; --success: #00b894; --error: #d63031; }
+:root { --primary: #059669; --accent: #059669; --bg: #f8fafc; --text: #1e293b; --warning: #d97706; --success: #059669; --error: #dc2626; }
         
         body { 
             font-family: 'SolaimanLipi', 'Solaiman Lipi', 'Josefin Sans', sans-serif; 
@@ -2380,4 +2380,443 @@ body, button, input, select, textarea {
     .glacier-link {
         font-size: 13px !important;
     }
+}
+
+
+/* ==========================================================
+ * 🌟 CLEAN, AUTHENTIC, EDITORIAL DESIGN SYSTEM (ZERO AI-SLOP) 🌟
+ * ========================================================== */
+
+/* 1. পেমেন্ট কার্ড: গাঢ় বেগুনি গ্র্যাডিয়েন্ট ও ছায়া বাদ, সমতল সবুজ রঙ ও সাধারণ বর্ডার */
+.promo-banner {
+    background: #ecfdf5 !important;
+    border: 1.5px solid #a7f3d0 !important;
+    color: #064e3b !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    margin-top: 24px !important;
+    margin-bottom: 24px !important;
+    box-shadow: none !important;
+    display: none;
+    flex-direction: column;
+    cursor: default !important;
+}
+.promo-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    border-bottom: 1px solid #d1fae5;
+    padding-bottom: 14px;
+    width: 100%;
+}
+.promo-title {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #064e3b !important;
+}
+.promo-subtitle {
+    margin: 4px 0 0 0 !important;
+    font-size: 13px !important;
+    color: #047857 !important;
+    opacity: 1 !important;
+}
+.btn-pay {
+    background: #059669 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 9px 16px !important;
+    border-radius: 6px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.15s ease !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.btn-pay:hover {
+    background: #047857 !important;
+    transform: none !important;
+}
+
+/* 2. ফিচার লিস্টের রেসপনসিভ গ্রিড (৭, ৮ বা ৯ ফিচারের নিখুঁত বিন্যাস) */
+.promo-features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.promo-features-grid .feature-item {
+    background: #ffffff;
+    border: 1px solid #d1fae5;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #065f46;
+    line-height: 1.35;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+.promo-features-grid .feature-check-icon {
+    color: #059669 !important;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/* মোবাইলে বিজোড় হলে শেষ আইটেম দুই কলাম জুড়ে পুরো প্রস্থ নেবে */
+@media (max-width: 767px) {
+    .promo-features-grid .feature-item:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ডেস্কটপে ৮টা হলে ৪ কলাম, ৯টা হলে ৩ কলাম, ৭টা হলে শেষ সারির আইটেম মাঝখানে */
+@media (min-width: 768px) {
+    .promo-features-grid.grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .promo-features-grid.grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .promo-features-grid.count-7 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .promo-features-grid.count-7 .feature-item:last-child {
+        grid-column: 2; /* ৭ম আইটেমটি মাঝখানের কলামে থাকবে */
+    }
+}
+
+/* 3. পরীক্ষার কার্ড: সাধারণ ও ছায়ামুক্ত */
+.course-banner-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease !important;
+    transform: none !important;
+}
+.course-banner-card:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.course-card-meta {
+    font-size: 12.5px !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+}
+.course-card-btn {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 7px 13px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+}
+.course-card-btn:hover {
+    background: #e2e8f0 !important;
+}
+
+/* 4. হেডারের আইকনগুলো এক রঙের ও পাশে ছোট লেবেল */
+.nav-actions-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.nav-icon-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 11px !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    transition: all 0.15s ease !important;
+}
+.nav-icon-btn i {
+    color: #475569 !important;
+    font-size: 13px !important;
+}
+.nav-icon-btn:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+.nav-icon-btn:hover i {
+    color: #0f172a !important;
+}
+
+/* 5. পরিচিতি বার্তা: সাধারণ পরিচ্ছন্ন টেক্সট */
+.site-about-simple {
+    max-width: 850px;
+    margin: 20px auto 0 auto;
+    padding: 0 16px;
+    text-align: center;
+}
+.site-about-simple p {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* 6. ফুটার: হালকা ব্যাকগ্রাউন্ড, নীল ক্লিকেবল লিঙ্ক */
+.site-footer {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 32px 16px 20px 16px !important;
+    margin-top: 40px !important;
+}
+.footer-simple-card {
+    max-width: 850px;
+    margin: 0 auto;
+}
+.footer-links-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    margin-bottom: 22px;
+}
+.footer-link-group {
+    flex: 1;
+    min-width: 220px;
+}
+.footer-group-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #475569;
+    display: block;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.footer-list a {
+    color: #2563eb !important; /* নীল ক্লিকেবল রঙ */
+    text-decoration: underline !important;
+    text-underline-offset: 3px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    transition: color 0.15s ease !important;
+}
+.footer-list a:hover {
+    color: #1d4ed8 !important;
+}
+.footer-bottom-copy {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 14px;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* 7. ধন্যবাদ ব্যানার: ইমোজি ও গ্র্যাডিয়েন্ট মুক্ত */
+.success-banner {
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    color: #166534 !important;
+    padding: 11px 16px !important;
+    border-radius: 6px !important;
+    margin-top: 16px !important;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px !important;
+    box-shadow: none !important;
+}
+.btn-success-join {
+    background: #059669 !important;
+    color: #ffffff !important;
+    padding: 6px 13px !important;
+    border-radius: 5px !important;
+    text-decoration: none !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+.btn-success-join:hover {
+    background: #047857 !important;
+}
+
+/* ==========================================================
+ * 🌟 PAYMENT MODAL CLEANUP (FLAT, HONEST, ZERO EMOJI) 🌟
+ * ========================================================== */
+
+.payment-modal-content {
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 20px !important;
+    max-width: 440px !important;
+}
+.pay-modal-header {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+}
+.pay-modal-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+
+/* প্রশ্নের কার্ড: বর্ডার ও ব্যাকগ্রাউন্ড মুক্ত */
+.pay-method-selector-box {
+    margin-bottom: 14px !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+.pay-selector-label {
+    display: block !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-bottom: 6px !important;
+}
+.pay-method-select {
+    border-radius: 6px !important;
+    padding: 9px 36px 9px 12px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    border: 1.5px solid #cbd5e1 !important;
+    background: #ffffff !important;
+}
+
+/* মেথড কার্ড: সমতল রঙ, ছায়া ও গ্র্যাডিয়েন্ট বাদ */
+.pay-instruction-card {
+    border-radius: 8px !important;
+    padding: 14px !important;
+    color: #ffffff !important;
+    margin-bottom: 14px !important;
+    box-shadow: none !important;
+}
+.card-bkash {
+    background: #e2136e !important; /* বিকাশ সমতল রঙ */
+}
+.card-nagad {
+    background: #f97316 !important; /* নগদ সমতল রঙ */
+}
+.card-rocket {
+    background: #8c3494 !important; /* রকেট সমতল রঙ */
+}
+.method-title-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* সতর্কতার নোট: সাধারণ আলাদা নোট বক্স, ইমোজি ও টাকা মুক্ত */
+.pay-inst-note {
+    background: rgba(0, 0, 0, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 6px !important;
+    padding: 9px 11px !important;
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+    margin: 0 0 12px 0 !important;
+    color: #ffffff !important;
+}
+
+/* নম্বর বক্স */
+.pay-num-box {
+    background: rgba(0, 0, 0, 0.22) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 6px !important;
+    padding: 9px 12px !important;
+}
+.num-sub {
+    font-size: 11px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 600 !important;
+}
+.num-val {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+.btn-copy-action {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 6px !important;
+    padding: 6px 11px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+/* সাবমিট বাটন: ছায়া ও ডক-আইকন ছাড়া, অ্যাকসেন্ট সবুজ */
+.btn-submit-payment {
+    background: #059669 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 10px 16px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+    transition: background 0.15s ease !important;
+}
+.btn-submit-payment:hover {
+    background: #047857 !important;
+}
+
+/* হোয়াটসঅ্যাপ বার: ড্যাশ বর্ডার বাদ, এক লাইনের সাধারণ সারি */
+.pay-support-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    margin-bottom: 12px !important;
+    font-size: 13px !important;
+    color: #475569 !important;
+}
+.btn-pay-wa {
+    color: #059669 !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+.btn-pay-wa:hover {
+    text-decoration: underline !important;
+}
+
+/* গাইড প্রিভিউ */
+.guide-img-box {
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
 }

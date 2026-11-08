@@ -64,6 +64,18 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
         const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
 
 // ==========================================
+
+// 🌟 ডিফল্ট কোর্স ফিচার অ্যারে (নতুন ফিচার যোগ করতে চাইলে শুধু এই অ্যারেতে লাইন যোগ করুন) 🌟
+const DEFAULT_COURSE_FEATURES = [
+    "অধ্যায়ভিত্তিক পরীক্ষা",
+    "পেপার ফাইনাল পরীক্ষা",
+    "মডেল টেস্ট পরীক্ষা",
+    "প্রশ্নব্যাংক সমাধান পরীক্ষা",
+    "ভুল প্রশ্ন ব্যাংক থেকে পরীক্ষা",
+    "সলভ শীট",
+    "টপিক সাজেশন ও গাইডলাইন"
+];
+
 // 🌟 DYNAMIC SITE SETTINGS & COURSES (FROM GOOGLE SHEETS) 🌟
 // ==========================================
 window.siteSettings = {
@@ -219,23 +231,32 @@ function applyDynamicSiteData() {
 
     if (pTitle) pTitle.innerText = mainCourse.name || s.course_title;
     if (pSub) {
-        const bFee = toBanglaDigits(mainCourse.fee || s.course_fee);
-        pSub.innerText = `মাত্র ${bFee} টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন`;
+        pSub.innerText = "সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন";
     }
     if (pBtnFee) {
         pBtnFee.innerText = `${toBanglaDigits(mainCourse.fee || s.course_fee)} টাকা`;
     }
 
-    // Green checkmark features list
+    // 🌟 গ্রিড লেআউট (৭, ৮ বা ৯ ফিচারের নিখুঁত বিন্যাস) 🌟
     if (pFeatList) {
         const feats = (mainCourse.features && mainCourse.features.length > 0) 
             ? mainCourse.features 
             : parseCourseFeatures(s.course_features);
-        
-        pFeatList.innerHTML = feats.map(f => `
-            <span class="promo-feature-chip">
-                <i class="fas fa-check-circle feature-check-icon"></i> ${f}
-            </span>
+        const finalFeats = feats && feats.length ? feats : DEFAULT_COURSE_FEATURES;
+        const count = finalFeats.length;
+
+        let countClass = 'count-7';
+        if (count === 8) countClass = 'grid-cols-4';
+        else if (count === 9 || count % 3 === 0) countClass = 'grid-cols-3';
+        else if (count === 7) countClass = 'count-7';
+        else countClass = (count % 4 === 0) ? 'grid-cols-4' : 'grid-cols-3';
+
+        pFeatList.className = `promo-features-grid ${countClass}`;
+        pFeatList.innerHTML = finalFeats.map(f => `
+            <div class="feature-item">
+                <i class="fas fa-check feature-check-icon"></i>
+                <span class="feature-text">${f}</span>
+            </div>
         `).join('');
     }
 
@@ -637,15 +658,15 @@ function navigateBack() {
             } else {
                 container.innerHTML = `
                     <div class="nav-actions-wrap">
-                        <a href="mistakes.html" class="nav-icon-btn nav-mistake" title="ভুল প্রশ্ন ব্যাংক">
+                        <a href="mistakes.html" class="nav-icon-btn" title="ভুল প্রশ্ন ব্যাংক">
                             <i class="fas fa-book-open"></i>
                             <span class="nav-btn-label">ভুল ব্যাংক</span>
                         </a>
-                        <a href="profile.html" class="nav-icon-btn nav-profile" title="আমার প্রোফাইল">
+                        <a href="profile.html" class="nav-icon-btn" title="আমার প্রোফাইল">
                             <i class="fas fa-user"></i>
                             <span class="nav-btn-label">প্রোফাইল</span>
                         </a>
-                        <button onclick="logout()" class="nav-icon-btn nav-logout" title="লগআউট">
+                        <button onclick="logout()" class="nav-icon-btn" title="লগআউট">
                             <i class="fas fa-sign-out-alt"></i>
                             <span class="nav-btn-label">লগআউট</span>
                         </button>
@@ -763,23 +784,32 @@ function navigateBack() {
                     const masterCats = [...new Set(allExams.map(e => e['Master Category']))].filter(m => m && String(m).trim() !== "");
                     let html = "";
                     masterCats.forEach(mCat => {
-                        const count = allExams.filter(e => e['Master Category'] === mCat).length;
                         const bannerImg = getMasterBanner(mCat);
                         const isVideoMaster = mCat === 'About Textile Engineering';
-                        const subtext = isVideoMaster ? 'ক্যারিয়ার ও গাইডলাইন ভিডিও' : 'অধ্যায়ভিত্তিক পরীক্ষা ও মডেল টেস্ট';
+
+                        // স্বাভাবিক কেস ও বাংলা নাম (ALL CAPS বাদ)
+                        let displayTitle = mCat;
+                        if (mCat.toUpperCase().includes('TEXTILE STANDARD EXAM') || mCat.toLowerCase().includes('textile standard')) {
+                            displayTitle = 'টেক্সটাইল স্ট্যান্ডার্ড এক্সাম';
+                        } else if (isVideoMaster) {
+                            displayTitle = 'টেক্সটাইল ইঞ্জিনিয়ারিং পরিচিতি ও গাইডলাইন';
+                        }
+
+                        // আইকন ও "117 Items" এর বদলে বাংলায় "১০০+ পরীক্ষা"
+                        const subtext = isVideoMaster ? 'গাইডলাইন ভিডিও' : '১০০+ পরীক্ষা';
                         const actionText = isVideoMaster ? 'ভিডিও দেখুন' : 'প্রবেশ করুন';
-                        const actionIcon = isVideoMaster ? 'fa-play' : 'fa-chevron-right';
+                        const actionIcon = isVideoMaster ? 'fa-play' : 'fa-arrow-right';
 
                         html += `
                             <div class="course-banner-card" onclick="openMaster('${mCat.replace(/'/g, "\\'")}')">
                                 ${bannerImg ? `
                                 <div class="course-card-banner-wrap">
-                                    <img src="${bannerImg}" alt="${mCat}" class="course-card-banner-img" loading="lazy">
+                                    <img src="${bannerImg}" alt="${displayTitle}" class="course-card-banner-img" loading="lazy">
                                 </div>` : ''}
                                 <div class="course-card-body">
                                     <div class="course-card-info">
-                                        <h3 class="course-card-title">${mCat}</h3>
-                                        <span class="course-card-meta"><i class="${isVideoMaster ? 'fas fa-video' : 'fas fa-layer-group'}"></i> ${count} Items • ${subtext}</span>
+                                        <h3 class="course-card-title">${displayTitle}</h3>
+                                        <span class="course-card-meta">${subtext}</span>
                                     </div>
                                     <div class="course-card-btn">
                                         <span>${actionText}</span>
@@ -1003,21 +1033,9 @@ function navigateBack() {
             const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'Textile Engineering Admission Full Course');
             const bFee = toBanglaDigits(fee);
 
-            // Update modal title & subtitle
+            // Update modal title (ফি শুধু শিরোনামে থাকবে)
             const mTitle = document.getElementById('modalPayTitle');
-            const mSub = document.getElementById('modalPaySubtitle');
             if (mTitle) mTitle.innerText = `কোর্সে ভর্তি ও পেমেন্ট (${bFee} টাকা)`;
-            if (mSub) mSub.innerText = name;
-
-            // Update fee pills
-            document.querySelectorAll('.dyn-fee-pill').forEach(el => {
-                el.innerText = `ফি: ${bFee} টাকা`;
-            });
-
-            // Update fee inside instructional notes
-            document.querySelectorAll('.dyn-fee-text').forEach(el => {
-                el.innerText = bFee;
-            });
 
             // Keep currently selected method or default to bkash
             const sel = document.getElementById('payMethodSelect');
