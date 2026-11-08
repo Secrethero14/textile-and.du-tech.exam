@@ -296,8 +296,43 @@ html { scroll-behavior: smooth; }
                 border-radius: 10px !important;
                 margin-bottom: 14px !important;
             }
-            .promo-title {
-                font-size: 14px !important;
+            .promo-banner {
+                padding: 16px 14px !important;
+                gap: 12px !important;
+                text-align: center !important;
+                align-items: center !important;
+            }
+            .promo-header-row {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+            .promo-content {
+                text-align: center !important;
+                align-items: center !important;
+            }
+            .promo-title,
+            .promo-content .promo-title,
+            #promoCourseTitle {
+                font-size: 17px !important;
+                color: #064e3b !important;
+                text-align: center !important;
+                margin-bottom: 5px !important;
+            }
+            .promo-subtitle,
+            .promo-content .promo-subtitle,
+            #promoCourseSubtitle {
+                font-size: 13px !important;
+                color: #047857 !important;
+                text-align: center !important;
+            }
+            .promo-actions {
+                justify-content: center !important;
+            }
+            .btn-pay,
+            .promo-actions .btn-pay {
+                padding: 9px 20px !important;
+                font-size: 13px !important;
             }
             .promo-subtitle {
                 font-size: 11.5px !important;
@@ -691,70 +726,7 @@ body, input, button, select, textarea {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* BALANCED & CALM PROMO BANNER */
-.promo-banner {
-    background: linear-gradient(135deg, #3730a3, #4f46e5) !important;
-    color: white !important;
-    padding: 16px 20px !important;
-    border-radius: 12px !important;
-    margin-bottom: 20px !important;
-    display: none;
-    justify-content: space-between !important;
-    align-items: center !important;
-    flex-wrap: wrap !important;
-    gap: 14px !important;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-}
-.promo-banner:hover {
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3) !important;
-}
-.promo-content {
-    flex: 1;
-    min-width: 250px;
-}
-.promo-content .promo-title {
-    margin: 0 0 5px 0 !important;
-    font-size: 19px !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    line-height: 1.35 !important;
-}
-.promo-content .promo-subtitle {
-    margin: 0 !important;
-    font-size: 13.5px !important;
-    color: #e0e7ff !important;
-    line-height: 1.4 !important;
-    font-weight: 400 !important;
-}
-.promo-actions {
-    display: flex;
-    align-items: center;
-}
-.btn-pay {
-    background: #ffffff !important;
-    color: #4338ca !important;
-    border: none !important;
-    padding: 8px 18px !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    font-size: 13.5px !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    white-space: nowrap !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    transition: all 0.2s ease !important;
-}
-.btn-pay:hover {
-    background: #f8fafc !important;
-    color: #3730a3 !important;
-    transform: translateY(-1px) !important;
-}
-
-/* 🌟 PROMO BANNER GREEN CHECKMARK FEATURES (CLEAN EDTECH DESIGN, ZERO AI-SLOP) 🌟 */
+/* BALANCED & CALM PROMO BANNER (cleaned) */
 .promo-features-list {
     display: flex;
     flex-wrap: wrap;
@@ -1188,8 +1160,43 @@ body, input, button, select, textarea {
                 border-radius: 10px !important;
                 margin-bottom: 14px !important;
             }
-            .promo-title {
-                font-size: 14px !important;
+            .promo-banner {
+                padding: 16px 14px !important;
+                gap: 12px !important;
+                text-align: center !important;
+                align-items: center !important;
+            }
+            .promo-header-row {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+            .promo-content {
+                text-align: center !important;
+                align-items: center !important;
+            }
+            .promo-title,
+            .promo-content .promo-title,
+            #promoCourseTitle {
+                font-size: 17px !important;
+                color: #064e3b !important;
+                text-align: center !important;
+                margin-bottom: 5px !important;
+            }
+            .promo-subtitle,
+            .promo-content .promo-subtitle,
+            #promoCourseSubtitle {
+                font-size: 13px !important;
+                color: #047857 !important;
+                text-align: center !important;
+            }
+            .promo-actions {
+                justify-content: center !important;
+            }
+            .btn-pay,
+            .promo-actions .btn-pay {
+                padding: 9px 20px !important;
+                font-size: 13px !important;
             }
             .promo-subtitle {
                 font-size: 11.5px !important;
@@ -1238,91 +1245,6 @@ body, button, input, select, textarea {
 }
 
 /* 1. MODERN PROMO STRIP (Full Text Visible, Rectangular Pay Now Button) */
-.promo-banner {
-    background: linear-gradient(135deg, #3730a3 0%, #4f46e5 100%) !important;
-    color: #ffffff !important;
-    padding: 14px 18px !important;
-    border-radius: 12px !important;
-    margin-bottom: 16px !important;
-    display: none;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-    gap: 14px !important;
-    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2) !important;
-    cursor: pointer !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-}
-.promo-banner:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.28) !important;
-}
-.promo-banner:active {
-    transform: scale(0.995) !important;
-}
-.promo-content {
-    flex: 1;
-    min-width: 220px;
-    text-align: left !important;
-}
-.promo-title {
-    font-size: 15.5px !important;
-    font-weight: 700 !important;
-    color: #ffffff !important;
-    margin: 0 0 4px 0 !important;
-    line-height: 1.35 !important;
-    text-align: left !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-}
-.promo-subtitle {
-    font-size: 12.5px !important;
-    color: #e0e7ff !important;
-    margin: 0 !important;
-    line-height: 1.4 !important;
-    text-align: left !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    font-weight: 400 !important;
-}
-.promo-actions {
-    flex-shrink: 0;
-}
-.btn-pay {
-    background: #ffffff !important;
-    color: #4338ca !important;
-    border: none !important;
-    padding: 8px 18px !important;
-    border-radius: 6px !important; /* চারকোনা / crisp rectangular */
-    font-weight: 800 !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    white-space: nowrap !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
-    transition: all 0.2s ease !important;
-    letter-spacing: 0.3px;
-    font-family: inherit !important;
-}
-.btn-pay:hover {
-    background: #f8fafc !important;
-    color: #3730a3 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16) !important;
-}
-.btn-pay:active {
-    transform: translateY(0) !important;
-}
-
 /* 2. MODERN FOLDER & ITEM CARDS */
 .item-card {
     position: relative !important;
@@ -2387,57 +2309,106 @@ body, button, input, select, textarea {
  * 🌟 CLEAN, AUTHENTIC, EDITORIAL DESIGN SYSTEM (ZERO AI-SLOP) 🌟
  * ========================================================== */
 
-/* 1. পেমেন্ট কার্ড: গাঢ় বেগুনি গ্র্যাডিয়েন্ট ও ছায়া বাদ, সমতল সবুজ রঙ ও সাধারণ বর্ডার */
+/* 1. পেমেন্ট কার্ড: সমতল সবুজ রঙ, সম্পূর্ণ সেন্ট্রাল ব্যালেন্সড ও হাই কনট্রাস্ট */
 .promo-banner {
     background: #ecfdf5 !important;
     border: 1.5px solid #a7f3d0 !important;
     color: #064e3b !important;
-    border-radius: 8px !important;
-    padding: 20px !important;
-    margin-top: 24px !important;
+    border-radius: 14px !important;
+    padding: 22px 18px 20px 18px !important;
+    margin-top: 18px !important;
     margin-bottom: 24px !important;
     box-shadow: none !important;
     display: none;
-    flex-direction: column;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
     cursor: default !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
 }
+
 .promo-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 14px;
-    border-bottom: 1px solid #d1fae5;
-    padding-bottom: 14px;
-    width: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 10px !important;
+    border-bottom: 1px solid #d1fae5 !important;
+    padding-bottom: 16px !important;
+    width: 100% !important;
 }
-.promo-title {
-    margin: 0 !important;
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: #064e3b !important;
+
+.promo-content {
+    width: 100% !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
-.promo-subtitle {
-    margin: 4px 0 0 0 !important;
-    font-size: 13px !important;
-    color: #047857 !important;
+
+.promo-title,
+.promo-content .promo-title,
+.promo-banner .promo-title,
+#promoCourseTitle {
+    margin: 0 0 6px 0 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #064e3b !important; /* ডিপ গাঢ় সবুজ - ১০০% স্পষ্ট ও হাই কনট্রাস্ট */
+    line-height: 1.35 !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+.promo-subtitle,
+.promo-content .promo-subtitle,
+.promo-banner .promo-subtitle,
+#promoCourseSubtitle {
+    margin: 0 auto !important;
+    font-size: 14px !important;
+    color: #047857 !important; /* মিডিয়াম ডিপ সবুজ - সম্পূর্ণ স্পষ্ট */
+    line-height: 1.45 !important;
+    font-weight: 500 !important;
+    text-align: center !important;
     opacity: 1 !important;
+    max-width: 520px !important;
+    width: 100% !important;
 }
-.btn-pay {
+
+.promo-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+}
+
+.btn-pay,
+.promo-actions .btn-pay {
     background: #059669 !important;
     color: #ffffff !important;
     border: none !important;
-    padding: 9px 16px !important;
-    border-radius: 6px !important;
-    font-size: 13.5px !important;
+    padding: 10px 22px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    transition: background 0.15s ease !important;
-    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25) !important;
     transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
 }
-.btn-pay:hover {
+
+.btn-pay:hover,
+.promo-actions .btn-pay:hover {
     background: #047857 !important;
+    box-shadow: 0 5px 14px rgba(5, 150, 105, 0.35) !important;
     transform: none !important;
 }
 

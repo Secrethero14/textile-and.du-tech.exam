@@ -85,15 +85,15 @@ window.siteSettings = {
     whatsapp_number: "01873275283",
     telegram_link: "https://t.me/careforcandidates",
     telegram_helper: "https://t.me/Admissionhelper007",
-    course_fee: "100",
-    course_title: "Textile Engineering Admission Full Course",
+    course_fee: "149",
+    course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
     course_subtitle: "মাত্র ১০০ টাকায় সব অধ্যায়ভিত্তিক পরীক্ষা, প্রশ্নব্যাংক ও গাইডলাইন আনলক করুন",
     course_features: "১০০+ অধ্যায়ভিত্তিক পরীক্ষা, বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান, স্মার্ট ভুল ব্যাংক ও রি-টেস্ট, এক্সক্লুসিভ গাইডলাইন"
 };
 
 window.siteCourses = [
     {
-        name: "Textile Engineering Admission Full Course",
+        name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
         fee: "100",
         banner: "",
         features: [
@@ -1030,7 +1030,7 @@ function navigateBack() {
             window.activePaymentCourse = course;
 
             const fee = course ? (course.fee || (window.siteSettings && window.siteSettings.course_fee) || '100') : ((window.siteSettings && window.siteSettings.course_fee) || '100');
-            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'Textile Engineering Admission Full Course');
+            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স');
             const bFee = toBanglaDigits(fee);
 
             // Update modal title (ফি শুধু শিরোনামে থাকবে)
