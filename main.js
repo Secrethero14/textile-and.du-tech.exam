@@ -373,7 +373,20 @@ if (document.readyState === 'loading') {
             }
         }
 
-        function navigateBack() {
+        
+function goToHome(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (window.location.hash) {
+        window.location.hash = '';
+    } else {
+        currentMaster = "";
+        currentCategory = "";
+        if (typeof renderView === 'function') renderView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function navigateBack() {
             if (currentCategory && currentMaster) {
                 // সাব-ক্যাটাগরি থেকে মাস্টার ক্যাটাগরিতে ফিরবে
                 window.location.hash = encodeURIComponent(currentMaster);
@@ -1029,6 +1042,9 @@ if (document.readyState === 'loading') {
 // 🌐 হাবিবস কেয়ার ফেসবুক পেজে রিডাইরেক্ট হ্যান্ডলার 🌐
 document.addEventListener('click', function(e) {
     if (e.target.closest('button, input, textarea, select, .btn-login, .btn-pay-wa, .btn-copy-action, .btn-start')) return;
+
+    // হেডার ও হোম লিংকে ক্লিক করলে ফেসবুক ওপেন হবে না (হোমপেজে যাবে)
+    if (e.target.closest('.top-nav, .home-link, .nav-brand-logo, .nav-brand-text')) return;
 
     const link = e.target.closest('a');
     if (link && link.href) return;

@@ -103,9 +103,10 @@ html { scroll-behavior: smooth; }
 
         .home-link { 
             text-decoration: none; display: flex; align-items: center; gap: 11px; min-width: 0;
-            cursor: pointer; transition: opacity 0.2s ease;
+            cursor: pointer; transition: opacity 0.2s ease; color: inherit;
         }
         .home-link:hover { opacity: 0.92; }
+        .home-link:hover .nav-brand-title { color: var(--primary); }
         .nav-brand-logo {
             width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
             background: #ffffff; border: 1.5px solid #edf2f7;
