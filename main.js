@@ -453,6 +453,22 @@ if (document.readyState === 'loading') {
             return (item['Link'] || item['LInk'] || item['link'] || '').trim();
         }
 
+        // 🔴 শিটের যেকোনো ফরম্যাটের কলাম ভ্যালু পাওয়ার হেল্পার (স্পেস, ক্যাপিটালাইজেশন মুক্ত) 🔴
+        function getItemVal(item, keys) {
+            if (!item) return '';
+            for (let k of Object.keys(item)) {
+                const norm = k.trim().toLowerCase();
+                for (let target of keys) {
+                    if (norm === target.toLowerCase()) {
+                        if (item[k] !== undefined && item[k] !== null && String(item[k]).trim() !== '') {
+                            return String(item[k]).trim();
+                        }
+                    }
+                }
+            }
+            return '';
+        }
+
         // 🔴 ফোল্ডার নেভিগেশন ও History কন্ট্রোল 🔴
         function openMaster(mCat) {
             currentMaster = mCat;
@@ -1083,13 +1099,14 @@ function navigateBack() {
                     
                     // 🕒 রুটিন অনুযায়ী শিডিউল্ড কি না যাচাই (সবার জন্য নির্ভুল তারিখ ও সময় পার্সিং)
                     let isScheduled = false;
-                    if (item['Start Time'] && String(item['Start Time']).trim() !== '') {
-                        const schedD = parseExamScheduleDate(String(item['Start Time']).trim());
+                    const startTimeVal = getItemVal(item, ['start time', 'starttime', 'start_time', 'start']);
+                    if (startTimeVal) {
+                        const schedD = parseExamScheduleDate(startTimeVal);
                         if (schedD && schedD > new Date()) {
                             isScheduled = true;
                         }
                     }
-                    const statusStr = (item['Status'] || item['status'] || '').toLowerCase().trim();
+                    const statusStr = getItemVal(item, ['status', 'exam_status', 'state', 'config']).toLowerCase();
                     if (statusStr === 'upcoming' || statusStr === 'scheduled') {
                         isScheduled = true;
                     } else if (statusStr === 'live' || statusStr === 'unlocked' || statusStr === 'active') {
@@ -1431,8 +1448,9 @@ function navigateBack() {
         function showScheduledExamModal(item) {
             const examName = item['Exam Name'] || 'পরীক্ষা';
             let timeNotice = 'রুটিনের নির্ধারিত সময়ে এই পরীক্ষাটি স্বয়ংক্রিয়ভাবে লাইভ হবে।';
-            if (item['Start Time'] && String(item['Start Time']).trim() !== '') {
-                const d = parseExamScheduleDate(String(item['Start Time']).trim());
+            const startTimeVal = getItemVal(item, ['start time', 'starttime', 'start_time', 'start']);
+            if (startTimeVal) {
+                const d = parseExamScheduleDate(startTimeVal);
                 if (d && !isNaN(d.getTime())) {
                     const timeStr = d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
                     timeNotice = `📅 নির্ধারিত লাইভ সময়: <b style="color:#0369a1;">${timeStr}</b>`;
