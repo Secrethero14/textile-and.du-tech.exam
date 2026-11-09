@@ -150,6 +150,8 @@
                 <button class="btn btn-load" id="loadBtn" onclick="loadResults()"><i class="fas fa-search"></i> লোড ডাটা</button>
                 <button class="btn btn-pdf" id="pdfBtn" onclick="printMeritPDF()" disabled><i class="fas fa-file-pdf"></i> মেধা তালিকা PDF</button>
                 <button class="btn btn-export" id="exportBtn" onclick="exportTableToCSV('exam_report.csv')" disabled><i class="fas fa-file-excel"></i> CSV ডাউনলোড</button>
+                <button class="btn" id="printQuestionBtn" onclick="generateExamPrintDoc('questions')" style="background:#0984e3; color:white;" title="পরীক্ষার ফ্রেশ প্রশ্নপত্র প্রিন্ট বা সেভ করুন"><i class="fas fa-file-alt"></i> প্রশ্নপত্র PDF</button>
+                <button class="btn" id="printSolveBtn" onclick="generateExamPrintDoc('solve')" style="background:#00b894; color:white;" title="সঠিক উত্তর ও ব্যাখ্যা সহ সলভ শিট প্রিন্ট করুন"><i class="fas fa-check-double"></i> সলভ শিট PDF</button>
             </div>
         </div>
 
@@ -498,10 +500,294 @@
         }
 
         // --- LOAD EXAM LIST FOR DROPDOWN ---
+                // ==============================================
+        // 📄 1-CLICK QUESTION PAPER & SOLVE SHEET GENERATOR (2-COLUMN A4 WITH KATEX)
+        // ==============================================
+        function toBanglaDigits(num) {
+            if (num === undefined || num === null) return '';
+            const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return String(num).replace(/[0-9]/g, d => bn[d]);
+        }
+
+        function normalizeMCQAns(ans) {
+            if (!ans) return null;
+            let c = String(ans).toUpperCase().replace(/[\-\.\)\( \[\]]/g, '').replace(/OPTION/g, '').replace(/অপশন/g, '').replace(/উত্তর/g, '').trim();
+            let firstChar = c.charAt(0);
+            const m = { '1':'A', '2':'B', '3':'C', '4':'D', '১':'A', '২':'B', '৩':'C', '৪':'D', 'ক':'A', 'খ':'B', 'গ':'C', 'ঘ':'D' };
+            return m[firstChar] || firstChar;
+        }
+
+        function applyQuestionRange(questions, rangeStr) {
+            if (!rangeStr || typeof rangeStr !== 'string' || !rangeStr.trim()) {
+                return questions;
+            }
+            const cleanRange = rangeStr.trim();
+            if (cleanRange.includes('-')) {
+                const parts = cleanRange.split('-');
+                const start = parseInt(parts[0].trim(), 10);
+                const end = parseInt(parts[1].trim(), 10);
+                if (!isNaN(start) && !isNaN(end) && start > 0 && end >= start) {
+                    if (questions.length > 0 && questions[0].sheetRow !== undefined) {
+                        return questions.filter(q => q.sheetRow >= start && q.sheetRow <= end);
+                    }
+                    return questions.slice(start - 1, end);
+                }
+            }
+            const singleNum = parseInt(cleanRange, 10);
+            if (!isNaN(singleNum) && singleNum > 0) {
+                return questions.slice(0, singleNum);
+            }
+            return questions;
+        }
+
+        async function generateExamPrintDoc(mode) {
+            const dropdown = document.getElementById('examDropdown');
+            const examIdInput = document.getElementById('examIdInput');
+            const tabId = (examIdInput && examIdInput.value ? examIdInput.value.trim() : (dropdown ? dropdown.value.trim() : ''));
+
+            if (!tabId) {
+                return Swal.fire('পরীক্ষা নির্বাচন করুন', 'দয়া করে ড্রপডাউন থেকে একটি পরীক্ষা বেছে নিন অথবা Tab ID লিখুন!', 'warning');
+            }
+
+            const isSolve = mode === 'solve';
+            const actionLabel = isSolve ? 'সলভ শিট' : 'প্রশ্নপত্র';
+
+            Swal.fire({
+                title: actionLabel + ' প্রস্তুত হচ্ছে...',
+                html: 'প্রশ্ন ও ব্যাখ্যা প্রসেস করা হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                if (!window.allExamsCache || window.allExamsCache.length === 0) {
+                    const resMeta = await fetch("https://textile-du-tech-exam.vercel.app/public/questions/exam-index.json?v=" + new Date().getTime());
+                    window.allExamsCache = await resMeta.json();
+                }
+
+                const meta = (window.allExamsCache || []).find(e => (e['Tab ID'] || '').toLowerCase().trim() === tabId.toLowerCase().trim()) || {};
+                const examName = meta['Exam Name'] || (dropdown.selectedIndex > 0 ? dropdown.options[dropdown.selectedIndex].text.split(' [')[0] : tabId);
+                const rangeStr = (meta['Range'] || meta['range'] || meta['রেঞ্জ'] || meta['Question Range'] || '').trim();
+
+                let questions = null;
+                const urlsToTry = [
+                    './public/questions/' + tabId + '.json?v=' + new Date().getTime(),
+                    'public/questions/' + tabId + '.json?v=' + new Date().getTime(),
+                    'https://textile-du-tech-exam.vercel.app/public/questions/' + tabId + '.json?v=' + new Date().getTime()
+                ];
+
+                for (const u of urlsToTry) {
+                    try {
+                        const r = await fetch(u);
+                        if (r.ok) {
+                            questions = await r.json();
+                            if (Array.isArray(questions) && questions.length > 0) break;
+                        }
+                    } catch(e) {}
+                }
+
+                if (!questions || !Array.isArray(questions) || questions.length === 0) {
+                    Swal.close();
+                    return Swal.fire('প্রশ্ন পাওয়া যায়নি', '"' + tabId + '" এর জন্য কোনো প্রশ্নের ডাটা পাওয়া যায়নি। ফোল্ডারে ' + tabId + '.json ফাইলটি রয়েছে কিনা নিশ্চিত করুন।', 'error');
+                }
+
+                const filteredQuestions = applyQuestionRange(questions, rangeStr);
+
+                const printHtml = buildPrintDocHtml(filteredQuestions, {
+                    name: examName,
+                    time: meta['Total Time'],
+                    marks: meta['Total Marks'],
+                    neg: meta['Negative Mark'],
+                    category: meta['Category'] || meta['Master Category'] || '',
+                    tabId: tabId
+                }, mode);
+
+                Swal.close();
+
+                const printWin = window.open('', '_blank');
+                if (!printWin) {
+                    return Swal.fire('পপআপ ব্লকড!', 'দয়া করে ব্রাউজারের পপআপ পারমিশন এলাও (Allow) করুন।', 'warning');
+                }
+                printWin.document.open();
+                printWin.document.write(printHtml);
+                printWin.document.close();
+            } catch (err) {
+                console.error("Print doc error:", err);
+                Swal.close();
+                Swal.fire('Error', 'ডকুমেন্ট তৈরি করতে সমস্যা হয়েছে: ' + err.message, 'error');
+            }
+        }
+
+        function buildPrintDocHtml(questions, examMeta, mode) {
+            const isSolve = mode === 'solve';
+            const examName = examMeta.name || examMeta.tabId;
+            const totalQ = questions.length;
+            const totalTime = examMeta.time || Math.round(totalQ * 0.8);
+            const totalMarks = examMeta.marks || totalQ;
+            const negMark = examMeta.neg !== undefined && examMeta.neg !== '' ? examMeta.neg : 0.5;
+
+            let questionsHtml = '';
+            questions.forEach((q, idx) => {
+                const qNum = toBanglaDigits(idx + 1);
+                const qText = q['প্রশ্ন (LaTeX সহ)'] || q['question'] || '';
+                const optA = q['অপশন A'] || q['optA'] || '';
+                const optB = q['অপশন B'] || q['optB'] || '';
+                const optC = q['অপশন C'] || q['optC'] || '';
+                const optD = q['অপশন D'] || q['optD'] || '';
+                const rawAns = q['উত্তর'] || q['ans'] || '';
+                const rightAns = normalizeMCQAns(rawAns);
+                const exp = q['বিস্তারিত ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা'] || '';
+                const shortcut = q['Shortcut'] || '';
+                const note = q['বিশেষ নোট'] || '';
+                const sub = q['Subject'] || '';
+                const ch = q['অধ্যায়'] || q['Chapter'] || '';
+
+                const isA = isSolve && rightAns === 'A';
+                const isB = isSolve && rightAns === 'B';
+                const isC = isSolve && rightAns === 'C';
+                const isD = isSolve && rightAns === 'D';
+
+                questionsHtml += '<div class="q-card">' +
+                    '<div class="q-header">' +
+                        '<span class="q-num">' + qNum + '.</span> ' +
+                        '<span class="q-text">' + qText + '</span> ' +
+                        ((sub || ch) ? '<span class="q-tag">' + (sub ? sub : '') + (sub && ch ? ' • ' : '') + (ch ? ch : '') + '</span>' : '') +
+                    '</div>' +
+                    '<div class="options-grid">' +
+                        '<div class="opt-item ' + (isA ? 'opt-correct' : '') + '">' +
+                            '<span class="opt-label">(ক)</span> <span class="opt-text">' + optA + '</span> ' + (isA ? '<span class="check-icon">✓</span>' : '') +
+                        '</div>' +
+                        '<div class="opt-item ' + (isB ? 'opt-correct' : '') + '">' +
+                            '<span class="opt-label">(খ)</span> <span class="opt-text">' + optB + '</span> ' + (isB ? '<span class="check-icon">✓</span>' : '') +
+                        '</div>' +
+                        '<div class="opt-item ' + (isC ? 'opt-correct' : '') + '">' +
+                            '<span class="opt-label">(গ)</span> <span class="opt-text">' + optC + '</span> ' + (isC ? '<span class="check-icon">✓</span>' : '') +
+                        '</div>' +
+                        '<div class="opt-item ' + (isD ? 'opt-correct' : '') + '">' +
+                            '<span class="opt-label">(ঘ)</span> <span class="opt-text">' + optD + '</span> ' + (isD ? '<span class="check-icon">✓</span>' : '') +
+                        '</div>' +
+                    '</div>' +
+                    (isSolve && (exp || shortcut || note) ? (
+                        '<div class="explanation-box">' +
+                            (exp ? '<div class="exp-row"><b class="exp-badge">💡 ব্যাখ্যা:</b> ' + exp + '</div>' : '') +
+                            (shortcut ? '<div class="exp-row"><b class="exp-badge shortcut">⚡ শর্টকাট:</b> ' + shortcut + '</div>' : '') +
+                            (note ? '<div class="exp-row"><b class="exp-badge note">📌 নোট:</b> ' + note + '</div>' : '') +
+                        '</div>'
+                    ) : '') +
+                '</div>';
+            });
+
+            return '<!DOCTYPE html>' +
+'\x3Chtml lang="bn">' +
+'\x3Chead>' +
+    '\x3Cmeta charset="UTF-8">' +
+    '\x3Ctitle>' + (isSolve ? 'সলভ শিট' : 'প্রশ্নপত্র') + ' - ' + examName + '\x3C/title>' +
+    '\x3Cmeta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    '\x3Clink rel="preconnect" href="https://fonts.googleapis.com">' +
+    '\x3Clink rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+    '\x3Clink href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">' +
+    '\x3Clink rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">' +
+    '\x3Cscript defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">\x3C/script>' +
+    '\x3Cscript defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">\x3C/script>' +
+    '\x3Cstyle>' +
+        '* { box-sizing: border-box; }' +
+        'body {' +
+            'font-family: "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;' +
+            'margin: 0; padding: 15px; color: #1a1a1a; background: #f8fafc; line-height: 1.45;' +
+            '-webkit-print-color-adjust: exact; print-color-adjust: exact;' +
+        '}' +
+        '.paper-wrapper { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 24px 28px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }' +
+        '.exam-header { text-align: center; border-bottom: 2px solid #2d3436; padding-bottom: 12px; margin-bottom: 14px; }' +
+        '.inst-title { font-size: 20px; font-weight: 700; color: #1e3a8a; margin: 0 0 4px 0; letter-spacing: 0.5px; }' +
+        '.sub-inst-title { font-size: 13px; color: #4b5563; margin: 0 0 8px 0; }' +
+        '.exam-title-badge { display: inline-block; background: ' + (isSolve ? '#10b981' : '#0984e3') + '; color: #ffffff; font-size: 15px; font-weight: 600; padding: 3px 14px; border-radius: 20px; margin-bottom: 8px; }' +
+        '.meta-bar { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; font-size: 12.5px; font-weight: 600; color: #374151; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; }' +
+        '.instructions-box { font-size: 11.5px; color: #475569; margin-top: 8px; font-style: italic; }' +
+        '.columns-container { column-count: 2; column-gap: 24px; column-rule: 1px dashed #cbd5e1; margin-top: 14px; }' +
+        '.q-card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dotted #e2e8f0; font-size: 13px; }' +
+        '.q-header { margin-bottom: 6px; display: block; }' +
+        '.q-num { font-weight: 700; color: #1e3a8a; margin-right: 4px; font-size: 13.5px; }' +
+        '.q-text { font-weight: 500; color: #0f172a; }' +
+        '.q-tag { display: inline-block; font-size: 10px; color: #64748b; background: #f8fafc; border: 0.5px solid #e2e8f0; padding: 1px 5px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }' +
+        '.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; margin-top: 4px; font-size: 12px; }' +
+        '.opt-item { padding: 3px 6px; border-radius: 4px; color: #334155; display: flex; align-items: baseline; gap: 4px; background: #fafafa; border: 0.5px solid #f1f5f9; }' +
+        '.opt-label { font-weight: 600; color: #64748b; flex-shrink: 0; }' +
+        '.opt-text { flex-grow: 1; word-break: break-word; }' +
+        '.opt-correct { background: #dcfce7 !important; border-color: #86efac !important; color: #15803d !important; font-weight: 600 !important; }' +
+        '.check-icon { font-weight: bold; color: #16a34a; margin-left: 4px; font-size: 11px; }' +
+        '.explanation-box { margin-top: 6px; background: #f8fafc; border-left: 3px solid #10b981; padding: 5px 8px; border-radius: 4px; font-size: 11.5px; color: #334155; line-height: 1.4; }' +
+        '.exp-row { margin-bottom: 3px; }' +
+        '.exp-row:last-child { margin-bottom: 0; }' +
+        '.exp-badge { color: #059669; font-size: 11.5px; }' +
+        '.exp-badge.shortcut { color: #d97706; }' +
+        '.exp-badge.note { color: #7c3aed; }' +
+        '.floating-action-bar { position: fixed; bottom: 25px; right: 25px; display: flex; gap: 10px; z-index: 99999; background: rgba(255, 255, 255, 0.95); padding: 8px 12px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }' +
+        '.f-btn { border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }' +
+        '.f-btn-print { background: #1e3a8a; color: #ffffff; }' +
+        '.f-btn-print:hover { background: #1e40af; }' +
+        '.f-btn-close { background: #e2e8f0; color: #334155; }' +
+        '.f-btn-close:hover { background: #cbd5e1; }' +
+        '@media print {' +
+            'body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; }' +
+            '.paper-wrapper { max-width: 100% !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; }' +
+            '.floating-action-bar { display: none !important; }' +
+            '@page { size: A4 portrait; margin: 10mm 12mm 12mm 12mm; }' +
+        '}' +
+    '\x3C/style>' +
+'\x3C/head>' +
+'\x3Cbody>' +
+    '\x3Cdiv class="floating-action-bar">' +
+        '\x3Cbutton class="f-btn f-btn-print" onclick="window.print()">🖨️ প্রিন্ট / Save as PDF\x3C/button>' +
+        '\x3Cbutton class="f-btn f-btn-close" onclick="window.close()">✖️ বন্ধ করুন\x3C/button>' +
+    '\x3C/div>' +
+    '\x3Cdiv class="paper-wrapper">' +
+        '\x3Cdiv class="exam-header">' +
+            '\x3Ch1 class="inst-title">HABIB\'S CARE EXAM PORTAL\x3C/h1>' +
+            '\x3Cp class="sub-inst-title">টেক্সটাইল ইঞ্জিনিয়ারিং ও ঢাবি প্রযুক্তি ইউনিট ভর্তি প্রস্তুতি\x3C/p>' +
+            '\x3Cdiv class="exam-title-badge">' + (isSolve ? '📝 সলভ শিট ও পূর্ণাঙ্গ ব্যাখ্যা' : '📄 প্রশ্নপত্র') + ' : ' + examName + '\x3C/div>' +
+            '\x3Cdiv class="meta-bar">' +
+                '\x3Cspan>মোট প্রশ্ন: ' + toBanglaDigits(totalQ) + ' টি\x3C/span>' +
+                '\x3Cspan>সময়: ' + toBanglaDigits(totalTime) + ' মিনিট\x3C/span>' +
+                '\x3Cspan>পূর্ণমান: ' + toBanglaDigits(totalMarks) + '\x3C/span>' +
+                '\x3Cspan>নেগেটিভ মার্ক: ' + toBanglaDigits(negMark) + '\x3C/span>' +
+            '\x3C/div>' +
+            (!isSolve ? '\x3Cdiv class="instructions-box">* নির্দেশাবলী: প্রতিটি প্রশ্নের সঠিক উত্তরটি বৃত্ত ভরাট বা চিহ্নিত করুন। প্রতিটি ভুল উত্তরের জন্য ' + toBanglaDigits(negMark) + ' নম্বর কাটা যাবে।\x3C/div>' : '') +
+        '\x3C/div>' +
+        '\x3Cdiv class="columns-container">' +
+            questionsHtml +
+        '\x3C/div>' +
+    '\x3C/div>' +
+    '\x3Cscript>' +
+        'window.addEventListener("DOMContentLoaded", function() {' +
+            'function renderKaTeX() {' +
+                'if (typeof renderMathInElement === "function") {' +
+                    'renderMathInElement(document.body, {' +
+                        'delimiters: [' +
+                            '{left: "$", right: "$", display: true},' +
+                            '{left: "\\\[", right: "\\\]", display: true},' +
+                            '{left: "$", right: "$", display: false},' +
+                            '{left: "\\\\(", right: "\\\\)", display: false}' +
+                        '],' +
+                        'throwOnError: false' +
+                    '});' +
+                '} else {' +
+                    'setTimeout(renderKaTeX, 100);' +
+                '}' +
+            '}' +
+            'renderKaTeX();' +
+        '});' +
+    '\x3C/script>' +
+'\x3C/body>' +
+'\x3C/html>';
+        }
+
+let allExamsCache = [];
         async function loadExamList() {
             try {
                 const res = await fetch("https://textile-du-tech-exam.vercel.app/public/questions/exam-index.json?v=" + new Date().getTime());
                 const exams = await res.json();
+                allExamsCache = exams;
+                window.allExamsCache = exams;
                 const select = document.getElementById('examDropdown');
                 
                 let html = '<option value="">-- পরীক্ষার তালিকা থেকে বেছে নিন (Auto-select) --</option>';
