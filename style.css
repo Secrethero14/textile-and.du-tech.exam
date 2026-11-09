@@ -1746,6 +1746,14 @@ body, button, input, select, textarea {
 .success-banner[style*="display:flex"] {
     display: flex !important;
 }
+.pending-banner[style*="display: none"],
+.pending-banner[style*="display:none"] {
+    display: none !important;
+}
+.pending-banner[style*="display: flex"],
+.pending-banner[style*="display:flex"] {
+    display: flex !important;
+}
 
 
 /* 🔴 60-120 FPS GPU-ACCELERATED GENTLE VIEW TRANSITION ENGINE 🔴 */
@@ -2622,6 +2630,43 @@ body, button, input, select, textarea {
 }
 .btn-success-join:hover {
     background: #047857 !important;
+}
+
+/* 6.1 পেন্ডিং ব্যানার */
+.pending-banner {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #92400e !important;
+    padding: 11px 16px !important;
+    border-radius: 6px !important;
+    margin-top: 16px !important;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px !important;
+    box-shadow: none !important;
+}
+.pending-banner-text {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.5;
+}
+.btn-pending-contact {
+    background: #d97706 !important;
+    color: #ffffff !important;
+    padding: 6px 13px !important;
+    border-radius: 5px !important;
+    text-decoration: none !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-pending-contact:hover {
+    background: #b45309 !important;
 }
 
 /* ==========================================================

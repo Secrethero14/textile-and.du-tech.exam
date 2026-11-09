@@ -334,6 +334,12 @@ function applyDynamicSiteData() {
 
     const footerTg = document.getElementById('footerTgLink');
     if (footerTg && s.telegram_link) footerTg.href = s.telegram_link;
+
+    const successTg = document.getElementById('successBannerTgLink');
+    if (successTg && s.telegram_link) successTg.href = s.telegram_link;
+
+    const pendingWa = document.getElementById('pendingBannerWaLink');
+    if (pendingWa && waUrl) pendingWa.href = waUrl;
 }
 
 // Auto-start dynamic settings & courses loader immediately
@@ -674,22 +680,39 @@ function navigateBack() {
 
         function checkEnrollment(email) {
             try {
+                const normEmail = (email || '').toLowerCase().trim();
                 // 🔴 রিয়েল-টাইম লিসেনার: অ্যাডমিন এক্সেস দিলে ১ সেকেন্ডের মধ্যে লাইভ আনলক হবে
                 db.collection("payment_requests")
-                    .where("email", "==", email)
-                    .where("status", "==", "approved")
+                    .where("email", "==", normEmail)
                     .onSnapshot((snap) => {
                         const promoBanner = document.getElementById('promoBanner');
                         const successBanner = document.getElementById('successBanner');
+                        const pendingBanner = document.getElementById('pendingBanner');
                         
-                        if (!snap.empty) {
+                        let isApproved = false;
+                        let isPending = false;
+
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            if (d.status === 'approved') isApproved = true;
+                            else if (d.status === 'pending') isPending = true;
+                        });
+
+                        if (isApproved) {
                             userEnrollment = 'TextileFull';
                             if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
+                            if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
                             if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
+                        } else if (isPending) {
+                            userEnrollment = null;
+                            if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
+                            if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                            if (pendingBanner) pendingBanner.style.setProperty('display', 'flex', 'important');
                         } else {
                             userEnrollment = null;
                             if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
                             if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                            if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
                         }
 
                         // পরীক্ষাগুলো অলরেডি লোড করা থাকলে সাথে সাথে রি-রেন্ডার করে আনলক করা

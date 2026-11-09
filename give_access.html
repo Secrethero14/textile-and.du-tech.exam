@@ -2,46 +2,196 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>কোর্সে ভর্তি ফর্ম</title>
+    <title>কোর্সে ভর্তি ফর্ম — Habib's Care</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
-        body { font-family: 'SolaimanLipi', 'Solaiman Lipi', 'Josefin Sans', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        .form-card h2 { color: #6c5ce7; text-align: center; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #2d3436; font-size: 14px; }
-        .input-group input, .input-group select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; outline: none; transition: 0.3s; }
-        .input-group input:focus, .input-group select:focus { border-color: #6c5ce7; }
-        .row { display: flex; gap: 15px; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'SolaimanLipi', 'Solaiman Lipi', 'Noto Sans Bengali', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .form-card {
+            position: relative;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 🔴 ক্রস / ক্লোজ বাটন */
+        .close-card-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f1f2f6;
+            border: 1px solid #e4e7eb;
+            color: #57606f;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .close-card-btn:hover {
+            background: #ff4757;
+            color: #ffffff;
+            border-color: #ff4757;
+            transform: scale(1.08);
+        }
+        .form-card h2 {
+            color: #059669;
+            text-align: center;
+            margin-top: 5px;
+            margin-bottom: 8px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .form-sub {
+            text-align: center;
+            color: #64748b;
+            font-size: 13.5px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .input-group { margin-bottom: 14px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3436;
+            font-size: 13.5px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14.5px;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+            background: #ffffff;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+        }
+        .row { display: flex; gap: 12px; }
         .row .input-group { flex: 1; }
-        .btn-submit { background: #6c5ce7; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit:hover { background: #5a4bcf; }
+        .btn-submit {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 13px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            margin-top: 6px;
+        }
+        .btn-submit:hover { background: #047857; }
         .optional-text { color: #888; font-size: 12px; font-weight: normal; }
         
-        /* Success Section */
+        .back-link-box {
+            text-align: center;
+            margin-top: 14px;
+        }
+        .back-link-box a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+        .back-link-box a:hover {
+            color: #059669;
+        }
+
+        /* Success / Pending Section */
         #successSection { display: none; text-align: center; }
-        .success-icon { font-size: 60px; color: #00b894; margin-bottom: 15px; }
-        .contact-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; text-decoration: none; color: white; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
+        .status-badge-icon {
+            font-size: 50px;
+            color: #d97706;
+            margin-bottom: 12px;
+        }
+        .contact-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 14.5px;
+            margin-bottom: 10px;
+            transition: 0.2s;
+            font-family: inherit;
+            border: none;
+            width: 100%;
+        }
         .btn-wa { background: #25D366; } .btn-wa:hover { background: #1ebe5d; }
         .btn-tg { background: #0088cc; } .btn-tg:hover { background: #007bb5; }
+        .btn-copy { background: #475569; } .btn-copy:hover { background: #334155; }
+        .btn-home { background: #059669; } .btn-home:hover { background: #047857; }
+
+        .notice-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            text-align: left;
+            margin-bottom: 18px;
+            font-size: 13.5px;
+            color: #78350f;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
 
     <div class="form-card" id="formContainer">
-        <h2>📝 পেমেন্ট ও তথ্য সাবমিট</h2>
-        <p style="text-align:center; color:#666; font-size:14px; margin-bottom:20px;">নিচের তথ্যগুলো দিয়ে আপনার কোর্স আনলক করুন</p>
+        <!-- 🔴 ক্রস বাটন: ক্লিক করলে হোমে ফেরত যাবে -->
+        <button type="button" class="close-card-btn" onclick="goBackOrHome()" title="বন্ধ করুন (হোমে ফিরে যান)">&times;</button>
+
+        <h2>📝 পেমেন্ট ও কোর্সে ভর্তি</h2>
+        <p class="form-sub">টাকা পাঠানোর পর নিচের তথ্যগুলো সাবমিট করুন। অ্যাডমিন চেক করে অনুমোদন দিলেই কোর্স আনলক হবে।</p>
         
         <div class="input-group">
-            <label>আপনার নাম *</label>
-            <input type="text" id="sName" placeholder="সম্পূর্ণ নাম লিখুন" required>
+            <label>আপনার সম্পূর্ণ নাম *</label>
+            <input type="text" id="sName" placeholder="আপনার নাম লিখুন" required>
         </div>
         
         <div class="input-group">
@@ -56,7 +206,7 @@
             </div>
             <div class="input-group">
                 <label>টাকা পাঠানোর লাস্ট ৩ ডিজিট *</label>
-                <input type="text" id="sLast3" placeholder="যেমন: 583" maxlength="3" required>
+                <input type="text" id="sLast3" placeholder="যেমন: 583" maxlength="4" required>
             </div>
         </div>
 
@@ -73,9 +223,9 @@
                 <label>HSC ব্যাচ *</label>
                 <select id="sBatch" required>
                     <option value="">নির্বাচন করুন</option>
-                    <option value="HSC 25">HSC 25 (এইচএসসি ২৫)</option>
+                    <option value="HSC 25">HSC 25 (১ম বার)</option>
                     <option value="HSC 26">HSC 26 (এইচএসসি ২৬)</option>
-                    <option value="HSC 24">HSC 24 (এইচএসসি ২৪)</option>
+                    <option value="HSC 24">HSC 24 (২য় বার)</option>
                     <option value="Other">অন্যান্য (Other)</option>
                 </select>
             </div>
@@ -98,34 +248,73 @@
         </div>
 
         <button class="btn-submit" onclick="submitForm()">সাবমিট করুন</button>
+        
+        <div class="back-link-box">
+            <a href="javascript:void(0)" onclick="goBackOrHome()"><i class="fas fa-arrow-left"></i> মূল ওয়েবসাইটে ফিরে যান</a>
+        </div>
     </div>
 
+    <!-- 🌟 সাবমিট সফল (পেন্ডিং স্ট্যাটাস) সেকশন 🌟 -->
     <div class="form-card" id="successSection">
-        <i class="fas fa-check-circle success-icon"></i>
-        <h2 style="color: #00b894; border:none;">সাবমিট সফল হয়েছে!</h2>
-        <p style="color: #2d3436; font-size: 16px; margin-bottom: 25px;">
-            আপনার অ্যাকাউন্টে এক্সাম আনলক হয়ে গেছে।<br><br>
-            <b>প্রাইভেট গ্রুপে অ্যাড হতে আপনার নাম জানিয়ে নিচের যেকোনো লিংকে মেসেজ দিন:</b>
-        </p>
+        <button type="button" class="close-card-btn" onclick="goBackOrHome()" title="বন্ধ করুন (হোমে ফিরে যান)">&times;</button>
         
-        <a id="giveAccessWaLink" href="https://wa.me/8801925251621" target="_blank" class="contact-btn btn-wa">
+        <i class="fas fa-clock status-badge-icon"></i>
+        <h2 style="color: #d97706; margin-bottom: 6px;">তথ্য সফলভাবে জমা হয়েছে!</h2>
+        <p style="color: #64748b; font-size: 13.5px; margin-top: 0; margin-bottom: 16px;">আপনার কোর্সে ভর্তির আবেদনটি পেন্ডিং অবস্থায় রয়েছে।</p>
+        
+        <div class="notice-box">
+            <div style="font-weight: 700; margin-bottom: 4px; color: #92400e;"><i class="fas fa-info-circle"></i> গুরুত্বপূর্ণ নির্দেশনা:</div>
+            অ্যাডমিন আপনার পেমেন্ট তথ্য মিলিয়ে দেখার সাথে সাথেই <b>আপনার কোর্স স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে</b>। দ্রুত আনলক ও সিক্রেট প্রাইভেট গ্রুপে যুক্ত হতে নিচের বাটনে ক্লিক করে অ্যাডমিনকে ভেরিফিকেশন মেসেজ দিন:
+        </div>
+        
+        <a id="giveAccessWaLink" href="https://wa.me/8801873275283" target="_blank" rel="noopener noreferrer" class="contact-btn btn-wa">
             <i class="fab fa-whatsapp" style="font-size: 20px;"></i> WhatsApp -এ মেসেজ দিন
         </a>
-        <a id="giveAccessTgLink" href="https://t.me/Admissionhelper007" target="_blank" class="contact-btn btn-tg">
+        <a id="giveAccessTgLink" href="https://t.me/careforcandidates" target="_blank" rel="noopener noreferrer" class="contact-btn btn-tg">
             <i class="fab fa-telegram-plane" style="font-size: 20px;"></i> Telegram -এ মেসেজ দিন
         </a>
+        <button type="button" class="contact-btn btn-copy" onclick="copyVerificationMessage()">
+            <i class="fas fa-copy"></i> মেসেজের তথ্য কপি করুন
+        </button>
+        <button type="button" class="contact-btn btn-home" onclick="goBackOrHome()">
+            <i class="fas fa-home"></i> হোমপেজে ফিরে যান
+        </button>
     </div>
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681"
+            apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0",
+            authDomain: "hstu---cou--exam-2026.firebaseapp.com",
+            projectId: "hstu---cou--exam-2026",
+            storageBucket: "hstu---cou--exam-2026.firebasestorage.app",
+            messagingSenderId: "1058124789396",
+            appId: "1:1058124789396:web:fc772af33deb7c18c9e681"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // 🌟 ডাইনামিক সেটিংস (WhatsApp ও Telegram লিংক অটো-আপডেট) 🌟
-        (async function() {
+        let generatedMessageText = "";
+        let siteSettings = {
+            whatsapp_number: "01873275283",
+            telegram_link: "https://t.me/careforcandidates",
+            telegram_helper: "https://t.me/careforcandidates"
+        };
+
+        // 🔴 ক্রস / ব্যাক বাটন ফাংশন
+        function goBackOrHome() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html";
+            }
+        }
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') goBackOrHome();
+        });
+
+        // 🌟 ডাইনামিক সেটিংস (WhatsApp ও Telegram লিংক অটো-লোড) 🌟
+        (async function loadSettings() {
             try {
                 let res = await fetch(`public/questions/settings.json?t=${Date.now()}`).catch(() => null);
                 if (!res || !res.ok) {
@@ -133,31 +322,19 @@
                 }
                 if (res && res.ok) {
                     const raw = await res.json();
-                    const settings = {};
                     if (Array.isArray(raw)) {
                         raw.forEach(r => {
                             const k = (r.Key || r.key || '').trim().toLowerCase();
                             const v = (r.Value || r.value || '').trim();
-                            if (k && v) settings[k] = v;
+                            if (k && v) siteSettings[k] = v;
                         });
-                    }
-                    const wa = settings.whatsapp_number || settings.rocket_number || settings.bkash_number || '';
-                    const tg = settings.telegram_helper || settings.telegram_link || '';
-                    if (wa) {
-                        const clean = wa.replace(/[^0-9]/g, '');
-                        const waEl = document.getElementById('giveAccessWaLink');
-                        if (waEl) waEl.href = `https://wa.me/88${clean.startsWith('88') ? clean.substring(2) : clean}`;
-                    }
-                    if (tg) {
-                        const tgEl = document.getElementById('giveAccessTgLink');
-                        if (tgEl) tgEl.href = tg;
                     }
                 }
             } catch(e) {}
         })();
 
-        // লগইন করা থাকলে স্বয়ংক্রিয়ভাবে ইমেইল ও নাম পূরণ হবে
-        auth.onAuthStateChanged(user => {
+        // লগইন করা থাকলে স্বয়ংক্রিয়ভাবে ইমেইল ও নাম পূরণ হবে এবং পূর্বের স্ট্যাটাস চেক হবে
+        auth.onAuthStateChanged(async (user) => {
             if (user && user.email) {
                 const emailInp = document.getElementById('sEmail');
                 if (emailInp) {
@@ -171,42 +348,132 @@
                 if (nameInp && !nameInp.value && user.displayName) {
                     nameInp.value = user.displayName;
                 }
+
+                // অলরেডি অ্যাপ্রুভড বা পেন্ডিং রিকোয়েস্ট আছে কি না চেক
+                try {
+                    const snap = await db.collection("payment_requests")
+                        .where("email", "==", user.email.toLowerCase().trim())
+                        .get();
+                    if (!snap.empty) {
+                        let isApproved = false;
+                        snap.forEach(doc => {
+                            if (doc.data().status === 'approved') isApproved = true;
+                        });
+                        if (isApproved) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'কোর্স ইতিমধ্যে সক্রিয়!',
+                                text: 'আপনার এই ইমেইলে কোর্সটি ইতিমধ্যে আনলক করা রয়েছে। আপনি সকল পরীক্ষা দিতে পারবেন।',
+                                confirmButtonText: 'হোমপেজে যান'
+                            }).then(() => {
+                                window.location.href = 'index.html';
+                            });
+                        }
+                    }
+                } catch(e) { console.error(e); }
             }
         });
 
+        // 🌟 ফর্ম সাবমিট ফাংশন (🔒 স্ট্যাটাস ডিফল্টভাবে "pending" হবে) 🌟
         async function submitForm() {
+            const name = document.getElementById('sName').value.trim();
+            const email = document.getElementById('sEmail').value.trim().toLowerCase();
+            const phone = document.getElementById('sPhone').value.trim();
+            const last3 = document.getElementById('sLast3').value.trim();
+            const gender = document.getElementById('sGender').value;
+            const hscBatch = document.getElementById('sBatch').value;
+            const college = document.getElementById('sCollege').value.trim();
+            const weakSub = document.getElementById('sWeak').value.trim() || "N/A";
+            const strongSub = document.getElementById('sStrong').value.trim() || "N/A";
+
+            if (!name || !email || !phone || !last3 || !gender || !hscBatch || !college) {
+                return Swal.fire('ভুল!', 'দয়া করে স্টার (*) চিহ্নিত সব ঘর পূরণ করুন (HSC ব্যাচ সহ)।', 'warning');
+            }
+
+            Swal.fire({ title: 'অপেক্ষা করুন...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            // মেসেজ টেমপ্লেট তৈরি
+            generatedMessageText = `আসসালামু আলাইকুম ভাইয়া, আমি কোর্সের ফি পাঠিয়েছি এবং ওয়েবসাইটে ফর্ম পূরণ করেছি।
+নাম: ${name}
+ইমেইল: ${email}
+ফোন নম্বর: ${phone}
+টাকা পাঠানোর লাস্ট ডিজিট: ${last3}
+HSC ব্যাচ: ${hscBatch}
+কলেজ: ${college}
+
+দয়া করে আমার পেমেন্ট ভেরিফাই করে কোর্সের এক্সেস দিন এবং প্রাইভেট গ্রুপে যুক্ত করুন।`;
+
             const data = {
-                name: document.getElementById('sName').value.trim(),
-                email: document.getElementById('sEmail').value.trim().toLowerCase(),
-                phone: document.getElementById('sPhone').value.trim(),
-                last3: document.getElementById('sLast3').value.trim(),
-                gender: document.getElementById('sGender').value,
-                college: document.getElementById('sCollege').value.trim(),
-                hscBatch: document.getElementById('sBatch').value,
-                weakSub: document.getElementById('sWeak').value.trim() || "N/A",
-                strongSub: document.getElementById('sStrong').value.trim() || "N/A",
+                name: name,
+                email: email,
+                phone: phone,
+                last3: last3,
+                gender: gender,
+                college: college,
+                hscBatch: hscBatch,
+                weakSub: weakSub,
+                strongSub: strongSub,
                 package: "TextileFull", 
-                status: "approved", 
+                status: "pending", // 🔒 অ্যাডমিন অনুমোদনের জন্য পেন্ডিং থাকবে
                 method: "student_form",
                 session: "2026-27",
                 timestamp: new Date().toISOString()
             };
 
-            if (!data.name || !data.email || !data.phone || !data.last3 || !data.gender || !data.hscBatch || !data.college) {
-                return Swal.fire('ভুল!', 'দয়া করে স্টার (*) মার্ক করা সব ঘর পূরণ করুন (HSC ব্যাচ সহ)।', 'warning');
-            }
-
-            Swal.fire({ title: 'অপেক্ষা করুন...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
             try {
                 await db.collection("payment_requests").add(data);
                 Swal.close();
+
+                // মেসেজ সহ লিংক আপডেট
+                updateContactLinks(generatedMessageText);
+
                 document.getElementById('formContainer').style.display = 'none';
                 document.getElementById('successSection').style.display = 'block';
             } catch (error) {
                 console.error(error);
-                Swal.fire('সমস্যা!', 'ইন্টারনেট কানেকশন চেক করুন।', 'error');
+                Swal.fire('সমস্যা!', 'ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।', 'error');
             }
+        }
+
+        // WhatsApp ও Telegram লিংকে মেসেজ প্যারামিটার বসানো
+        function updateContactLinks(msg) {
+            const waRaw = siteSettings.whatsapp_number || siteSettings.rocket_number || siteSettings.bkash_number || '01873275283';
+            const cleanWa = waRaw.replace(/[^0-9]/g, '');
+            const waFinalNum = cleanWa.startsWith('88') ? cleanWa : `88${cleanWa}`;
+            
+            const waEl = document.getElementById('giveAccessWaLink');
+            if (waEl) {
+                waEl.href = `https://wa.me/${waFinalNum}?text=${encodeURIComponent(msg)}`;
+            }
+
+            const tgRaw = siteSettings.telegram_helper || siteSettings.telegram_link || 'https://t.me/careforcandidates';
+            let tgClean = tgRaw.trim();
+            let tgUsername = tgClean.replace(/^https?:\/\/t\.me\//i, '').replace(/^@/, '').split('/')[0].split('?')[0];
+
+            const tgEl = document.getElementById('giveAccessTgLink');
+            if (tgEl) {
+                if (tgUsername) {
+                    tgEl.href = `https://t.me/${tgUsername}?text=${encodeURIComponent(msg)}`;
+                } else {
+                    tgEl.href = tgClean;
+                }
+            }
+        }
+
+        function copyVerificationMessage() {
+            if (!generatedMessageText) return;
+            navigator.clipboard.writeText(generatedMessageText).then(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'মেসেজ কপি হয়েছে!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }).catch(() => {
+                Swal.fire('Error', 'কপি করা যায়নি, অনুগ্রহ করে ম্যানুয়ালি কপি করুন।', 'error');
+            });
         }
     </script>
 </body>
