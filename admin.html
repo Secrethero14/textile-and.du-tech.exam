@@ -174,41 +174,83 @@
 
         <div class="card" style="border-left: 5px solid #00b894; margin-top: 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-calendar-alt" style="color:#00b894;"></i> ওয়েবসাইট রুটিন ও নোটিশ ব্যবস্থাপনা</h3>
-                <span style="font-size:12px; color:#636e72;">এখানে রুটিন আপডেট করলে সমস্ত শিক্ষার্থী সাথে সাথে দেখতে ও ডাউনলোড করতে পারবে</span>
+                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-calendar-alt" style="color:#00b894;"></i> সাপ্তাহিক পরীক্ষার রুটিন ও নোটিশ ব্যবস্থাপনা</h3>
+                <span style="font-size:12px; color:#636e72;">প্রতি সপ্তাহে নতুন রুটিন পাবলিশ করুন, আগের রুটিনগুলো স্বয়ংক্রিয়ভাবে শিক্ষার্থীদের আর্কাইভে থাকবে</span>
             </div>
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div>
-                    <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                        <i class="fas fa-image"></i> রুটিনের ছবির লিংক (Image URL):
-                    </label>
-                    <input type="url" id="adminRoutineImgInput" class="input-box" style="width:100%;" placeholder="যেমন: https://i.imgur.com/... অথবা Google Drive ইমেজ লিংক">
+            <!-- নতুন রুটিন প্রকাশ ফরম -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:20px;">
+                <h4 style="margin:0 0 12px 0; font-size:14.5px; color:#0f172a;"><i class="fas fa-plus-circle" style="color:#00b894;"></i> নতুন সপ্তাহের রুটিন পাবলিশ করুন</h4>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            সপ্তাহের নাম / নম্বর:
+                        </label>
+                        <input type="text" id="adminRoutineWeek" class="input-box" style="width:100%;" placeholder="যেমন: সপ্তাহ ০৩ (চলতি)..." required>
+                    </div>
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            তারিখের সীমা (Date Range):
+                        </label>
+                        <input type="text" id="adminRoutineDates" class="input-box" style="width:100%;" placeholder="যেমন: ১০ নভেম্বর - ১৭ নভেম্বর ২০২৬...">
+                    </div>
                 </div>
-                <div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            <i class="fas fa-image"></i> রুটিনের ছবির লিংক (Image URL):
+                        </label>
+                        <input type="url" id="adminRoutineImg" class="input-box" style="width:100%;" placeholder="যেমন: Imgur বা Google Drive ইমেজ লিংক...">
+                    </div>
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            <i class="fas fa-file-pdf"></i> রুটিনের PDF লিংক (ঐচ্ছিক):
+                        </label>
+                        <input type="url" id="adminRoutinePdf" class="input-box" style="width:100%;" placeholder="Google Drive PDF ডাউনলোড লিংক (ঐচ্ছিক)...">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
                     <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                        <i class="fas fa-file-pdf"></i> রুটিনের PDF লিংক (ঐচ্ছিক):
+                        <i class="fas fa-bullhorn"></i> এই সপ্তাহের বিশেষ নির্দেশনা / নোটিশ:
                     </label>
-                    <input type="url" id="adminRoutinePdfInput" class="input-box" style="width:100%;" placeholder="যেমন: Google Drive PDF ডাউনলোড লিংক...">
+                    <textarea id="adminRoutineNotice" class="input-box" rows="2" style="width:100%; resize:vertical;" placeholder="শিক্ষার্থীদের উদ্দেশ্যে এই সপ্তাহের পরীক্ষার বিশেষ নির্দেশনা বা বার্তা লিখুন..."></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <label style="font-size:13px; color:#2d3436; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="adminRoutineIsCurrent" checked style="width:16px; height:16px;">
+                        <b>এটিকে "চলতি সপ্তাহের রুটিন" হিসেবে সেট করুন</b> (আগের রুটিন স্বয়ংক্রিয়ভাবে আর্কাইভে থাকবে)
+                    </label>
+                    <button type="button" class="btn btn-export" onclick="publishWeeklyRoutine()" style="background:#00b894;">
+                        <i class="fas fa-paper-plane"></i> নতুন রুটিন পাবলিশ করুন
+                    </button>
                 </div>
             </div>
 
-            <div style="margin-bottom:15px;">
-                <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                    <i class="fas fa-bullhorn"></i> রুটিন সংক্রান্ত জরুরি নোটিশ বা নির্দেশনা:
-                </label>
-                <textarea id="adminRoutineNoticeInput" class="input-box" rows="2" style="width:100%; resize:vertical;" placeholder="শিক্ষার্থীদের উদ্দেশ্যে রুটিনের বিশেষ নির্দেশনা বা পরীক্ষার তারিখ সংক্রান্ত বার্তা লিখুন..."></textarea>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div id="adminRoutineStatusMsg" style="font-size:12.5px; color:#0369a1; font-weight:600;"></div>
-                <div style="display:flex; gap:10px;">
-                    <button type="button" class="btn" onclick="previewAdminRoutine()" style="background:#6c5ce7; color:white;">
-                        <i class="fas fa-eye"></i> প্রিভিউ দেখুন
-                    </button>
-                    <button type="button" class="btn btn-export" onclick="saveAdminRoutineSettings()">
-                        <i class="fas fa-save"></i> রুটিন সেভ ও লাইভ আপডেট করুন
-                    </button>
+            <!-- প্রকাশিত সকল রুটিনের তালিকা (Active & Archive) -->
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="margin:0; font-size:14px; color:#0f172a;"><i class="fas fa-list"></i> প্রকাশিত রুটিনসমূহ ও আর্কাইভ তালিকা</h4>
+                    <button class="btn btn-load" onclick="loadAdminRoutineSettings()" style="padding:4px 10px; font-size:12px;"><i class="fas fa-sync-alt"></i> রিফ্রেশ</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">সপ্তাহ ও তারিখ</th>
+                                <th>স্ট্যাটাস</th>
+                                <th>লিংক</th>
+                                <th>পাবলিশ তারিখ</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRoutineTableBody">
+                            <tr><td colspan="5" style="padding:15px; color:#888;">রুটিন তালিকা লোড হচ্ছে...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -544,80 +586,183 @@
 
         
         // ==============================================
-        // 📅 ADMIN ROUTINE MANAGEMENT LOGIC
+        // 📅 ADMIN WEEKLY ROUTINE & ARCHIVE MANAGEMENT LOGIC
         // ==============================================
         async function loadAdminRoutineSettings() {
-            try {
-                const snap = await db.collection("site_settings").doc("routine").get();
-                if (snap.exists) {
-                    const data = snap.data();
-                    const imgInp = document.getElementById('adminRoutineImgInput');
-                    const pdfInp = document.getElementById('adminRoutinePdfInput');
-                    const noticeInp = document.getElementById('adminRoutineNoticeInput');
-                    const statusMsg = document.getElementById('adminRoutineStatusMsg');
+            const tbody = document.getElementById('adminRoutineTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> রুটিন লোড হচ্ছে...</td></tr>';
 
-                    if (imgInp && data.image) imgInp.value = data.image;
-                    if (pdfInp && data.pdf) pdfInp.value = data.pdf;
-                    if (noticeInp && data.notice) noticeInp.value = data.notice;
-                    if (statusMsg && data.updatedAt) {
-                        const d = new Date(data.updatedAt);
-                        statusMsg.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> সর্বশেষ আপডেট: ' + d.toLocaleString('bn-BD');
-                    }
+            try {
+                const snap = await db.collection("weekly_routines").orderBy("createdAt", "desc").get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; color:#888; text-align:center;">বর্তমানে কোনো সাপ্তাহিক রুটিন পাবলিশ করা নেই। উপরের বক্সে তথ্য লিখে প্রথম রুটিনটি পাবলিশ করুন।</td></tr>';
+                    return;
                 }
+
+                let html = '';
+                snap.forEach(doc => {
+                    const r = { id: doc.id, ...doc.data() };
+                    const d = r.createdAt ? new Date(r.createdAt) : null;
+                    const dStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }) : '-';
+                    const isCur = !!r.isCurrent;
+
+                    html += `<tr>
+                        <td style="text-align:left;">
+                            <strong style="color:#0f172a; font-size:14px;">${r.week || 'রুটিন'}</strong>
+                            ${r.dates ? `<br><span style="font-size:12px; color:#64748b;">${r.dates}</span>` : ''}
+                        </td>
+                        <td>
+                            ${isCur ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;"><i class="fas fa-check-circle"></i> চলতি সপ্তাহ</span>' : '<span class="badge" style="background:#f1f5f9; color:#64748b;">আর্কাইভ</span>'}
+                        </td>
+                        <td>
+                            ${r.image ? `<a href="${r.image}" target="_blank" style="color:#0284c7; font-size:13px; text-decoration:none; margin-right:8px;"><i class="fas fa-image"></i> ছবি</a>` : ''}
+                            ${r.pdf ? `<a href="${r.pdf}" target="_blank" style="color:#10b981; font-size:13px; text-decoration:none;"><i class="fas fa-file-pdf"></i> PDF</a>` : ''}
+                        </td>
+                        <td style="font-size:12px; color:#64748b;">${dStr}</td>
+                        <td>
+                            ${!isCur ? `<button class="btn" onclick="setRoutineAsCurrent('${r.id}')" style="background:#0984e3; color:white; padding:4px 8px; font-size:11px; margin-right:5px; border-radius:5px;" title="এটিকে চলতি রুটিন হিসেবে সেট করুন"><i class="fas fa-star"></i> চলতি করুন</button>` : ''}
+                            <button class="btn" onclick="deleteWeeklyRoutine('${r.id}', '${r.week || 'রুটিন'}')" style="background:#ff7675; color:white; padding:4px 8px; font-size:11px; border-radius:5px;" title="মুছে ফেলুন">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
             } catch (err) {
-                console.warn("Could not load routine from Firestore:", err);
+                console.error("loadAdminRoutineSettings error:", err);
+                tbody.innerHTML = '<tr><td colspan="5" style="padding:15px; color:red;">রুটিন লোড করতে সমস্যা হয়েছে।</td></tr>';
             }
         }
 
-        async function saveAdminRoutineSettings() {
-            const imgInp = document.getElementById('adminRoutineImgInput');
-            const pdfInp = document.getElementById('adminRoutinePdfInput');
-            const noticeInp = document.getElementById('adminRoutineNoticeInput');
-            const statusMsg = document.getElementById('adminRoutineStatusMsg');
+        async function publishWeeklyRoutine() {
+            const weekInp = document.getElementById('adminRoutineWeek');
+            const datesInp = document.getElementById('adminRoutineDates');
+            const imgInp = document.getElementById('adminRoutineImg');
+            const pdfInp = document.getElementById('adminRoutinePdf');
+            const noticeInp = document.getElementById('adminRoutineNotice');
+            const isCurInp = document.getElementById('adminRoutineIsCurrent');
 
+            const week = (weekInp ? weekInp.value : '').trim();
+            const dates = (datesInp ? datesInp.value : '').trim();
             const image = (imgInp ? imgInp.value : '').trim();
             const pdf = (pdfInp ? pdfInp.value : '').trim();
             const notice = (noticeInp ? noticeInp.value : '').trim();
+            const isCurrent = isCurInp ? isCurInp.checked : true;
 
-            Swal.fire({ title: 'রুটিন আপডেট হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            if (!week) {
+                return Swal.fire('সপ্তাহের নাম দিন', 'দয়া করে সপ্তাহের নাম বা নম্বর লিখুন (যেমন: সপ্তাহ ০৩)।', 'warning');
+            }
+            if (!image && !pdf) {
+                return Swal.fire('রুটিন দিন', 'দয়া করে রুটিনের ছবির লিংক অথবা PDF লিংক প্রদান করুন।', 'warning');
+            }
+
+            Swal.fire({ title: 'পাবলিশ হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                await db.collection("site_settings").doc("routine").set({
+                // If setting as current, unset previous current routines
+                if (isCurrent) {
+                    const prevCurs = await db.collection("weekly_routines").where("isCurrent", "==", true).get();
+                    const batch = db.batch();
+                    prevCurs.forEach(d => {
+                        batch.update(d.ref, { isCurrent: false });
+                    });
+                    await batch.commit();
+                }
+
+                // Add new weekly routine
+                await db.collection("weekly_routines").add({
+                    week: week,
+                    dates: dates,
                     image: image,
                     pdf: pdf,
                     notice: notice,
-                    updatedAt: new Date().toISOString(),
-                    updatedBy: auth.currentUser ? auth.currentUser.email : 'admin'
+                    isCurrent: isCurrent,
+                    createdAt: new Date().toISOString(),
+                    publishedBy: auth.currentUser ? auth.currentUser.email : 'admin'
                 });
 
-                Swal.fire('সফল!', 'পরীক্ষার রুটিন সফলভাবে আপডেট হয়েছে। সমস্ত শিক্ষার্থী সাইটে প্রবেশ করলেই এটি লাইভ দেখতে ও ডাউনলোড করতে পারবে।', 'success');
-                if (statusMsg) statusMsg.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> রুটিন লাইভ সেভ হয়েছে!';
-            } catch (err) {
+                // Also update site_settings/routine fallback
+                if (isCurrent) {
+                    await db.collection("site_settings").doc("routine").set({
+                        week: week,
+                        dates: dates,
+                        image: image,
+                        pdf: pdf,
+                        notice: notice,
+                        updatedAt: new Date().toISOString()
+                    });
+                }
+
+                if (weekInp) weekInp.value = '';
+                if (datesInp) datesInp.value = '';
+                if (imgInp) imgInp.value = '';
+                if (pdfInp) pdfInp.value = '';
+                if (noticeInp) noticeInp.value = '';
+
+                Swal.fire('সফল!', `<b>${week}</b>-এর রুটিন সফলভাবে পাবলিশ করা হয়েছে। শিক্ষার্থীরা এখনই এটি ওয়েবসাইটে দেখতে ও ডাউনলোড করতে পারবে।`, 'success');
+                loadAdminRoutineSettings();
+            } catch(err) {
                 console.error(err);
-                Swal.fire('Error', 'রুটিন সেভ করা যায়নি: ' + err.message, 'error');
+                Swal.fire('Error', 'রুটিন পাবলিশ করা যায়নি: ' + err.message, 'error');
             }
         }
 
-        function previewAdminRoutine() {
-            const img = (document.getElementById('adminRoutineImgInput') || {}).value || '';
-            const pdf = (document.getElementById('adminRoutinePdfInput') || {}).value || '';
-            const notice = (document.getElementById('adminRoutineNoticeInput') || {}).value || '';
+        async function setRoutineAsCurrent(docId) {
+            Swal.fire({ title: 'আপডেট হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            if (!img && !pdf && !notice) {
-                return Swal.fire('তথ্য নেই', 'প্রিভিউ দেখার জন্য কোনো লিংক বা নোটিশ লেখা হয়নি।', 'info');
+            try {
+                const prevCurs = await db.collection("weekly_routines").where("isCurrent", "==", true).get();
+                const batch = db.batch();
+                prevCurs.forEach(d => {
+                    batch.update(d.ref, { isCurrent: false });
+                });
+                batch.update(db.collection("weekly_routines").doc(docId), { isCurrent: true });
+                await batch.commit();
+
+                // Update site_settings/routine fallback too
+                const targetDoc = await db.collection("weekly_routines").doc(docId).get();
+                if (targetDoc.exists) {
+                    const data = targetDoc.data();
+                    await db.collection("site_settings").doc("routine").set({
+                        week: data.week || '',
+                        dates: data.dates || '',
+                        image: data.image || '',
+                        pdf: data.pdf || '',
+                        notice: data.notice || '',
+                        updatedAt: new Date().toISOString()
+                    });
+                }
+
+                Swal.fire('সফল!', 'রুটিনটিকে চলতি সপ্তাহের রুটিন হিসেবে নির্ধারণ করা হয়েছে।', 'success');
+                loadAdminRoutineSettings();
+            } catch(err) {
+                console.error(err);
+                Swal.fire('Error', 'পরিবর্তন করা যায়নি: ' + err.message, 'error');
             }
+        }
 
-            Swal.fire({
-                title: 'রুটিন প্রিভিউ',
-                html: `
-                    <div style="text-align:left; font-size:13.5px;">
-                        ${notice ? `<p style="background:#fefce8; padding:8px 12px; border-radius:6px; color:#854d0e;"><b>নোটিশ:</b> ${notice}</p>` : ''}
-                        ${img ? `<div style="text-align:center; margin:10px 0;"><img src="${img}" style="max-width:100%; max-height:300px; border-radius:6px;"></div>` : '<p style="color:#888;">কোনো ছবি নেই</p>'}
-                        ${pdf ? `<p style="color:#0984e3;"><i class="fas fa-file-pdf"></i> PDF লিংক যুক্ত আছে</p>` : ''}
-                    </div>
-                `,
-                showCloseButton: true
+        async function deleteWeeklyRoutine(docId, weekTitle) {
+            const confirm = await Swal.fire({
+                title: 'রুটিন মুছে ফেলবেন?',
+                html: `আপনি কি <b>${weekTitle}</b>-এর রুটিন মুছে ফেলতে চান?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d63031',
+                confirmButtonText: 'হ্যাঁ, মুছুন',
+                cancelButtonText: 'না'
             });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                await db.collection("weekly_routines").doc(docId).delete();
+                Swal.fire('মুছে ফেলা হয়েছে', 'রুটিনটি তালিকা থেকে সফলভাবে মুছে ফেলা হয়েছে।', 'success');
+                loadAdminRoutineSettings();
+            } catch(err) {
+                console.error(err);
+                Swal.fire('Error', 'মুছে ফেলা সম্ভব হয়নি: ' + err.message, 'error');
+            }
         }
 
         // --- LOAD EXAM LIST FOR DROPDOWN ---

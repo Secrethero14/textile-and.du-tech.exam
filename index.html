@@ -170,7 +170,7 @@
                 <i class="fas fa-chevron-right drawer-chevron"></i>
             </a>
 
-            <a href="javascript:void(0)" onclick="closeSideNav(); openPaymentModal();" class="drawer-menu-item">
+            <a href="javascript:void(0)" id="sideDrawerCourseItem" onclick="closeSideNav(); openPaymentModal();" class="drawer-menu-item">
                 <div class="drawer-item-icon course-icon"><i class="fas fa-graduation-cap"></i></div>
                 <div class="drawer-item-text">
                     <span class="drawer-item-title">কোর্স ও ভর্তি</span>
@@ -377,7 +377,8 @@
 
     <!-- 📅 পরীক্ষার রুটিন ও নোটিশ মোডাল 📅 -->
     <div id="routineModal" class="modal-overlay" onclick="if(event.target === this) closeRoutineModal()">
-        <div class="modal-content routine-modal-content" style="max-width: 680px; text-align: left; padding: 20px 24px; border-radius: 14px;">
+        <div class="modal-content routine-modal-content" style="max-width: 720px; text-align: left; padding: 20px 24px; border-radius: 14px; max-height: 90vh; overflow-y: auto;">
+            <!-- Modal Header -->
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 15px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:38px; height:38px; border-radius:10px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:18px;">
@@ -385,37 +386,79 @@
                     </div>
                     <div>
                         <h3 id="routineModalTitle" style="margin:0; font-size:17px; color:#1e293b; font-weight:700;">পরীক্ষার রুটিন ও নোটিশ</h3>
-                        <span id="routineUpdateDate" style="font-size:12px; color:#64748b;">চলতি সেশন ২০২৬-২৭</span>
+                        <span id="routineUpdateDate" style="font-size:12px; color:#64748b;">চলতি ব্যাচ ২০২৬-২৭</span>
                     </div>
                 </div>
                 <button type="button" onclick="closeRoutineModal()" style="background:none; border:none; font-size:26px; color:#94a3b8; cursor:pointer; padding:0 5px; line-height:1;" title="বন্ধ করুন">&times;</button>
             </div>
 
-            <!-- জরুরি নোটিশ বক্স -->
-            <div id="routineNoticeBox" style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#854d0e; line-height:1.5;">
-                <i class="fas fa-bullhorn" style="color:#d97706; margin-right:4px;"></i>
-                <span id="routineNoticeText">রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে। একবার পরীক্ষা শুরু হলে তা সবসময় প্র্যাকটিসের জন্য উন্মুক্ত থাকবে।</span>
-            </div>
+            <!-- 🌟 ১. চলতি সপ্তাহের রুটিন সেকশন (CURRENT WEEK) 🌟 -->
+            <div id="currentRoutineCard" style="background:#ffffff; border:1.5px solid #bae6fd; border-radius:12px; padding:14px; margin-bottom:18px; box-shadow:0 3px 10px rgba(2, 132, 199, 0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:4px 10px; border-radius:20px; font-size:11.5px;">
+                            <i class="fas fa-check-circle"></i> চলতি সপ্তাহ
+                        </span>
+                        <h4 id="routineCurrentWeekTitle" style="margin:0; font-size:15px; color:#0f172a; font-weight:700;">চলতি সপ্তাহের রুটিন</h4>
+                    </div>
+                    <span id="routineCurrentDateRange" style="font-size:12.5px; color:#0369a1; font-weight:600;"></span>
+                </div>
 
-            <!-- রুটিন ছবি প্রিভিউ ও কন্টেইনার -->
-            <div id="routineImageContainer" style="text-align:center; margin-bottom:15px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:10px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <img id="routineImageEl" src="" alt="Exam Routine" style="max-width:100%; max-height:480px; height:auto; border-radius:8px; display:none; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:zoom-in;" onclick="window.open(this.src, '_blank')">
-                <div id="routinePlaceholder" style="padding:25px 15px; color:#64748b; text-align:center;">
-                    <i class="fas fa-calendar-day fa-3x" style="color:#94a3b8; margin-bottom:10px;"></i>
-                    <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই রুটিন প্রকাশ করা হবে</p>
-                    <p style="margin:0; font-size:12px;">অ্যাডমিন রুটিন প্রকাশ করা মাত্রই আপনি এই পপআপ থেকে সরাসরি রুটিন দেখতে এবং নিজের ফোনে ডাউনলোড করে নিতে পারবেন।</p>
+                <!-- জরুরি নোটিশ বক্স -->
+                <div id="routineNoticeBox" style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13px; color:#854d0e; line-height:1.5;">
+                    <i class="fas fa-bullhorn" style="color:#d97706; margin-right:4px;"></i>
+                    <span id="routineNoticeText">রুটিন অনুযায়ী নির্ধারিত দিনে পরীক্ষাগুলো লাইভ হবে। একবার পরীক্ষা শুরু হলে তা সবসময় প্র্যাকটিসের জন্য উন্মুক্ত থাকবে।</span>
+                </div>
+
+                <!-- রুটিন ছবি প্রিভিউ -->
+                <div id="routineImageContainer" style="text-align:center; margin-bottom:12px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:8px; min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    <img id="routineImageEl" src="" alt="Exam Routine" style="max-width:100%; max-height:480px; height:auto; border-radius:8px; display:none; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:zoom-in;" onclick="window.open(this.src, '_blank')" title="বড় করে দেখতে ক্লিক করুন">
+                    <div id="routinePlaceholder" style="padding:25px 15px; color:#64748b; text-align:center;">
+                        <i class="fas fa-calendar-day fa-3x" style="color:#94a3b8; margin-bottom:10px;"></i>
+                        <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই রুটিন প্রকাশ করা হবে</p>
+                        <p style="margin:0; font-size:12px;">অ্যাডমিন রুটিন প্রকাশ করা মাত্রই আপনি এই পপআপ থেকে সরাসরি রুটিন দেখতে এবং নিজের ফোনে ডাউনলোড করে নিতে পারবেন।</p>
+                    </div>
+                </div>
+
+                <!-- ডাউনলোড ও একশন বাটন -->
+                <div id="routineActionButtons" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a id="routineDownloadImgBtn" href="#" download="exam_routine.jpg" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; font-size:13px;">
+                        <i class="fas fa-download"></i> এই সপ্তাহের রুটিন ডাউনলোড
+                    </a>
+                    <a id="routineDownloadPdfBtn" href="#" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#10b981; color:white; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; font-size:13px;">
+                        <i class="fas fa-file-pdf"></i> রুটিন PDF ডাউনলোড
+                    </a>
                 </div>
             </div>
 
-            <!-- ডাউনলোড ও একশন বাটন -->
-            <div id="routineActionButtons" style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a id="routineDownloadImgBtn" href="#" download="exam_routine.jpg" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; text-decoration:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px;">
-                    <i class="fas fa-download"></i> রুটিন ডাউনলোড (Image)
-                </a>
-                <a id="routineDownloadPdfBtn" href="#" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#10b981; color:white; text-decoration:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px;">
-                    <i class="fas fa-file-pdf"></i> রুটিন PDF ডাউনলোড
-                </a>
-                <button type="button" onclick="closeRoutineModal()" style="flex:1; min-width:120px; background:#f1f5f9; color:#475569; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px; cursor:pointer;">
+            <!-- 📂 ২. পূর্ববর্তী সপ্তাহের রুটিনসমূহ (ARCHIVE SECTION) 📂 -->
+            <div id="routineArchiveWrapper" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="margin:0; font-size:14px; color:#334155;"><i class="fas fa-archive" style="color:#0284c7;"></i> পূর্ববর্তী সপ্তাহের রুটিনসমূহ (আর্কাইভ)</h4>
+                    <span id="archiveCountBadge" style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:10px; font-weight:bold;"></span>
+                </div>
+                <select id="routineArchiveSelect" class="input-box" style="width:100%; padding:9px 12px; font-size:13px;" onchange="showArchivedRoutine(this.value)">
+                    <option value="">-- পূর্ববর্তী যেকোনো সপ্তাহের রুটিন দেখতে নির্বাচন করুন --</option>
+                </select>
+
+                <!-- সিলেক্ট করা আর্কাইভ রুটিন প্রিভিউ -->
+                <div id="archiveRoutineDisplay" style="display:none; margin-top:12px; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong id="archiveDisplayTitle" style="color:#0f172a; font-size:14px;"></strong>
+                        <span id="archiveDisplayDates" style="font-size:12px; color:#64748b;"></span>
+                    </div>
+                    <img id="archiveDisplayImg" src="" alt="Archive Routine" style="max-width:100%; max-height:400px; height:auto; border-radius:6px; margin-bottom:10px; cursor:zoom-in;" onclick="window.open(this.src, '_blank')">
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <a id="archiveDisplayDownloadBtn" href="#" target="_blank" download="archive_routine.jpg" style="display:inline-flex; align-items:center; gap:6px; background:#0284c7; color:white; text-decoration:none; padding:8px 14px; border-radius:6px; font-size:12.5px; font-weight:bold;">
+                            <i class="fas fa-download"></i> ডাউনলোড করুন
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ক্লোজ বাটন -->
+            <div style="text-align:right;">
+                <button type="button" onclick="closeRoutineModal()" style="background:#f1f5f9; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;">
                     বন্ধ করুন
                 </button>
             </div>

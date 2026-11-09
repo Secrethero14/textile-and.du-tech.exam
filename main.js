@@ -686,7 +686,16 @@ function navigateBack() {
                 const displayEmail = user.email || '';
                 if (nameEl) nameEl.innerText = displayName;
                 if (emailEl) emailEl.innerText = displayEmail;
-                if (statusEl) statusEl.innerText = userEnrollment === 'TextileFull' ? "কোর্সে যুক্ত আছেন (Active)" : "কোর্স আনলক করুন";
+                
+                // 🔒 এনরোল্ড থাকলে সাইডবারের কোর্স বাটন হাইড থাকবে
+                const sideCourseItem = document.getElementById('sideDrawerCourseItem');
+                if (userEnrollment === 'TextileFull') {
+                    if (sideCourseItem) sideCourseItem.style.setProperty('display', 'none', 'important');
+                } else {
+                    if (sideCourseItem) sideCourseItem.style.setProperty('display', 'flex', 'important');
+                    if (statusEl) statusEl.innerText = "কোর্স আনলক করুন";
+                }
+
                 if (authBox) {
                     authBox.innerHTML = `
                         <button type="button" onclick="closeSideNav(); logout();" class="drawer-auth-btn logout-btn">
@@ -719,25 +728,30 @@ function navigateBack() {
 
                         isUserPending = isPending && !isApproved;
 
+                        // 🔒 সাইডবারে কোর্স কেনার অপশন প্রদর্শন নিয়ন্ত্রণ (এনরোল্ড থাকলে সম্পূর্ণ হাইড থাকবে)
+                        const sideCourseItem = document.getElementById('sideDrawerCourseItem');
+
                         if (isApproved) {
                             userEnrollment = 'TextileFull';
                             isUserPending = false;
                             if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
                             if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
+                            if (sideCourseItem) sideCourseItem.style.setProperty('display', 'none', 'important');
                         } else if (isPending) {
                             userEnrollment = null;
                             isUserPending = true;
-                            // পেমেন্ট ব্যানার দৃশ্যমান থাকবে, কিন্তু ক্লিক করলে পেন্ডিং নোটিশ দেখাবে
                             if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'flex', 'important');
                             if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                            if (sideCourseItem) sideCourseItem.style.setProperty('display', 'flex', 'important');
                         } else {
                             userEnrollment = null;
                             isUserPending = false;
                             if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
                             if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
+                            if (sideCourseItem) sideCourseItem.style.setProperty('display', 'flex', 'important');
                         }
 
                         // পরীক্ষাগুলো অলরেডি লোড করা থাকলে সাথে সাথে রি-রেন্ডার করে আনলক করা
@@ -1105,32 +1119,62 @@ function navigateBack() {
 
         
         // ==============================================
-        // 📅 ROUTINE & NOTICE LOGIC (VIEW & DOWNLOAD)
+        // 📅 ROUTINE & NOTICE LOGIC (WEEKLY ARCHIVE SUPPORT)
         // ==============================================
         let currentRoutineData = null;
+        let allWeeklyRoutines = [];
 
-        async function fetchRoutineData() {
+        async function fetchWeeklyRoutines() {
+            allWeeklyRoutines = [];
+            currentRoutineData = null;
+
             try {
-                const snap = await db.collection("site_settings").doc("routine").get();
-                if (snap.exists) {
-                    currentRoutineData = snap.data();
-                    return currentRoutineData;
+                // 1. Fetch from weekly_routines collection
+                const snap = await db.collection("weekly_routines").orderBy("createdAt", "desc").get();
+                if (!snap.empty) {
+                    snap.forEach(doc => {
+                        allWeeklyRoutines.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // Current routine is the one with isCurrent === true, or the latest one
+                    currentRoutineData = allWeeklyRoutines.find(r => r.isCurrent) || allWeeklyRoutines[0];
+                    return { current: currentRoutineData, all: allWeeklyRoutines };
                 }
-            } catch (e) {
-                console.warn("Firestore routine fetch error:", e);
+            } catch(e) {
+                console.warn("Firestore weekly_routines fetch error:", e);
             }
-            
+
+            // 2. Fallback to single doc site_settings/routine
+            try {
+                const snapSingle = await db.collection("site_settings").doc("routine").get();
+                if (snapSingle.exists) {
+                    const data = snapSingle.data();
+                    currentRoutineData = {
+                        week: data.week || "চলতি সপ্তাহ",
+                        dates: data.dates || "",
+                        image: data.image || "",
+                        pdf: data.pdf || "",
+                        notice: data.notice || "রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে।",
+                        updatedAt: data.updatedAt
+                    };
+                    allWeeklyRoutines = [currentRoutineData];
+                    return { current: currentRoutineData, all: allWeeklyRoutines };
+                }
+            } catch(e) {}
+
+            // 3. Fallback to settings.json
             const s = window.siteSettings || {};
             currentRoutineData = {
-                image: s.routine_image || s.routine || '',
-                pdf: s.routine_pdf || '',
-                notice: s.routine_notice || 'রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে। একবার পরীক্ষা শুরু হলে তা সবসময় প্র্যাকটিসের জন্য উন্মুক্ত থাকবে।',
-                title: s.routine_title || 'পরীক্ষার রুটিন ও নোটিশ'
+                week: s.routine_title || "চলতি সপ্তাহ",
+                dates: s.routine_dates || "",
+                image: s.routine_image || s.routine || "",
+                pdf: s.routine_pdf || "",
+                notice: s.routine_notice || "রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে।"
             };
-            return currentRoutineData;
+            allWeeklyRoutines = currentRoutineData.image ? [currentRoutineData] : [];
+            return { current: currentRoutineData, all: allWeeklyRoutines };
         }
 
-        async 
         // ==============================================
         // ☰ SIDE DRAWER NAVIGATION LOGIC (RIGHT SIDE)
         // ==============================================
@@ -1159,8 +1203,14 @@ function navigateBack() {
             if (!modal) return;
             modal.style.display = 'flex';
 
-            const routine = await fetchRoutineData();
-            if (!routine) return;
+            const { current, all } = await fetchWeeklyRoutines();
+            const routine = current || {};
+
+            // Week Title & Date Range
+            const titleEl = document.getElementById('routineCurrentWeekTitle');
+            const datesEl = document.getElementById('routineCurrentDateRange');
+            if (titleEl) titleEl.innerText = routine.week || "চলতি সপ্তাহের রুটিন";
+            if (datesEl) datesEl.innerText = routine.dates ? "(" + routine.dates + ")" : "";
 
             // Notice
             const noticeBox = document.getElementById('routineNoticeBox');
@@ -1222,6 +1272,75 @@ function navigateBack() {
                     }
                 } catch(e) {}
             }
+
+            // 📂 Archive Section Handling
+            const archiveWrapper = document.getElementById('routineArchiveWrapper');
+            const archiveSelect = document.getElementById('routineArchiveSelect');
+            const archiveBadge = document.getElementById('archiveCountBadge');
+            const archiveDisplay = document.getElementById('archiveDisplayDisplay');
+
+            // Find archived routines (all routines other than current)
+            const archives = all.filter(r => r !== routine && (r.id !== routine.id));
+            if (archiveWrapper && archiveSelect) {
+                if (archives.length > 0) {
+                    archiveWrapper.style.display = 'block';
+                    if (archiveBadge) archiveBadge.innerText = archives.length + 'টি পূর্ববর্তী রুটিন';
+
+                    let opts = '<option value="">-- পূর্ববর্তী যেকোনো সপ্তাহের রুটিন দেখতে নির্বাচন করুন --</option>';
+                    archives.forEach((r, idx) => {
+                        const optTitle = (r.week || ('সপ্তাহ ' + (idx + 1))) + (r.dates ? ' (' + r.dates + ')' : '');
+                        opts += `<option value="${r.id || idx}">${optTitle}</option>`;
+                    });
+                    archiveSelect.innerHTML = opts;
+                } else {
+                    archiveWrapper.style.display = 'none';
+                }
+            }
+        }
+
+        function showArchivedRoutine(selectedId) {
+            const displayBox = document.getElementById('archiveRoutineDisplay');
+            if (!displayBox) return;
+
+            if (!selectedId) {
+                displayBox.style.display = 'none';
+                return;
+            }
+
+            const r = allWeeklyRoutines.find(item => item.id == selectedId || allWeeklyRoutines.indexOf(item) == selectedId);
+            if (!r) {
+                displayBox.style.display = 'none';
+                return;
+            }
+
+            const titleEl = document.getElementById('archiveDisplayTitle');
+            const datesEl = document.getElementById('archiveDisplayDates');
+            const imgEl = document.getElementById('archiveDisplayImg');
+            const dlBtn = document.getElementById('archiveDisplayDownloadBtn');
+
+            if (titleEl) titleEl.innerText = r.week || 'আর্কাইভ রুটিন';
+            if (datesEl) datesEl.innerText = r.dates || '';
+
+            let imgSrc = r.image || '';
+            if (imgSrc.includes('drive.google.com/file/d/')) {
+                const fileId = imgSrc.split('/d/')[1].split('/')[0];
+                imgSrc = 'https://drive.google.com/uc?export=view&id=' + fileId;
+            }
+
+            if (imgEl) {
+                if (imgSrc) {
+                    imgEl.src = imgSrc;
+                    imgEl.style.display = 'block';
+                } else {
+                    imgEl.style.display = 'none';
+                }
+            }
+
+            if (dlBtn) {
+                dlBtn.href = imgSrc || r.pdf || '#';
+            }
+
+            displayBox.style.display = 'block';
         }
 
         function closeRoutineModal() {
