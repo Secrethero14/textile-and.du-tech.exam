@@ -368,6 +368,7 @@ if (document.readyState === 'loading') {
         let currentMaster = ""; 
         let currentCategory = ""; 
         let userEnrollment = null;
+        let isUserPending = false;
         let isRegistering = false;
         let isGuest = false;
 
@@ -710,18 +711,24 @@ function navigateBack() {
                             else if (d.status === 'pending') isPending = true;
                         });
 
+                        isUserPending = isPending && !isApproved;
+
                         if (isApproved) {
                             userEnrollment = 'TextileFull';
+                            isUserPending = false;
                             if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
                             if (successBanner) successBanner.style.setProperty('display', 'flex', 'important');
                         } else if (isPending) {
                             userEnrollment = null;
-                            if (promoBanner) promoBanner.style.setProperty('display', 'none', 'important'); 
-                            if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
+                            isUserPending = true;
+                            // পেমেন্ট ব্যানার দৃশ্যমান থাকবে, কিন্তু ক্লিক করলে পেন্ডিং নোটিশ দেখাবে
+                            if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'flex', 'important');
+                            if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
                         } else {
                             userEnrollment = null;
+                            isUserPending = false;
                             if (promoBanner) promoBanner.style.setProperty('display', 'flex', 'important'); 
                             if (successBanner) successBanner.style.setProperty('display', 'none', 'important');
                             if (pendingBanner) pendingBanner.style.setProperty('display', 'none', 'important');
@@ -1049,7 +1056,44 @@ function navigateBack() {
             copyPaymentNumber(num, event ? event.currentTarget : null);
         }
 
+        function showPendingNoticeModal() {
+            Swal.fire({
+                icon: 'warning',
+                iconColor: '#f39c12',
+                title: 'আবেদন প্রক্রিয়াধীন রয়েছে!',
+                html: `
+                    <div style="font-size:14px; line-height:1.6; color:#2d3436; text-align:left;">
+                        <p style="margin:0 0 10px 0;">আপনার কোর্সে ভর্তির আবেদন ও পেমেন্ট তথ্য সফলভাবে জমা হয়েছে। এটি বর্তমানে <b>অ্যাডমিন ভেরিফিকেশন প্রক্রিয়াধীন</b> রয়েছে।</p>
+                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13.5px; color:#92400e;">
+                            <i class="fas fa-check-circle" style="color:#10b981;"></i> অ্যাডমিন পেমেন্ট চেক করে অনুমোদন দেওয়া মাত্রই আপনার সমস্ত কোর্স ও এক্সাম স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে।
+                        </div>
+                        <p style="margin:0; font-size:12.5px; color:#64748b;">জরুরি যোগাযোগের জন্য নিচের যেকোনো একটি মাধ্যমে অ্যাডমিনকে নক দিতে পারেন:</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#0088cc',
+                cancelButtonColor: '#25D366',
+                confirmButtonText: '<i class="fab fa-telegram-plane"></i> Telegram',
+                cancelButtonText: '<i class="fab fa-whatsapp"></i> WhatsApp',
+                showCloseButton: true,
+                footer: '<a href="https://m.me/habibs.care.edu" target="_blank" style="color:#0084ff; text-decoration:none; font-weight:600; font-size:13.5px;"><i class="fab fa-facebook-messenger"></i> অথবা Messenger-এ মেসেজ দিন</a>'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open('https://t.me/Admissionhelper007', '_blank');
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    const waRaw = (window.siteSettings && window.siteSettings.whatsapp_number) || '01873275283';
+                    const cleanWa = waRaw.replace(/[^0-9]/g, '');
+                    window.open(`https://wa.me/88${cleanWa.startsWith('88') ? cleanWa.substring(2) : cleanWa}`, '_blank');
+                }
+            });
+        }
+
         function openPaymentModal(courseRef) { 
+            // 🔒 যদি আবেদন অলরেডি পেন্ডিং থাকে, তবে পেমেন্ট মডাল না খুলে পেন্ডিং স্ট্যাটাস পপআপ দেখাবে
+            if (isUserPending) {
+                showPendingNoticeModal();
+                return;
+            } 
             let course = null;
             if (typeof courseRef === 'number' && window.siteCourses && window.siteCourses[courseRef]) {
                 course = window.siteCourses[courseRef];
