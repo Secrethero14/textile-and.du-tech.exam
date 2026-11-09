@@ -665,33 +665,35 @@ function navigateBack() {
         }
 
         function updateNavBar(user, guest=false) {
-            const container = document.getElementById('authContainer');
+            const nameEl = document.getElementById('sideDrawerUserName');
+            const emailEl = document.getElementById('sideDrawerUserEmail');
+            const authBox = document.getElementById('sideDrawerAuthAction');
+            const statusEl = document.getElementById('sideDrawerEnrollmentStatus');
+
             if (guest) {
-                container.innerHTML = `
-                    <div class="nav-actions-wrap">
-                        <span class="guest-pill" title="Guest Mode"><i class="fas fa-user-secret"></i> <span class="guest-text">Guest</span></span>
-                        <button onclick="location.reload()" class="nav-icon-btn nav-exit" title="লগইন করুন">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span class="nav-btn-label">লগইন</span>
+                if (nameEl) nameEl.innerText = "গেস্ট শিক্ষার্থী";
+                if (emailEl) emailEl.innerHTML = '<span class="guest-pill" style="font-size:11px; padding:2px 6px;"><i class="fas fa-user-secret"></i> Guest Mode</span>';
+                if (statusEl) statusEl.innerText = "কোর্সে ভর্তি হতে ক্লিক করুন";
+                if (authBox) {
+                    authBox.innerHTML = `
+                        <button type="button" onclick="closeSideNav(); showGuestLoginPrompt();" class="drawer-auth-btn login-btn">
+                            <i class="fas fa-sign-in-alt"></i> লগইন / সাইন-আপ করুন
                         </button>
-                    </div>`;
-            } else {
-                container.innerHTML = `
-                    <div class="nav-actions-wrap">
-                        <a href="mistakes.html" class="nav-icon-btn" title="ভুল প্রশ্ন ব্যাংক">
-                            <i class="fas fa-book-open"></i>
-                            <span class="nav-btn-label">ভুল ব্যাংক</span>
-                        </a>
-                        <a href="profile.html" class="nav-icon-btn" title="আমার প্রোফাইল">
-                            <i class="fas fa-user"></i>
-                            <span class="nav-btn-label">প্রোফাইল</span>
-                        </a>
-                        <button onclick="logout()" class="nav-icon-btn" title="লগআউট">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span class="nav-btn-label">লগআউট</span>
+                    `;
+                }
+            } else if (user) {
+                const displayName = user.displayName || 'শিক্ষার্থী';
+                const displayEmail = user.email || '';
+                if (nameEl) nameEl.innerText = displayName;
+                if (emailEl) emailEl.innerText = displayEmail;
+                if (statusEl) statusEl.innerText = userEnrollment === 'TextileFull' ? "কোর্সে যুক্ত আছেন (Active)" : "কোর্স আনলক করুন";
+                if (authBox) {
+                    authBox.innerHTML = `
+                        <button type="button" onclick="closeSideNav(); logout();" class="drawer-auth-btn logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> অ্যাকাউন্টে থেকে লগআউট
                         </button>
-                    </div>
-                `;
+                    `;
+                }
             }
         }
 
@@ -1127,6 +1129,30 @@ function navigateBack() {
             };
             return currentRoutineData;
         }
+
+        async 
+        // ==============================================
+        // ☰ SIDE DRAWER NAVIGATION LOGIC (RIGHT SIDE)
+        // ==============================================
+        function openSideNav() {
+            const drawer = document.getElementById('sideNavDrawer');
+            const overlay = document.getElementById('sideNavOverlay');
+            if (drawer) drawer.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSideNav() {
+            const drawer = document.getElementById('sideNavDrawer');
+            const overlay = document.getElementById('sideNavOverlay');
+            if (drawer) drawer.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSideNav();
+        });
 
         async function openRoutineModal() {
             const modal = document.getElementById('routineModal');

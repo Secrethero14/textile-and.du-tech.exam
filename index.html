@@ -114,9 +114,82 @@
                     <span class="nav-brand-sub">ESTD 2021</span>
                 </div>
             </a>
-            <button type="button" class="btn-top-nav-routine" onclick="openRoutineModal()" title="পরীক্ষার রুটিন ও নোটিশ"><i class="fas fa-calendar-alt"></i> <span>রুটিন</span></button>
-            <div id="authContainer" class="auth-buttons"></div>
+            
+            <!-- ☰ ডানপাশের হ্যামবার্গার মেনু বাটন (৩টি দাগ) ☰ -->
+            <button type="button" id="hamburgerMenuBtn" class="hamburger-menu-btn" onclick="openSideNav()" aria-label="মেনু খুলুন" title="মেনু খুলুন">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div id="authContainer" style="display:none;"></div>
         </div>
+
+        
+    <!-- 🌟 ডানপাশ থেকে স্লাইড হওয়া সাইড ড্রয়ার মেনু ও ব্যাকড্রপ 🌟 -->
+    <div id="sideNavOverlay" class="side-nav-overlay" onclick="closeSideNav()"></div>
+    
+    <aside id="sideNavDrawer" class="side-nav-drawer" aria-label="মূল মেনু">
+        <!-- ড্রয়ার হেডার: ইউজার প্রোফাইল ও ক্লোজ বাটন -->
+        <div class="side-drawer-header">
+            <div id="sideDrawerUserBox" class="side-drawer-user-box">
+                <div class="drawer-user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="drawer-user-info">
+                    <h4 id="sideDrawerUserName" class="drawer-user-name">শিক্ষার্থী</h4>
+                    <span id="sideDrawerUserEmail" class="drawer-user-email">guest@habibscare.com</span>
+                </div>
+            </div>
+            <button type="button" class="side-drawer-close-btn" onclick="closeSideNav()" aria-label="মেনু বন্ধ করুন" title="বন্ধ করুন">&times;</button>
+        </div>
+
+        <!-- ড্রয়ার মেনু আইটেম তালিকা -->
+        <nav class="side-drawer-menu">
+            <a href="javascript:void(0)" onclick="closeSideNav(); openRoutineModal();" class="drawer-menu-item">
+                <div class="drawer-item-icon routine-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="drawer-item-text">
+                    <span class="drawer-item-title">পরীক্ষার রুটিন ও নোটিশ</span>
+                    <span class="drawer-item-sub">শিডিউল দেখুন ও ডাউনলোড করুন</span>
+                </div>
+                <i class="fas fa-chevron-right drawer-chevron"></i>
+            </a>
+
+            <a href="mistakes.html" class="drawer-menu-item">
+                <div class="drawer-item-icon mistake-icon"><i class="fas fa-book-open"></i></div>
+                <div class="drawer-item-text">
+                    <span class="drawer-item-title">ভুল প্রশ্ন ব্যাংক</span>
+                    <span class="drawer-item-sub">ভুল হওয়া প্রশ্ন রিভিশন ও প্র্যাকটিস</span>
+                </div>
+                <i class="fas fa-chevron-right drawer-chevron"></i>
+            </a>
+
+            <a href="profile.html" class="drawer-menu-item">
+                <div class="drawer-item-icon profile-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="drawer-item-text">
+                    <span class="drawer-item-title">আমার প্রোফাইল</span>
+                    <span class="drawer-item-sub">স্কোর, মেধা তালিকা ও অগ্রগতি</span>
+                </div>
+                <i class="fas fa-chevron-right drawer-chevron"></i>
+            </a>
+
+            <a href="javascript:void(0)" onclick="closeSideNav(); openPaymentModal();" class="drawer-menu-item">
+                <div class="drawer-item-icon course-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="drawer-item-text">
+                    <span class="drawer-item-title">কোর্স ও ভর্তি</span>
+                    <span class="drawer-item-sub" id="sideDrawerEnrollmentStatus">কোর্স স্ট্যাটাস চেক করুন</span>
+                </div>
+                <i class="fas fa-chevron-right drawer-chevron"></i>
+            </a>
+        </nav>
+
+        <!-- ড্রয়ার ফুটার: লগআউট বা লগইন বাটন -->
+        <div class="side-drawer-footer">
+            <div id="sideDrawerAuthAction">
+                <!-- Dynamically populated by updateNavBar -->
+            </div>
+            <div class="drawer-footer-brand">
+                <small>&copy; 2026 Habib's Care Exam Portal</small>
+            </div>
+        </div>
+    </aside>
 
         <!-- 🌟 ১০টি টেক্সটাইল ইঞ্জিনিয়ারিং কলেজ ওভারঅল হিরো ব্যানার (ACS Style - Full Width, Zero Gap) 🌟 -->
         <div id="overallHomeBanner" class="overall-home-banner">
