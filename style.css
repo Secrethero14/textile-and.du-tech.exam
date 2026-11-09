@@ -3134,6 +3134,29 @@ body, button, input, select, textarea {
     align-items: center;
     gap: 12px;
     min-width: 0;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 10px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+.side-drawer-user-box:hover {
+    background: rgba(2, 132, 199, 0.08);
+}
+.side-drawer-user-box:active {
+    transform: scale(0.98);
+}
+.drawer-profile-hint {
+    font-size: 11px;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    font-weight: 600;
+}
+.side-drawer-user-box:hover .drawer-profile-hint {
+    color: #0369a1;
+    text-decoration: underline;
 }
 .drawer-user-avatar {
     width: 44px;
@@ -3296,4 +3319,156 @@ body, button, input, select, textarea {
     margin-top: 10px;
     color: #94a3b8;
     font-size: 11px;
+}
+
+
+/* 📅 পরীক্ষার রুটিন মোডাল রেস্পনসিভ স্টাইলিং (সব ধরনের মোবাইল ও ডেস্কটপে পারফেক্ট ফিট) 📅 */
+.routine-modal-content {
+    background: #ffffff;
+    width: 100%;
+    max-width: 680px;
+    text-align: left;
+    padding: 20px 24px;
+    border-radius: 16px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+    margin: auto;
+}
+.routine-card-box {
+    background: #ffffff;
+    border: 1.5px solid #bae6fd;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 10px rgba(2, 132, 199, 0.05);
+}
+.routine-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+#routineImageContainer {
+    text-align: center;
+    margin-bottom: 14px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 8px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+#routineImageEl {
+    max-width: 100%;
+    width: auto;
+    max-height: 480px;
+    height: auto;
+    border-radius: 8px;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: zoom-in;
+    object-fit: contain;
+}
+.routine-actions-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.routine-action-btn {
+    flex: 1;
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13.5px;
+    box-sizing: border-box;
+    transition: transform 0.15s, opacity 0.2s;
+}
+.routine-action-btn:active {
+    transform: scale(0.98);
+}
+.routine-btn-blue {
+    background: #0984e3;
+    color: #ffffff !important;
+}
+.routine-btn-green {
+    background: #10b981;
+    color: #ffffff !important;
+}
+.routine-archive-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+}
+
+/* 📱 মোবাইল স্ক্রিন অপটিমাইজেশন (< 600px) */
+@media (max-width: 600px) {
+    #routineModal.modal-overlay {
+        padding: 8px !important;
+        align-items: center !important;
+    }
+    .routine-modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px 12px !important;
+        border-radius: 12px !important;
+        max-height: 92vh !important;
+    }
+    .routine-card-box {
+        padding: 10px 10px !important;
+        margin-bottom: 12px !important;
+        border-radius: 10px !important;
+    }
+    .routine-card-header {
+        margin-bottom: 8px !important;
+    }
+    #routineCurrentWeekTitle {
+        font-size: 13.5px !important;
+    }
+    #routineNoticeBox {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+        margin-bottom: 10px !important;
+    }
+    #routineImageContainer {
+        padding: 4px !important;
+        min-height: 110px !important;
+        margin-bottom: 10px !important;
+    }
+    #routineImageEl {
+        max-height: 45vh !important;
+        width: 100% !important;
+    }
+    .routine-actions-wrap {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    .routine-action-btn {
+        width: 100% !important;
+        min-width: unset !important;
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+    .routine-archive-card {
+        padding: 10px !important;
+    }
+    #archiveDisplayImg {
+        max-height: 40vh !important;
+        width: 100% !important;
+    }
 }
