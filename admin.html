@@ -224,10 +224,8 @@
                     </select>
                     <select id="batchFilter" class="select-box" style="min-width:140px; padding:8px 12px;" onchange="filterStudentLogs()">
                         <option value="ALL">সকল ব্যাচ</option>
-                        <option value="HSC 25">HSC 25 (১ম বার)</option>
-                        <option value="HSC 26">HSC 26</option>
-                        <option value="HSC 24">HSC 24 (২য় বার)</option>
-                        <option value="Other">অন্যান্য</option>
+                        <option value="25">এইচএসসি ২৫</option>
+                        <option value="26">এইচএসসি ২৬</option>
                     </select>
                     <input type="text" id="studentSearchInput" class="input-box" style="min-width:180px; padding:8px 12px;" placeholder="নাম, ইমেইল, কলেজ বা ব্যাচ..." onkeyup="filterStudentLogs()">
                 </div>
@@ -838,9 +836,9 @@
             let other = 0;
 
             logs.forEach(log => {
-                const b = (log.hscBatch || '').toUpperCase();
-                if (b.includes('25')) hsc25++;
-                else if (b.includes('26')) hsc26++;
+                const b = (log.hscBatch || '').toString().toUpperCase();
+                if (b.includes('25') || b.includes('২৫')) hsc25++;
+                else if (b.includes('26') || b.includes('২৬')) hsc26++;
                 else other++;
             });
 
@@ -884,8 +882,9 @@
                 if(session !== 'ALL' && s !== session) return false;
 
                 if(batch !== 'ALL') {
-                    const b = (log.hscBatch || '').toUpperCase();
-                    if(!b.includes(batch.toUpperCase().replace('HSC ', '').trim()) && !b.includes(batch.toUpperCase())) return false;
+                    const b = (log.hscBatch || '').toString().toUpperCase();
+                    if(batch === '25' && !b.includes('25') && !b.includes('২৫')) return false;
+                    if(batch === '26' && !b.includes('26') && !b.includes('২৬')) return false;
                 }
 
                 if(query) {
