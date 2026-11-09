@@ -257,6 +257,37 @@
                 </table>
             </div>
         </div>
+        <!-- 🌟 বাতিলকৃত আবেদন তালিকা (ক্যানসেল সেকশন) 🌟 -->
+        <div class="card" style="border-left: 5px solid #d63031;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
+                <h3 style="margin:0; border:none; padding:0; color:#c0392b;">
+                    <i class="fas fa-user-times" style="color:#d63031;"></i> বাতিলকৃত আবেদনসমূহ (Cancelled / Rejected)
+                </h3>
+                <button class="btn btn-load" onclick="loadRejectedRequests()" style="padding:5px 12px; font-size:12px;">
+                    <i class="fas fa-sync-alt"></i> রিফ্রেশ
+                </button>
+            </div>
+            <p style="margin:0 0 12px 0; font-size:13px; color:#636e72;">
+                ভুল বা ফেক পেমেন্টের কারণে বাতিল করা আবেদনগুলো এখানে জমা থাকে। প্রয়োজনে ভুলবশত বাতিল হওয়া আবেদন পুনরায় <b>"অনুমোদন"</b> করা যাবে।
+            </p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th style="text-align:left;">নাম ও ইমেইল</th>
+                            <th>মোবাইল ও লাস্ট ৩</th>
+                            <th style="text-align:left;">কলেজ ও ব্যাচ</th>
+                            <th>স্ট্যাটাস</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rejectedLogBody">
+                        <tr><td colspan="6" style="padding:15px; color:#888;">ডাটা লোড হচ্ছে...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================== -->
@@ -298,19 +329,27 @@
             event.currentTarget.classList.add('active');
             document.getElementById(tabId).classList.add('active');
 
-            if(tabId === 'tabStudents') { listenPendingRequests(); if(allStudentLogs.length === 0) loadStudentLogs(); }
+            if(tabId === 'tabStudents') { listenPendingRequests(); loadRejectedRequests(); if(allStudentLogs.length === 0) loadStudentLogs(); }
             if(tabId === 'tabSupport') loadMentalSupportMessages();
         }
 
         // ==============================================
-        // 🔒 সিকিউরিটি সেটিংস: অনুমোদিত অ্যাডমিন তালিকা
+        // 🔒 সিকিউরিটি সেটিংস: রোল-ভিত্তিক অ্যাডমিন তালিকা
         // ==============================================
-        // আপনি চাইলে নিচে কমা দিয়ে আপনার আরও জিমেইল যুক্ত করতে পারবেন:
-        const ADMIN_EMAILS = [
+        // 👑 SUPER ADMIN (আপনি): সম্পূর্ণ ডাটাবেস, পূর্ববর্তী বছরের সকল পরিসংখ্যান ও সব কিছু দেখতে পাবেন:
+        const SUPER_ADMIN_EMAILS = [
             'rafychowdhury14@gmail.com'
-            // 'your_second_email@gmail.com',
-            // 'your_third_email@gmail.com'
         ];
+
+        // 🛡️ MODERATORS / ASSISTANTS (সহযোগী বা মডারেটর):
+        // শুধু চলতি ব্যাচের আবেদন অনুমোদন/বাতিল, ম্যানুয়াল এক্সেস ও রেজাল্ট শিট ডাউনলোড করতে পারবেন।
+        // পূর্ববর্তী বছরের কতজন শিক্ষার্থী ছিল বা তাদের তথ্য মডারেটরের কাছে সম্পূর্ণ গোপন থাকবে:
+        const MODERATOR_EMAILS = [
+            // 'assistant_email@gmail.com',
+            // 'moderator_email@gmail.com'
+        ];
+
+        let currentAdminRole = 'moderator'; // 'super_admin' অথবা 'moderator'
 
         // অ্যাডমিন ভেরিফিকেশন ও গেটকিপার লিসেনার
         auth.onAuthStateChanged(user => {
@@ -330,15 +369,35 @@
             }
 
             const email = (user.email || '').toLowerCase().trim();
-            const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
+            const isSuperAdmin = SUPER_ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
+            const isModerator = MODERATOR_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
 
-            if (isAdmin) {
-                // অনুমোদিত অ্যাডমিন: ড্যাশবোর্ড ওপেন
+            if (isSuperAdmin || isModerator) {
+                currentAdminRole = isSuperAdmin ? 'super_admin' : 'moderator';
+
+                // অনুমোদিত অ্যাডমিন/মডারেটর: ড্যাশবোর্ড ওপেন
                 gatekeeper.style.display = 'none';
                 adminApp.style.display = 'block';
                 
                 const badge = document.getElementById('currentAdminBadge');
-                if (badge) badge.innerHTML = `<i class="fas fa-user-check"></i> ${email}`;
+                if (badge) {
+                    if (isSuperAdmin) {
+                        badge.innerHTML = `<i class="fas fa-crown" style="color:#f1c40f;"></i> Super Admin (${email})`;
+                        badge.style.background = 'rgba(16, 185, 129, 0.25)';
+                    } else {
+                        badge.innerHTML = `<i class="fas fa-user-shield" style="color:#38bdf8;"></i> Moderator (${email})`;
+                        badge.style.background = 'rgba(59, 130, 246, 0.25)';
+                    }
+                }
+
+                // মডারেটরের জন্য সেশন ফিল্টার রেস্ট্রিক্ট
+                if (currentAdminRole === 'moderator') {
+                    const sFilter = document.getElementById('sessionFilter');
+                    if (sFilter) {
+                        sFilter.innerHTML = '<option value="2026-27">২০২৬-২৭ সেশন (চলতি)</option>';
+                        sFilter.disabled = true;
+                    }
+                }
 
                 loadExamList();
                 checkMentalSupportBadge();
@@ -762,7 +821,7 @@
         async function rejectPaymentRequest(docId, email) {
             const confirm = await Swal.fire({
                 title: 'বাতিল নিশ্চিত করুন',
-                text: `${email} এর আবেদনটি বাতিল বা মুছে ফেলতে চান?`,
+                text: `${email} এর আবেদনটি বাতিল তালিকায় পাঠাতে চান?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d63031',
@@ -774,11 +833,123 @@
             if (!confirm.isConfirmed) return;
 
             try {
+                const currentAdmin = auth.currentUser ? auth.currentUser.email : 'admin';
+                await db.collection("payment_requests").doc(docId).update({
+                    status: "rejected",
+                    rejectedAt: new Date().toISOString(),
+                    rejectedBy: currentAdmin
+                });
+                Swal.fire('বাতিল হয়েছে', 'আবেদনটি বাতিল তালিকায় সরানো হয়েছে।', 'success');
+                loadRejectedRequests();
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Error', 'বাতিল করা যায়নি: ' + e.message, 'error');
+            }
+        }
+
+        async function restorePaymentRequest(docId, email, name) {
+            const confirm = await Swal.fire({
+                title: 'পুনরুদ্ধার ও অনুমোদন',
+                html: `আপনি কি <b>${name || 'Student'}</b> (${email}) এর বাতিলকৃত আবেদনটি অনুমোদন দিয়ে কোর্স এক্সেস দিতে চান?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#00b894',
+                confirmButtonText: 'হ্যাঁ, অনুমোদন দিন',
+                cancelButtonText: 'বাতিল'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                const currentAdmin = auth.currentUser ? auth.currentUser.email : 'admin';
+                await db.collection("payment_requests").doc(docId).update({
+                    status: "approved",
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: currentAdmin
+                });
+                Swal.fire('অনুমোদিত!', 'আবেদনটি সফলভাবে সক্রিয় করা হয়েছে।', 'success');
+                loadRejectedRequests();
+                loadStudentLogs();
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Error', 'অনুমোদন করা যায়নি: ' + e.message, 'error');
+            }
+        }
+
+        async function permanentlyDeleteRequest(docId, email) {
+            if (currentAdminRole !== 'super_admin') {
+                return Swal.fire('অননুমোদিত', 'স্থায়ীভাবে ডিলিট করার ক্ষমতা শুধুমাত্র সুপার অ্যাডমিনের রয়েছে।', 'warning');
+            }
+
+            const confirm = await Swal.fire({
+                title: 'স্থায়ীভাবে ডিলিট করবেন?',
+                text: `${email} এর এই ডাটাটি ডাটাবেস থেকে স্থায়ীভাবে মুছে ফেলা হবে।`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d63031',
+                confirmButtonText: 'হ্যাঁ, চিরতরে ডিলিট করুন',
+                cancelButtonText: 'না'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
                 await db.collection("payment_requests").doc(docId).delete();
-                Swal.fire('মুছে ফেলা হয়েছে', 'আবেদনটি সফলভাবে বাতিল করা হয়েছে।', 'success');
+                Swal.fire('মুছে ফেলা হয়েছে', 'ডাটা স্থায়ীভাবে মুছে দেওয়া হয়েছে।', 'success');
+                loadRejectedRequests();
             } catch(e) {
                 console.error(e);
                 Swal.fire('Error', 'মুছে ফেলা যায়নি: ' + e.message, 'error');
+            }
+        }
+
+        async function loadRejectedRequests() {
+            const tbody = document.getElementById('rejectedLogBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা লোড হচ্ছে...</td></tr>';
+
+            try {
+                let query = db.collection("payment_requests").where("status", "==", "rejected");
+                if (currentAdminRole === 'moderator') {
+                    query = query.where("session", "==", "2026-27");
+                }
+                const snap = await query.get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="padding:15px; color:#888;">কোনো বাতিলকৃত আবেদন নেই।</td></tr>';
+                    return;
+                }
+                let html = '';
+                snap.forEach(doc => {
+                    const req = { id: doc.id, ...doc.data() };
+                    const d = new Date(req.timestamp);
+                    const dStr = isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+                    html += `<tr>
+                        <td style="color:#888; font-size:12px;">${dStr}</td>
+                        <td style="text-align:left;">
+                            <strong>${req.name || 'Student'}</strong><br>
+                            <span style="font-size:12px; color:#666;">${req.email || '-'}</span>
+                        </td>
+                        <td>${req.phone || '-'}<br><small style="color:#d63031; font-weight:bold;">লাস্ট ৩: ${req.last3 || '-'}</small></td>
+                        <td style="text-align:left;">${req.college || '-'}<br><small>${req.hscBatch || '-'}</small></td>
+                        <td style="color:#e17055; font-size:12px;"><i class="fas fa-times-circle"></i> বাতিলকৃত</td>
+                        <td>
+                            <div style="display:flex; gap:6px; justify-content:center;">
+                                <button class="btn" onclick="restorePaymentRequest('${req.id}', '${req.email}', '${(req.name||'').replace(/'/g, "\\'")}')" style="background:#00b894; color:white; padding:4px 8px; font-size:11px; border-radius:4px;" title="পুনরুদ্ধার ও অনুমোদন">
+                                    <i class="fas fa-undo"></i> অনুমোদন
+                                </button>
+                                ${currentAdminRole === 'super_admin' ? `
+                                <button class="btn" onclick="permanentlyDeleteRequest('${req.id}', '${req.email}')" style="background:#d63031; color:white; padding:4px 8px; font-size:11px; border-radius:4px;" title="স্থায়ীভাবে মুছুন">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" style="padding:15px; color:red;">বাতিলকৃত লগ লোড করা যায়নি।</td></tr>';
             }
         }
 
@@ -855,10 +1026,17 @@
 
         async function loadStudentLogs() {
             const tbody = document.getElementById('studentLogBody');
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:25px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা লোড হচ্ছে...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:25px; color:#888;"><i class="fas fa-spinner fa-spin"></i> ডাটা লোড হচ্ছে...</td></tr>';
 
             try {
-                const snapshot = await db.collection("payment_requests").where("status", "==", "approved").get();
+                let query = db.collection("payment_requests").where("status", "==", "approved");
+                
+                // 🛡️ মডারেটরের জন্য পূর্ববর্তী বছরের ডাটা ব্লক (শুধু চলতি 2026-27 সেশনের ডাটা পাবে)
+                if (currentAdminRole === 'moderator') {
+                    query = query.where("session", "==", "2026-27");
+                }
+
+                const snapshot = await query.get();
                 let logs = [];
                 snapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
                 
@@ -868,7 +1046,7 @@
                 renderStudentLogs(logs);
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="6" style="padding:25px; color:red;">লগ লোড করতে সমস্যা হয়েছে।</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="padding:25px; color:red;">লগ লোড করতে সমস্যা হয়েছে।</td></tr>';
             }
         }
 
