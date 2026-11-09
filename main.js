@@ -151,7 +151,7 @@ async function loadSettingsAndCourses() {
                         if (key === 'features') key = 'course_features';
                         if (key === 'banner') key = 'banner_image';
                         if (key === 'fee') key = 'course_fee';
-                        if (key === 'title') key = 'course_title';
+                        if (key === 'title' || key === 'course_title' || key === 'course_name' || key === 'name') key = 'course_title';
                         window.siteSettings[key] = val;
                     }
                 });
@@ -161,7 +161,7 @@ async function loadSettingsAndCourses() {
                     if (key === 'features') key = 'course_features';
                     if (key === 'banner') key = 'banner_image';
                     if (key === 'fee') key = 'course_fee';
-                    if (key === 'title') key = 'course_title';
+                    if (key === 'title' || key === 'course_title' || key === 'course_name' || key === 'name') key = 'course_title';
                     window.siteSettings[key] = String(rawSettings[k]).trim();
                 });
             }
