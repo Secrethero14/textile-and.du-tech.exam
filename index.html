@@ -114,6 +114,7 @@
                     <span class="nav-brand-sub">ESTD 2021</span>
                 </div>
             </a>
+            <button type="button" class="btn-top-nav-routine" onclick="openRoutineModal()" title="পরীক্ষার রুটিন ও নোটিশ"><i class="fas fa-calendar-alt"></i> <span>রুটিন</span></button>
             <div id="authContainer" class="auth-buttons"></div>
         </div>
 
@@ -128,6 +129,21 @@
             <div class="nav-header">
                 <button id="backBtn" class="btn-back" onclick="navigateBack()"><i class="fas fa-arrow-left"></i> ফিরে যান</button>
                 <h3 id="currentPathTitle" style="margin:0;">টেক্সটাইল ইঞ্জিনিয়ারিং ভর্তি প্রস্তুতি</h3>
+            </div>
+
+            <!-- 📅 পরীক্ষার রুটিন ও নোটিশ বার 📅 -->
+            <div class="routine-quick-bar" onclick="openRoutineModal()" title="পরীক্ষার রুটিন দেখতে ক্লিক করুন">
+                <div class="rqb-left">
+                    <div class="rqb-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="rqb-text">
+                        <span class="rqb-title">📅 পরীক্ষার পূর্ণাঙ্গ রুটিন ও নোটিশ</span>
+                        <span class="rqb-sub">চলতি ব্যাচের পরীক্ষার শিডিউল দেখুন ও ডাউনলোড করুন</span>
+                    </div>
+                </div>
+                <div class="rqb-btn">
+                    <span>রুটিন দেখুন</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
             </div>
 
             <!-- 🌟 সমতল ও পরিচ্ছন্ন কোর্স প্রাইসিং কার্ড (মূল পেমেন্ট ব্যানার) 🌟 -->
@@ -283,6 +299,54 @@
                 </div>
             </div>
         </footer>
+    </div>
+
+
+    <!-- 📅 পরীক্ষার রুটিন ও নোটিশ মোডাল 📅 -->
+    <div id="routineModal" class="modal-overlay" onclick="if(event.target === this) closeRoutineModal()">
+        <div class="modal-content routine-modal-content" style="max-width: 680px; text-align: left; padding: 20px 24px; border-radius: 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 15px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:#e0f2fe; color:#0284c7; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <h3 id="routineModalTitle" style="margin:0; font-size:17px; color:#1e293b; font-weight:700;">পরীক্ষার রুটিন ও নোটিশ</h3>
+                        <span id="routineUpdateDate" style="font-size:12px; color:#64748b;">চলতি সেশন ২০২৬-২৭</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeRoutineModal()" style="background:none; border:none; font-size:26px; color:#94a3b8; cursor:pointer; padding:0 5px; line-height:1;" title="বন্ধ করুন">&times;</button>
+            </div>
+
+            <!-- জরুরি নোটিশ বক্স -->
+            <div id="routineNoticeBox" style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#854d0e; line-height:1.5;">
+                <i class="fas fa-bullhorn" style="color:#d97706; margin-right:4px;"></i>
+                <span id="routineNoticeText">রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে। একবার পরীক্ষা শুরু হলে তা সবসময় প্র্যাকটিসের জন্য উন্মুক্ত থাকবে।</span>
+            </div>
+
+            <!-- রুটিন ছবি প্রিভিউ ও কন্টেইনার -->
+            <div id="routineImageContainer" style="text-align:center; margin-bottom:15px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:10px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <img id="routineImageEl" src="" alt="Exam Routine" style="max-width:100%; max-height:480px; height:auto; border-radius:8px; display:none; box-shadow:0 2px 8px rgba(0,0,0,0.08); cursor:zoom-in;" onclick="window.open(this.src, '_blank')">
+                <div id="routinePlaceholder" style="padding:25px 15px; color:#64748b; text-align:center;">
+                    <i class="fas fa-calendar-day fa-3x" style="color:#94a3b8; margin-bottom:10px;"></i>
+                    <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই রুটিন প্রকাশ করা হবে</p>
+                    <p style="margin:0; font-size:12px;">অ্যাডমিন রুটিন প্রকাশ করা মাত্রই আপনি এই পপআপ থেকে সরাসরি রুটিন দেখতে এবং নিজের ফোনে ডাউনলোড করে নিতে পারবেন।</p>
+                </div>
+            </div>
+
+            <!-- ডাউনলোড ও একশন বাটন -->
+            <div id="routineActionButtons" style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a id="routineDownloadImgBtn" href="#" download="exam_routine.jpg" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; text-decoration:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px;">
+                    <i class="fas fa-download"></i> রুটিন ডাউনলোড (Image)
+                </a>
+                <a id="routineDownloadPdfBtn" href="#" target="_blank" style="flex:1; min-width:160px; display:none; align-items:center; justify-content:center; gap:8px; background:#10b981; color:white; text-decoration:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px;">
+                    <i class="fas fa-file-pdf"></i> রুটিন PDF ডাউনলোড
+                </a>
+                <button type="button" onclick="closeRoutineModal()" style="flex:1; min-width:120px; background:#f1f5f9; color:#475569; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; font-size:13.5px; cursor:pointer;">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- 🔴 সমতল ও পরিচ্ছন্ন পেমেন্ট মোডাল 🔴 -->

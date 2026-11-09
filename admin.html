@@ -171,6 +171,48 @@
         </div>
     </div>
 
+
+        <div class="card" style="border-left: 5px solid #00b894; margin-top: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-calendar-alt" style="color:#00b894;"></i> ওয়েবসাইট রুটিন ও নোটিশ ব্যবস্থাপনা</h3>
+                <span style="font-size:12px; color:#636e72;">এখানে রুটিন আপডেট করলে সমস্ত শিক্ষার্থী সাথে সাথে দেখতে ও ডাউনলোড করতে পারবে</span>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                        <i class="fas fa-image"></i> রুটিনের ছবির লিংক (Image URL):
+                    </label>
+                    <input type="url" id="adminRoutineImgInput" class="input-box" style="width:100%;" placeholder="যেমন: https://i.imgur.com/... অথবা Google Drive ইমেজ লিংক">
+                </div>
+                <div>
+                    <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                        <i class="fas fa-file-pdf"></i> রুটিনের PDF লিংক (ঐচ্ছিক):
+                    </label>
+                    <input type="url" id="adminRoutinePdfInput" class="input-box" style="width:100%;" placeholder="যেমন: Google Drive PDF ডাউনলোড লিংক...">
+                </div>
+            </div>
+
+            <div style="margin-bottom:15px;">
+                <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                    <i class="fas fa-bullhorn"></i> রুটিন সংক্রান্ত জরুরি নোটিশ বা নির্দেশনা:
+                </label>
+                <textarea id="adminRoutineNoticeInput" class="input-box" rows="2" style="width:100%; resize:vertical;" placeholder="শিক্ষার্থীদের উদ্দেশ্যে রুটিনের বিশেষ নির্দেশনা বা পরীক্ষার তারিখ সংক্রান্ত বার্তা লিখুন..."></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div id="adminRoutineStatusMsg" style="font-size:12.5px; color:#0369a1; font-weight:600;"></div>
+                <div style="display:flex; gap:10px;">
+                    <button type="button" class="btn" onclick="previewAdminRoutine()" style="background:#6c5ce7; color:white;">
+                        <i class="fas fa-eye"></i> প্রিভিউ দেখুন
+                    </button>
+                    <button type="button" class="btn btn-export" onclick="saveAdminRoutineSettings()">
+                        <i class="fas fa-save"></i> রুটিন সেভ ও লাইভ আপডেট করুন
+                    </button>
+                </div>
+            </div>
+        </div>
+
     <!-- ============================================== -->
     <!-- TAB 2: STUDENT ACCESS & ENROLLMENT LOG -->
     <!-- ============================================== -->
@@ -475,6 +517,7 @@
                 loadExamList();
                 checkMentalSupportBadge();
                 listenPendingRequests();
+                loadAdminRoutineSettings();
             } else {
                 // অননুমোদিত ইউজার: অ্যাক্সেস ডিনাইড
                 loading.style.display = 'none';
@@ -496,6 +539,84 @@
         function logoutAdmin() {
             auth.signOut().then(() => {
                 location.reload();
+            });
+        }
+
+        
+        // ==============================================
+        // 📅 ADMIN ROUTINE MANAGEMENT LOGIC
+        // ==============================================
+        async function loadAdminRoutineSettings() {
+            try {
+                const snap = await db.collection("site_settings").doc("routine").get();
+                if (snap.exists) {
+                    const data = snap.data();
+                    const imgInp = document.getElementById('adminRoutineImgInput');
+                    const pdfInp = document.getElementById('adminRoutinePdfInput');
+                    const noticeInp = document.getElementById('adminRoutineNoticeInput');
+                    const statusMsg = document.getElementById('adminRoutineStatusMsg');
+
+                    if (imgInp && data.image) imgInp.value = data.image;
+                    if (pdfInp && data.pdf) pdfInp.value = data.pdf;
+                    if (noticeInp && data.notice) noticeInp.value = data.notice;
+                    if (statusMsg && data.updatedAt) {
+                        const d = new Date(data.updatedAt);
+                        statusMsg.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> সর্বশেষ আপডেট: ' + d.toLocaleString('bn-BD');
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not load routine from Firestore:", err);
+            }
+        }
+
+        async function saveAdminRoutineSettings() {
+            const imgInp = document.getElementById('adminRoutineImgInput');
+            const pdfInp = document.getElementById('adminRoutinePdfInput');
+            const noticeInp = document.getElementById('adminRoutineNoticeInput');
+            const statusMsg = document.getElementById('adminRoutineStatusMsg');
+
+            const image = (imgInp ? imgInp.value : '').trim();
+            const pdf = (pdfInp ? pdfInp.value : '').trim();
+            const notice = (noticeInp ? noticeInp.value : '').trim();
+
+            Swal.fire({ title: 'রুটিন আপডেট হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                await db.collection("site_settings").doc("routine").set({
+                    image: image,
+                    pdf: pdf,
+                    notice: notice,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: auth.currentUser ? auth.currentUser.email : 'admin'
+                });
+
+                Swal.fire('সফল!', 'পরীক্ষার রুটিন সফলভাবে আপডেট হয়েছে। সমস্ত শিক্ষার্থী সাইটে প্রবেশ করলেই এটি লাইভ দেখতে ও ডাউনলোড করতে পারবে।', 'success');
+                if (statusMsg) statusMsg.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> রুটিন লাইভ সেভ হয়েছে!';
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'রুটিন সেভ করা যায়নি: ' + err.message, 'error');
+            }
+        }
+
+        function previewAdminRoutine() {
+            const img = (document.getElementById('adminRoutineImgInput') || {}).value || '';
+            const pdf = (document.getElementById('adminRoutinePdfInput') || {}).value || '';
+            const notice = (document.getElementById('adminRoutineNoticeInput') || {}).value || '';
+
+            if (!img && !pdf && !notice) {
+                return Swal.fire('তথ্য নেই', 'প্রিভিউ দেখার জন্য কোনো লিংক বা নোটিশ লেখা হয়নি।', 'info');
+            }
+
+            Swal.fire({
+                title: 'রুটিন প্রিভিউ',
+                html: `
+                    <div style="text-align:left; font-size:13.5px;">
+                        ${notice ? `<p style="background:#fefce8; padding:8px 12px; border-radius:6px; color:#854d0e;"><b>নোটিশ:</b> ${notice}</p>` : ''}
+                        ${img ? `<div style="text-align:center; margin:10px 0;"><img src="${img}" style="max-width:100%; max-height:300px; border-radius:6px;"></div>` : '<p style="color:#888;">কোনো ছবি নেই</p>'}
+                        ${pdf ? `<p style="color:#0984e3;"><i class="fas fa-file-pdf"></i> PDF লিংক যুক্ত আছে</p>` : ''}
+                    </div>
+                `,
+                showCloseButton: true
             });
         }
 

@@ -989,18 +989,59 @@ function navigateBack() {
                         </a>
                     `;
                 } else {
-                    // 📝 সাধারণ এক্সাম কার্ড
+                    // 📝 সাধারণ এক্সাম কার্ড (শিডিউল্ড রুটিন এক্সাম সাপোর্ট সহ)
                     const isPaid = (item['Type']||'').toLowerCase() === 'paid';
-                    let unlocked = !isPaid;
-                    if(userEnrollment) { unlocked = true; }
+                    
+                    // 🕒 রুটিন অনুযায়ী শিডিউল্ড কি না যাচাই
+                    let isScheduled = false;
+                    if (item['Start Time'] && String(item['Start Time']).trim() !== '') {
+                        const d = new Date(item['Start Time']);
+                        if (!isNaN(d.getTime()) && d > new Date()) {
+                            isScheduled = true;
+                        }
+                    }
+                    if ((item['Status'] || item['status'] || '').toLowerCase().trim() === 'upcoming') {
+                        isScheduled = true;
+                    }
 
-                    const badge = isPaid ? (unlocked ? `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>` : `<span class="badge badge-paid">PAID</span>`) : `<span class="badge badge-free">FREE</span>`;
                     const itemRange = (item['Range'] || item['range'] || item['রেঞ্জ'] || item['Question Range'] || '').trim();
                     const itemName = (item['Exam Name'] || '').trim();
                     let examUrl = `exam.html?id=${encodeURIComponent(item['Tab ID'])}`;
                     if (itemName) examUrl += `&name=${encodeURIComponent(itemName)}`;
                     if (itemRange) examUrl += `&range=${encodeURIComponent(itemRange)}`;
-                    const action = unlocked ? `location.href='${examUrl}'` : `openPaymentModal()`;
+
+                    let badge = '';
+                    let action = '';
+                    let btnHtml = '';
+                    let isBtnUnlocked = false;
+
+                    if (!isPaid) {
+                        badge = `<span class="badge badge-free">FREE</span>`;
+                        action = `location.href='${examUrl}'`;
+                        btnHtml = 'Start Exam <i class="fas fa-arrow-right"></i>';
+                        isBtnUnlocked = true;
+                    } else if (!userEnrollment) {
+                        // পেইড কোর্স, কিন্তু এখনো কেনেনি
+                        badge = `<span class="badge badge-paid">PAID</span>`;
+                        action = 'openPaymentModal()';
+                        btnHtml = '<i class="fas fa-lock"></i> Locked';
+                    } else {
+                        // অলরেডি কোর্সে যুক্ত আছে!
+                        if (isScheduled) {
+                            // রুটিন অনুযায়ী এখনো শুরু হয়নি
+                            badge = `<span class="badge" style="background:#e0f2fe; color:#0284c7; font-weight:bold;"><i class="fas fa-clock"></i> UPCOMING</span>`;
+                            window.currentExamsMap = window.currentExamsMap || {};
+                            window.currentExamsMap[item['Tab ID']] = item;
+                            action = `showScheduledExamModal(window.currentExamsMap['${item['Tab ID']}'])`;
+                            btnHtml = '<i class="fas fa-calendar-alt"></i> রুটিন অনুযায়ী শিডিউল্ড';
+                        } else {
+                            // রুটিনের সময় চলে এসেছে বা আর্কাইভ এক্সাম (আনলক)
+                            badge = `<span class="badge badge-free" style="background:#e6fffa; color:#00b894;">PURCHASED</span>`;
+                            action = `location.href='${examUrl}'`;
+                            btnHtml = 'Start Exam <i class="fas fa-arrow-right"></i>';
+                            isBtnUnlocked = true;
+                        }
+                    }
                     
                     html += `
                         <div class="item-card exam-card" onclick="${action}">
@@ -1009,8 +1050,8 @@ function navigateBack() {
                             <h3 style="margin:0 0 10px 0; font-size:14px;">${item['Exam Name'] || 'Untitled Exam'}</h3>
                             <div style="font-size:12px; color:#666; margin-bottom:4px;"><i class="far fa-clock"></i> ${item['Total Time'] || 0} Minutes</div>
                             <div style="font-size:12px; color:#666;"><i class="fas fa-bullseye"></i> ${item['Total Marks'] || 0} Marks</div>
-                            <button class="btn-start ${unlocked ? 'unlocked' : ''}" style="pointer-events: auto; padding:8px; font-size:13px; margin-top:10px;">
-                                ${unlocked ? 'Start Exam <i class="fas fa-arrow-right"></i>' : '<i class="fas fa-lock"></i> Locked'}
+                            <button class="btn-start ${isBtnUnlocked ? 'unlocked' : ''}" style="pointer-events: auto; padding:8px; font-size:13px; margin-top:10px;">
+                                ${btnHtml}
                             </button>
                         </div>
                     `;
@@ -1058,6 +1099,149 @@ function navigateBack() {
             const numEl = document.getElementById('bkashNum') || document.getElementById('personalNum') || document.getElementById('paymentNum');
             const num = numEl ? numEl.innerText.trim() : '01522102384';
             copyPaymentNumber(num, event ? event.currentTarget : null);
+        }
+
+        
+        // ==============================================
+        // 📅 ROUTINE & NOTICE LOGIC (VIEW & DOWNLOAD)
+        // ==============================================
+        let currentRoutineData = null;
+
+        async function fetchRoutineData() {
+            try {
+                const snap = await db.collection("site_settings").doc("routine").get();
+                if (snap.exists) {
+                    currentRoutineData = snap.data();
+                    return currentRoutineData;
+                }
+            } catch (e) {
+                console.warn("Firestore routine fetch error:", e);
+            }
+            
+            const s = window.siteSettings || {};
+            currentRoutineData = {
+                image: s.routine_image || s.routine || '',
+                pdf: s.routine_pdf || '',
+                notice: s.routine_notice || 'রুটিন অনুযায়ী নির্দিষ্ট দিনে পরীক্ষাগুলো স্বয়ংক্রিয়ভাবে লাইভ হবে। একবার পরীক্ষা শুরু হলে তা সবসময় প্র্যাকটিসের জন্য উন্মুক্ত থাকবে।',
+                title: s.routine_title || 'পরীক্ষার রুটিন ও নোটিশ'
+            };
+            return currentRoutineData;
+        }
+
+        async function openRoutineModal() {
+            const modal = document.getElementById('routineModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+
+            const routine = await fetchRoutineData();
+            if (!routine) return;
+
+            // Notice
+            const noticeBox = document.getElementById('routineNoticeBox');
+            const noticeText = document.getElementById('routineNoticeText');
+            if (routine.notice && String(routine.notice).trim() !== '') {
+                if (noticeText) noticeText.innerText = String(routine.notice).trim();
+                if (noticeBox) noticeBox.style.display = 'block';
+            } else {
+                if (noticeBox) noticeBox.style.display = 'none';
+            }
+
+            // Image
+            const imgEl = document.getElementById('routineImageEl');
+            const placeholder = document.getElementById('routinePlaceholder');
+            const dlImgBtn = document.getElementById('routineDownloadImgBtn');
+
+            if (routine.image && String(routine.image).trim() !== '') {
+                let imgSrc = String(routine.image).trim();
+                if (imgSrc.includes('drive.google.com/file/d/')) {
+                    const fileId = imgSrc.split('/d/')[1].split('/')[0];
+                    imgSrc = 'https://drive.google.com/uc?export=view&id=' + fileId;
+                }
+                if (imgEl) {
+                    imgEl.src = imgSrc;
+                    imgEl.style.display = 'block';
+                }
+                if (placeholder) placeholder.style.display = 'none';
+                if (dlImgBtn) {
+                    dlImgBtn.href = imgSrc;
+                    dlImgBtn.style.display = 'inline-flex';
+                }
+            } else {
+                if (imgEl) {
+                    imgEl.src = '';
+                    imgEl.style.display = 'none';
+                }
+                if (placeholder) placeholder.style.display = 'block';
+                if (dlImgBtn) dlImgBtn.style.display = 'none';
+            }
+
+            // PDF
+            const dlPdfBtn = document.getElementById('routineDownloadPdfBtn');
+            if (routine.pdf && String(routine.pdf).trim() !== '') {
+                if (dlPdfBtn) {
+                    dlPdfBtn.href = String(routine.pdf).trim();
+                    dlPdfBtn.style.display = 'inline-flex';
+                }
+            } else {
+                if (dlPdfBtn) dlPdfBtn.style.display = 'none';
+            }
+
+            // Date
+            const dateEl = document.getElementById('routineUpdateDate');
+            if (dateEl && routine.updatedAt) {
+                try {
+                    const d = new Date(routine.updatedAt);
+                    if (!isNaN(d.getTime())) {
+                        dateEl.innerText = 'আপডেট: ' + d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+                    }
+                } catch(e) {}
+            }
+        }
+
+        function closeRoutineModal() {
+            const modal = document.getElementById('routineModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function showScheduledExamModal(item) {
+            const examName = item['Exam Name'] || 'পরীক্ষা';
+            let timeNotice = 'রুটিন অনুযায়ী নির্ধারিত তারিখে এই পরীক্ষাটি শুরু হবে।';
+            if (item['Start Time']) {
+                const d = new Date(item['Start Time']);
+                if (!isNaN(d.getTime())) {
+                    const timeStr = d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+                    timeNotice = 'এই পরীক্ষাটি <b>' + timeStr + '</b>-এ লাইভ শুরু হবে।';
+                }
+            }
+
+            Swal.fire({
+                icon: 'info',
+                iconColor: '#0284c7',
+                title: 'রুটিন অনুযায়ী শিডিউল্ড পরীক্ষা',
+                html: `
+                    <div style="font-size:14px; line-height:1.6; color:#2d3436; text-align:left;">
+                        <p style="margin:0 0 10px 0; font-weight:700; color:#1e3a8a; font-size:15px;">
+                            📝 ${examName}
+                        </p>
+                        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:12px;">
+                            <div style="color:#0369a1; font-weight:600; margin-bottom:4px;">
+                                <i class="fas fa-check-circle" style="color:#10b981;"></i> আপনার কোর্সটি সফলভাবে আনলক রয়েছে!
+                            </div>
+                            <div style="font-size:13px; color:#475569;">
+                                ${timeNotice}
+                            </div>
+                        </div>
+                        <p style="margin:0 0 14px 0; font-size:12.5px; color:#64748b;">
+                            রুটিনের নির্ধারিত সময় হওয়া মাত্রই আপনি এটি লাইভ দিতে পারবেন। পরীক্ষা সম্পন্ন হওয়ার পর এটি আপনার জন্য আজীবন উন্মুক্ত থাকবে এবং যেকোনো সময় প্র্যাকটিস করতে পারবেন।
+                        </p>
+                        <button type="button" onclick="Swal.close(); openRoutineModal();" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; border:none; padding:11px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
+                            <i class="fas fa-calendar-alt"></i> পূর্ণাঙ্গ পরীক্ষার রুটিন দেখুন ও ডাউনলোড করুন
+                        </button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true
+            });
         }
 
         function showPendingNoticeModal() {
