@@ -67,13 +67,14 @@ const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", auth
 
 // 🌟 ডিফল্ট কোর্স ফিচার অ্যারে (নতুন ফিচার যোগ করতে চাইলে শুধু এই অ্যারেতে লাইন যোগ করুন) 🌟
 const DEFAULT_COURSE_FEATURES = [
-    "অধ্যায়ভিত্তিক পরীক্ষা",
-    "পেপার ফাইনাল পরীক্ষা",
-    "মডেল টেস্ট পরীক্ষা",
-    "প্রশ্নব্যাংক সমাধান পরীক্ষা",
-    "ভুল প্রশ্ন ব্যাংক থেকে পরীক্ষা",
+    "অধ্যায় ভিত্তিক এক্সাম",
+    "পেপার ফাইনাল এক্সাম",
+    "মডেল টেস্ট এক্সাম",
+    "প্রশ্ন ব্যাংক সলভ এক্সাম",
+    "ভুল প্রশ্ন ব্যাংক থেকে নিজের ভুল প্রশ্নের এক্সাম",
     "সলভ শীট",
-    "টপিক সাজেশন ও গাইডলাইন"
+    "গুরুত্বপূর্ণ টপিক সাজেশন ও গাইডলাইন",
+    "টেলিগ্রাম পোল সলভ"
 ];
 
 // 🌟 DYNAMIC SITE SETTINGS & COURSES (FROM GOOGLE SHEETS) 🌟
@@ -87,19 +88,23 @@ window.siteSettings = {
     telegram_helper: "https://t.me/Admissionhelper007",
     course_fee: "149",
     course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
-        course_features: "১০০+ অধ্যায়ভিত্তিক পরীক্ষা, বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান, স্মার্ট ভুল ব্যাংক ও রি-টেস্ট, এক্সক্লুসিভ গাইডলাইন"
+    course_features: "অধ্যায় ভিত্তিক এক্সাম, পেপার ফাইনাল এক্সাম, মডেল টেস্ট এক্সাম, প্রশ্ন ব্যাংক সলভ এক্সাম, ভুল প্রশ্ন ব্যাংক থেকে নিজের ভুল প্রশ্নের এক্সাম, সলভ শীট, গুরুত্বপূর্ণ টপিক সাজেশন ও গাইডলাইন, টেলিগ্রাম পোল সলভ"
 };
 
 window.siteCourses = [
     {
         name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
-        fee: "100",
+        fee: "149",
         banner: "",
         features: [
-            "১০০+ অধ্যায়ভিত্তিক পরীক্ষা",
-            "বিগত ৫ বছরের প্রশ্নব্যাংক সমাধান",
-            "স্মার্ট ভুল ব্যাংক ও রি-টেস্ট",
-            "এক্সক্লুসিভ গাইডলাইন"
+            "অধ্যায় ভিত্তিক এক্সাম",
+            "পেপার ফাইনাল এক্সাম",
+            "মডেল টেস্ট এক্সাম",
+            "প্রশ্ন ব্যাংক সলভ এক্সাম",
+            "ভুল প্রশ্ন ব্যাংক থেকে নিজের ভুল প্রশ্নের এক্সাম",
+            "সলভ শীট",
+            "গুরুত্বপূর্ণ টপিক সাজেশন ও গাইডলাইন",
+            "টেলিগ্রাম পোল সলভ"
         ],
         status: "Active"
     }
@@ -143,26 +148,33 @@ async function loadSettingsAndCourses() {
         if (rawSettings) {
             if (Array.isArray(rawSettings)) {
                 rawSettings.forEach(row => {
-                    let key = (row.Key || row.key || row.KEY || row.name || '').trim().toLowerCase();
-                    const val = (row.Value || row.value || row.VALUE || row.val || '').trim();
+                    let key = String(row.Key || row.key || row.KEY || row.name || '').trim().toLowerCase();
+                    const val = String(row.Value !== undefined && row.Value !== null ? row.Value : (row.value !== undefined ? row.value : '')).trim();
                     if (key && val) {
-                        // Normalize underscores, spaces, hyphens
-                        key = key.replace(/[\s\-]+/g, '_');
-                        if (key === 'features') key = 'course_features';
-                        if (key === 'banner') key = 'banner_image';
-                        if (key === 'fee') key = 'course_fee';
+                        // Normalize underscores, spaces, tabs, hyphens
+                        key = key.replace(/[\s\t\-]+/g, '_');
+                        if (key === 'features' || key === 'course_features') key = 'course_features';
+                        if (key === 'banner' || key === 'banner_image') key = 'banner_image';
+                        if (key === 'fee' || key === 'course_fee' || key === 'price') key = 'course_fee';
                         if (key === 'title' || key === 'course_title' || key === 'course_name' || key === 'name') key = 'course_title';
+                        if (key === 'telegram' || key === 'telegram_link' || key === 'telegram_group') key = 'telegram_link';
+                        if (key === 'telegram_helper' || key === 'telegram_user' || key === 'telegram_username' || key === 'telegram_bot') key = 'telegram_helper';
+                        if (key === 'whatsapp' || key === 'whatsapp_number') key = 'whatsapp_number';
                         window.siteSettings[key] = val;
                     }
                 });
             } else if (typeof rawSettings === 'object') {
                 Object.keys(rawSettings).forEach(k => {
-                    let key = k.toLowerCase().trim().replace(/[\s\-]+/g, '_');
-                    if (key === 'features') key = 'course_features';
-                    if (key === 'banner') key = 'banner_image';
-                    if (key === 'fee') key = 'course_fee';
+                    let key = String(k).toLowerCase().trim().replace(/[\s\t\-]+/g, '_');
+                    const val = String(rawSettings[k] !== undefined && rawSettings[k] !== null ? rawSettings[k] : '').trim();
+                    if (key === 'features' || key === 'course_features') key = 'course_features';
+                    if (key === 'banner' || key === 'banner_image') key = 'banner_image';
+                    if (key === 'fee' || key === 'course_fee' || key === 'price') key = 'course_fee';
                     if (key === 'title' || key === 'course_title' || key === 'course_name' || key === 'name') key = 'course_title';
-                    window.siteSettings[key] = String(rawSettings[k]).trim();
+                    if (key === 'telegram' || key === 'telegram_link' || key === 'telegram_group') key = 'telegram_link';
+                    if (key === 'telegram_helper' || key === 'telegram_user' || key === 'telegram_username' || key === 'telegram_bot') key = 'telegram_helper';
+                    if (key === 'whatsapp' || key === 'whatsapp_number') key = 'whatsapp_number';
+                    window.siteSettings[key] = val;
                 });
             }
         }
