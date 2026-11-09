@@ -133,6 +133,7 @@
         <button class="tab-btn active" onclick="switchTab('tabMerit')"><i class="fas fa-trophy"></i> মেধা তালিকা ও রেজাল্ট</button>
         <button class="tab-btn" onclick="switchTab('tabStudents')"><i class="fas fa-user-check"></i> স্টুডেন্ট এক্সেস ও লগ <span id="pendingAccessBadge" style="display:none; background:#e74c3c; color:white; font-size:11px; padding:2px 7px; border-radius:10px;">0</span></button>
         <button class="tab-btn" onclick="switchTab('tabSupport')"><i class="fas fa-heartbeat"></i> মেন্টাল সাপোর্ট ইনবক্স <span id="supportBadge" style="display:none; background:#ff7675; color:white; font-size:11px; padding:2px 7px; border-radius:10px;">0</span></button>
+        <button id="tabTeamBtn" class="tab-btn" onclick="switchTab('tabTeam')" style="display:none;"><i class="fas fa-users-cog"></i> মডারেটর ও টিম</button>
     </div>
 
     <!-- ============================================== -->
@@ -304,6 +305,51 @@
         </div>
     </div>
 
+    <!-- ============================================== -->
+    <!-- TAB 4: MODERATOR & TEAM ACCESS MANAGEMENT (Super Admin Only) -->
+    <!-- ============================================== -->
+    <div id="tabTeam" class="tab-content">
+        <div class="card" style="border-left: 5px solid #0984e3;">
+            <h3><i class="fas fa-user-plus" style="color:#0984e3;"></i> নতুন মডারেটর / সহকারী যুক্ত করুন</h3>
+            <p style="margin:0 0 15px 0; color:#636e72; font-size:13.5px; line-height:1.5;">
+                যাঁকে মডারেটর এক্সেস দিতে চান, তাঁর গুগল জিমেইলটি নিচে লিখে যুক্ত করুন। তিনি এই সাইটে এসে নিজের জিমেইল দিয়ে সরাসরি লগইন করতে পারবেন (কোডে হাত দেওয়ার প্রয়োজন নেই)।<br>
+                <b style="color:#2d3436;">🔒 মডারেটরের ক্ষমতা ও সীমাবদ্ধতা:</b> মডারেটর শুধুমাত্র চলতি ব্যাচের আবেদন অনুমোদন/বাতিল, এক্সেস দেওয়া ও রেজাল্ট শিট ডাউনলোড করতে পারবে। আগের বছরের শিক্ষার্থীদের তথ্য বা মোট পরিসংখ্যান মডারেটরের কাছে সম্পূর্ণ গোপন থাকবে।
+            </p>
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <input type="email" id="newModEmail" class="input-box" placeholder="মডারেটরের গুগল জিমেইল (যেমন: assistant@gmail.com)..." style="flex:2; min-width:240px;" required>
+                <input type="text" id="newModNote" class="input-box" placeholder="সহকারীর নাম বা পদবী (ঐচ্ছিক)..." style="flex:1; min-width:180px;">
+                <button class="btn btn-load" onclick="addModerator()" style="background:#0984e3; color:white; padding:10px 18px; font-weight:bold;">
+                    <i class="fas fa-plus-circle"></i> মডারেটর যুক্ত করুন
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; border-bottom:2px solid #f0f0f0; padding-bottom:10px;">
+                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-users-cog"></i> সক্রিয় মডারেটরদের তালিকা</h3>
+                <button class="btn btn-load" onclick="loadModeratorList()" style="padding:5px 12px; font-size:12px;">
+                    <i class="fas fa-sync-alt"></i> রিফ্রেশ
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>তারিখ</th>
+                            <th style="text-align:left;">মডারেটরের নাম ও জিমেইল</th>
+                            <th>পদবী</th>
+                            <th>অনুমোদনকারী</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moderatorTableBody">
+                        <tr><td colspan="5" style="padding:20px; color:#888;">মডারেটর ডাটা লোড হচ্ছে...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- FIREBASE CONFIG ---
         const firebaseConfig = { 
@@ -331,6 +377,7 @@
 
             if(tabId === 'tabStudents') { listenPendingRequests(); loadRejectedRequests(); if(allStudentLogs.length === 0) loadStudentLogs(); }
             if(tabId === 'tabSupport') loadMentalSupportMessages();
+            if(tabId === 'tabTeam') loadModeratorList();
         }
 
         // ==============================================
@@ -351,8 +398,8 @@
 
         let currentAdminRole = 'moderator'; // 'super_admin' অথবা 'moderator'
 
-        // অ্যাডমিন ভেরিফিকেশন ও গেটকিপার লিসেনার
-        auth.onAuthStateChanged(user => {
+        // অ্যাডমিন ও মডারেটর ভেরিফিকেশন (Firestore ডাটাবেস ভিত্তিক ডাইনামিক এক্সেস)
+        auth.onAuthStateChanged(async (user) => {
             const loading = document.getElementById('gatekeeperLoading');
             const login = document.getElementById('gatekeeperLogin');
             const denied = document.getElementById('gatekeeperDenied');
@@ -368,26 +415,50 @@
                 return;
             }
 
+            loading.style.display = 'block';
+            login.style.display = 'none';
+            denied.style.display = 'none';
+
             const email = (user.email || '').toLowerCase().trim();
             const isSuperAdmin = SUPER_ADMIN_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
-            const isModerator = MODERATOR_EMAILS.map(e => e.toLowerCase().trim()).includes(email);
+
+            let isModerator = false;
+            let modData = null;
+
+            if (!isSuperAdmin) {
+                try {
+                    const modSnap = await db.collection("moderators").where("email", "==", email).get();
+                    if (!modSnap.empty) {
+                        isModerator = true;
+                        modData = modSnap.docs[0].data();
+                    }
+                } catch(e) {
+                    console.error("Moderator lookup error:", e);
+                }
+            }
 
             if (isSuperAdmin || isModerator) {
                 currentAdminRole = isSuperAdmin ? 'super_admin' : 'moderator';
 
-                // অনুমোদিত অ্যাডমিন/মডারেটর: ড্যাশবোর্ড ওপেন
                 gatekeeper.style.display = 'none';
                 adminApp.style.display = 'block';
                 
                 const badge = document.getElementById('currentAdminBadge');
-                if (badge) {
-                    if (isSuperAdmin) {
+                const teamTabBtn = document.getElementById('tabTeamBtn');
+
+                if (isSuperAdmin) {
+                    if (badge) {
                         badge.innerHTML = `<i class="fas fa-crown" style="color:#f1c40f;"></i> Super Admin (${email})`;
                         badge.style.background = 'rgba(16, 185, 129, 0.25)';
-                    } else {
+                    }
+                    if (teamTabBtn) teamTabBtn.style.display = 'flex';
+                    loadModeratorList();
+                } else {
+                    if (badge) {
                         badge.innerHTML = `<i class="fas fa-user-shield" style="color:#38bdf8;"></i> Moderator (${email})`;
                         badge.style.background = 'rgba(59, 130, 246, 0.25)';
                     }
+                    if (teamTabBtn) teamTabBtn.style.display = 'none';
                 }
 
                 // মডারেটরের জন্য সেশন ফিল্টার রেস্ট্রিক্ট
@@ -406,7 +477,7 @@
                 // অননুমোদিত ইউজার: অ্যাক্সেস ডিনাইড
                 loading.style.display = 'none';
                 login.style.display = 'none';
-                document.getElementById('deniedMsg').innerHTML = `<b>${email}</b> অ্যাকাউন্টটি অ্যাডমিন তালিকায় অন্তর্ভুক্ত নয়।`;
+                document.getElementById('deniedMsg').innerHTML = `<b>${email}</b> অ্যাকাউন্টটি অ্যাডমিন বা মডারেটর তালিকায় অন্তর্ভুক্ত নয়।`;
                 denied.style.display = 'block';
                 gatekeeper.style.display = 'flex';
                 adminApp.style.display = 'none';
@@ -1134,6 +1205,123 @@
                 </tr>`;
             });
             tbody.innerHTML = html;
+        }
+
+                // ==============================================
+        // TAB 4: MODERATOR MANAGEMENT LOGIC (SUPER ADMIN ONLY)
+        // ==============================================
+        async function addModerator() {
+            if (currentAdminRole !== 'super_admin') {
+                return Swal.fire('অননুমোদিত', 'শুধুমাত্র সুপার অ্যাডমিন নতুন মডারেটর যোগ করতে পারেন।', 'warning');
+            }
+
+            const emailInp = document.getElementById('newModEmail');
+            const noteInp = document.getElementById('newModNote');
+            const email = (emailInp ? emailInp.value : '').toLowerCase().trim();
+            const note = (noteInp ? noteInp.value : '').trim();
+
+            if (!email || !email.includes('@')) {
+                return Swal.fire('ভুল ইমেইল!', 'দয়া করে মডারেটরের সঠিক গুগল জিমেইল লিখুন।', 'warning');
+            }
+
+            if (SUPER_ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email)) {
+                return Swal.fire('সুপার অ্যাডমিন!', 'এই ইমেইলটি ইতোমধ্যে সুপার অ্যাডমিন হিসেবে সংরক্ষিত।', 'info');
+            }
+
+            Swal.fire({ title: 'যোগ করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                const existing = await db.collection("moderators").where("email", "==", email).get();
+                if (!existing.empty) {
+                    Swal.close();
+                    return Swal.fire('ইতিমধ্যে যুক্ত!', 'এই জিমেইলটি ইতোমধ্যে মডারেটর তালিকায় রয়েছে।', 'info');
+                }
+
+                await db.collection("moderators").add({
+                    email: email,
+                    name: note || 'Moderator',
+                    role: 'moderator',
+                    addedBy: auth.currentUser ? auth.currentUser.email : 'super_admin',
+                    addedAt: new Date().toISOString()
+                });
+
+                if (emailInp) emailInp.value = '';
+                if (noteInp) noteInp.value = '';
+
+                Swal.fire('সফল!', `<b>${email}</b> কে সফলভাবে মডারেটর এক্সেস দেওয়া হয়েছে। তিনি এখন নিজের জিমেইল দিয়ে এই ড্যাশবোর্ডে লগইন করতে পারবেন।`, 'success');
+                loadModeratorList();
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Error', 'যোগ করা সম্ভব হয়নি: ' + e.message, 'error');
+            }
+        }
+
+        async function removeModerator(docId, email) {
+            if (currentAdminRole !== 'super_admin') {
+                return Swal.fire('অননুমোদিত', 'শুধুমাত্র সুপার অ্যাডমিন মডারেটর বাতিল করতে পারেন।', 'warning');
+            }
+
+            const confirm = await Swal.fire({
+                title: 'এক্সেস প্রত্যাহার করবেন?',
+                html: `আপনি কি <b>${email}</b> এর মডারেটর এক্সেস বাতিল করতে চান?<br><br>বাতিল করলে তিনি আর এই প্যানেলে লগইন করতে পারবেন না।`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d63031',
+                confirmButtonText: 'হ্যাঁ, বাতিল করুন',
+                cancelButtonText: 'না'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                await db.collection("moderators").doc(docId).delete();
+                Swal.fire('এক্সেস প্রত্যাহার সম্পন্ন', `${email} এর মডারেটর এক্সেস সফলভাবে বন্ধ করা হয়েছে।`, 'success');
+                loadModeratorList();
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Error', 'বাতিল করা যায়নি: ' + e.message, 'error');
+            }
+        }
+
+        async function loadModeratorList() {
+            const tbody = document.getElementById('moderatorTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> মডারেটর তালিকা লোড হচ্ছে...</td></tr>';
+
+            try {
+                const snap = await db.collection("moderators").get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:18px; color:#888; text-align:center;">বর্তমানে কোনো অতিরিক্ত মডারেটর যুক্ত নেই। উপরের বক্সে জিমেইল লিখে মডারেটর যোগ করুন।</td></tr>';
+                    return;
+                }
+                let html = '';
+                snap.forEach(doc => {
+                    const m = { id: doc.id, ...doc.data() };
+                    const d = m.addedAt ? new Date(m.addedAt) : null;
+                    const dStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+                    html += `<tr>
+                        <td style="color:#636e72; font-size:12.5px;">${dStr}</td>
+                        <td style="text-align:left;">
+                            <strong>${m.name || 'Moderator'}</strong><br>
+                            <span style="font-size:12px; color:#0984e3; font-weight:600;">${m.email}</span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:bold;"><i class="fas fa-user-shield"></i> মডারেটর</span>
+                        </td>
+                        <td style="font-size:12px; color:#636e72;">${m.addedBy || 'Super Admin'}</td>
+                        <td>
+                            <button class="btn" onclick="removeModerator('${m.id}', '${m.email}')" style="background:#ff7675; color:white; padding:5px 10px; font-size:11.5px; border-radius:5px; cursor:pointer;" title="এক্সেস বাতিল করুন">
+                                <i class="fas fa-user-minus"></i> এক্সেস বাতিল
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="5" style="padding:15px; color:red;">তালিকা লোড করতে সমস্যা হয়েছে।</td></tr>';
+            }
         }
 
         // ==============================================
