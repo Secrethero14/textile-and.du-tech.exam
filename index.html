@@ -164,7 +164,7 @@
                     <i class="fas fa-clock" style="color:#d97706; margin-right:6px;"></i>
                     আপনার কোর্সে ভর্তির আবেদনটি ভেরিফিকেশন প্রক্রিয়াধীন রয়েছে। অ্যাডমিন অনুমোদন দিলেই কোর্সটি স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে।
                 </span>
-                <a id="pendingBannerWaLink" href="javascript:void(0)" onclick="showPendingNoticeModal()" class="btn-pending-contact">
+                <a id="pendingBannerWaLink" href="javascript:void(0)" onclick="event.preventDefault(); showPendingNoticeModal(); return false;" class="btn-pending-contact">
                     <i class="fas fa-info-circle"></i> স্ট্যাটাস দেখুন
                 </a>
             </div>

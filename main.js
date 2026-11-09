@@ -350,8 +350,8 @@ function applyDynamicSiteData() {
     const successTg = document.getElementById('successBannerTgLink');
     if (successTg && s.telegram_link) successTg.href = s.telegram_link;
 
+    // pendingBannerWaLink এর href পরিবর্তন করা হবে না, যাতে ক্লিক করলে স্বয়ংক্রিয়ভাবে হোয়াটসঅ্যাপ ওপেন না হয়ে শুধু স্ট্যাটাস পপআপ খোলে
     const pendingWa = document.getElementById('pendingBannerWaLink');
-    if (pendingWa && waUrl) pendingWa.href = waUrl;
 }
 
 // Auto-start dynamic settings & courses loader immediately
@@ -484,6 +484,10 @@ function navigateBack() {
                 dashboardView.style.opacity = '1';
                 updateNavBar(user);
                 checkEnrollment(user.email);
+                if (window.openPaymentAfterLogin) {
+                    window.openPaymentAfterLogin = false;
+                    setTimeout(() => { openPaymentModal(); }, 600);
+                }
             } else if (isGuest) {
                 sysLoader.style.display = 'none';
                 loginView.style.display = 'none';
@@ -1057,6 +1061,12 @@ function navigateBack() {
         }
 
         function showPendingNoticeModal() {
+            const waRaw = (window.siteSettings && window.siteSettings.whatsapp_number) || '01873275283';
+            const cleanWa = waRaw.replace(/[^0-9]/g, '');
+            const waLink = `https://wa.me/88${cleanWa.startsWith('88') ? cleanWa.substring(2) : cleanWa}`;
+            const tgLink = (window.siteSettings && window.siteSettings.telegram_helper) || 'https://t.me/Admissionhelper007';
+            const messengerLink = 'https://m.me/habibs.care.edu';
+
             Swal.fire({
                 icon: 'warning',
                 iconColor: '#f39c12',
@@ -1064,34 +1074,88 @@ function navigateBack() {
                 html: `
                     <div style="font-size:14px; line-height:1.6; color:#2d3436; text-align:left;">
                         <p style="margin:0 0 10px 0;">আপনার কোর্সে ভর্তির আবেদন ও পেমেন্ট তথ্য সফলভাবে জমা হয়েছে। এটি বর্তমানে <b>অ্যাডমিন ভেরিফিকেশন প্রক্রিয়াধীন</b> রয়েছে।</p>
-                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13.5px; color:#92400e;">
+                        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; margin-bottom:15px; font-size:13.5px; color:#92400e;">
                             <i class="fas fa-check-circle" style="color:#10b981;"></i> অ্যাডমিন পেমেন্ট চেক করে অনুমোদন দেওয়া মাত্রই আপনার সমস্ত কোর্স ও এক্সাম স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে।
                         </div>
-                        <p style="margin:0; font-size:12.5px; color:#64748b;">জরুরি যোগাযোগের জন্য নিচের যেকোনো একটি মাধ্যমে অ্যাডমিনকে নক দিতে পারেন:</p>
+                        <p style="margin:0 0 10px 0; font-size:13px; color:#64748b; font-weight:600;">জরুরি যোগাযোগের জন্য নিচের যেকোনো মাধ্যমে নক দিতে পারেন:</p>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <a href="${waLink}" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#25D366; color:white; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; font-size:13.5px; transition:opacity 0.2s;">
+                                <i class="fab fa-whatsapp" style="font-size:17px;"></i> WhatsApp-এ মেসেজ দিন
+                            </a>
+                            <a href="${tgLink}" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#0088cc; color:white; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; font-size:13.5px; transition:opacity 0.2s;">
+                                <i class="fab fa-telegram-plane" style="font-size:17px;"></i> Telegram-এ মেসেজ দিন
+                            </a>
+                            <a href="${messengerLink}" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#0084ff; color:white; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; font-size:13.5px; transition:opacity 0.2s;">
+                                <i class="fab fa-facebook-messenger" style="font-size:17px;"></i> Messenger-এ মেসেজ দিন
+                            </a>
+                        </div>
                     </div>
                 `,
-                showCancelButton: true,
-                confirmButtonColor: '#0088cc',
-                cancelButtonColor: '#25D366',
-                confirmButtonText: '<i class="fab fa-telegram-plane"></i> Telegram',
-                cancelButtonText: '<i class="fab fa-whatsapp"></i> WhatsApp',
+                showConfirmButton: false,
                 showCloseButton: true,
-                footer: '<a href="https://m.me/habibs.care.edu" target="_blank" style="color:#0084ff; text-decoration:none; font-weight:600; font-size:13.5px;"><i class="fab fa-facebook-messenger"></i> অথবা Messenger-এ মেসেজ দিন</a>'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.open('https://t.me/Admissionhelper007', '_blank');
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    const waRaw = (window.siteSettings && window.siteSettings.whatsapp_number) || '01873275283';
-                    const cleanWa = waRaw.replace(/[^0-9]/g, '');
-                    window.open(`https://wa.me/88${cleanWa.startsWith('88') ? cleanWa.substring(2) : cleanWa}`, '_blank');
-                }
+                focusConfirm: false
             });
+        }
+
+        function showGuestLoginPrompt() {
+            Swal.fire({
+                icon: 'info',
+                iconColor: '#0984e3',
+                title: 'প্রথমে লগইন বা রেজিস্ট্রেশন করুন',
+                html: `
+                    <div style="font-size:14px; line-height:1.6; color:#2d3436; text-align:left;">
+                        <p style="margin:0 0 12px 0;">
+                            কোর্সে ভর্তি হওয়া ও পেমেন্ট করার জন্য আপনাকে আপনার অ্যাকাউন্টে লগইন থাকতে হবে। এতে আপনার ভর্তি অনুমোদন ও পরীক্ষার অগ্রগতি আপনার জিমেইল অ্যাকাউন্টে আজীবন সুরক্ষিত থাকবে।
+                        </p>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
+                            <button type="button" onclick="handleGoogleLoginFromPrompt()" style="display:flex; align-items:center; justify-content:center; gap:10px; background:#ffffff; color:#2d3436; border:1px solid #cbd5e1; padding:12px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google">
+                                Google দিয়ে লগইন / সাইন-আপ
+                            </button>
+                            <button type="button" onclick="openEmailSignupFromPrompt()" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">
+                                <i class="fas fa-user-plus"></i> নতুন অ্যাকাউন্ট খুলুন (ইমেইল)
+                            </button>
+                            <button type="button" onclick="openEmailLoginFromPrompt()" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#f1f2f6; color:#2d3436; border:none; padding:10px; border-radius:8px; font-size:13px; cursor:pointer;">
+                                <i class="fas fa-sign-in-alt"></i> ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন
+                            </button>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        }
+
+        function handleGoogleLoginFromPrompt() {
+            Swal.close();
+            window.openPaymentAfterLogin = true;
+            handleGoogleLogin();
+        }
+
+        function openEmailSignupFromPrompt() {
+            Swal.close();
+            window.openPaymentAfterLogin = true;
+            showLoginModal();
+            if (!isRegistering) toggleAuthMode();
+        }
+
+        function openEmailLoginFromPrompt() {
+            Swal.close();
+            window.openPaymentAfterLogin = true;
+            showLoginModal();
+            if (isRegistering) toggleAuthMode();
         }
 
         function openPaymentModal(courseRef) { 
             // 🔒 যদি আবেদন অলরেডি পেন্ডিং থাকে, তবে পেমেন্ট মডাল না খুলে পেন্ডিং স্ট্যাটাস পপআপ দেখাবে
             if (isUserPending) {
                 showPendingNoticeModal();
+                return;
+            } 
+            
+            // 🔒 যদি ইউজার গেস্ট মোডে থাকে বা লগইন না থাকে, তবে আগে লগইন বা একাউন্ট তৈরির প্রম্পট দেখাবে
+            if (isGuest || !auth.currentUser) {
+                showGuestLoginPrompt();
                 return;
             } 
             let course = null;
