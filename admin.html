@@ -890,13 +890,51 @@
             }
         }
 
+        function stripLatexForLen(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/\$\$[\s\S]*?\$\$/g, 'XX')
+                .replace(/\$[^$]*?\$/g, 'X')
+                .replace(/<[^>]*>/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function detectOptionLayout(opA, opB, opC, opD) {
+            const opts = [opA, opB, opC, opD];
+            const lens = opts.map(o => stripLatexForLen(o).length);
+            const hasBlockMath = opts.some(o => /\\frac|\\begin|\\int|\\sum|<br>/i.test(String(o || '')));
+            const maxLen = Math.max.apply(null, lens);
+            const totalLen = lens.reduce((a, b) => a + b, 0);
+            if (!hasBlockMath && maxLen <= 9 && totalLen <= 28) return 'oneline';
+            if (maxLen > 24) return 'stack';
+            return '';
+        }
+
+        function formatExplanationForPrint(raw) {
+            if (!raw) return '';
+            let s = String(raw).trim();
+            s = s.replace(/\n/g, '<br>');
+            s = s.replace(/।\s+/g, '।<br>');
+            s = s.replace(/([^\d]):\s+/g, '$1:<br>');
+            if (s.includes('$')) {
+                s = s.replace(/\\Rightarrow/g, '$<br>$\\Rightarrow');
+                s = s.replace(/\$\$/g, '$ $');
+            }
+            s = s.replace(/([→⇌⇋↔])/g, '<br>$1');
+            s = s.replace(/(ধাপ\s*[০-৯\d]+:)/g, '<br>$1');
+            s = s.replace(/(<br>\s*)+/g, '<br>');
+            if (s.startsWith('<br>')) s = s.substring(4);
+            return s;
+        }
+
         function buildPrintDocHtml(questions, examMeta, mode) {
             const isSolve = mode === 'solve';
-            const examName = examMeta.name || examMeta.tabId;
+            const examName = examMeta.name || examMeta.tabId || 'Exam';
             const totalQ = questions.length;
             const totalTime = examMeta.time || Math.round(totalQ * 0.8);
             const totalMarks = examMeta.marks || totalQ;
-            const negMark = examMeta.neg !== undefined && examMeta.neg !== '' ? examMeta.neg : 0.5;
+            const negMark = examMeta.neg !== undefined && examMeta.neg !== '' ? examMeta.neg : 0.25;
 
             let questionsHtml = '';
             questions.forEach((q, idx) => {
@@ -908,42 +946,31 @@
                 const optD = q['অপশন D'] || q['optD'] || '';
                 const rawAns = q['উত্তর'] || q['ans'] || '';
                 const rightAns = normalizeMCQAns(rawAns);
-                const exp = q['বিস্তারিত ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা'] || '';
+                const expRaw = q['বিস্তারিত ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা'] || '';
+                const exp = formatExplanationForPrint(expRaw);
                 const shortcut = q['Shortcut'] || '';
                 const note = q['বিশেষ নোট'] || '';
-                const sub = q['Subject'] || '';
-                const ch = q['অধ্যায়'] || q['Chapter'] || '';
 
                 const isA = isSolve && rightAns === 'A';
                 const isB = isSolve && rightAns === 'B';
                 const isC = isSolve && rightAns === 'C';
                 const isD = isSolve && rightAns === 'D';
 
-                questionsHtml += '<div class="q-card">' +
-                    '<div class="q-header">' +
-                        '<span class="q-num">' + qNum + '.</span> ' +
-                        '<span class="q-text">' + qText + '</span> ' +
-                        ((sub || ch) ? '<span class="q-tag">' + (sub ? sub : '') + (sub && ch ? ' • ' : '') + (ch ? ch : '') + '</span>' : '') +
-                    '</div>' +
-                    '<div class="options-grid">' +
-                        '<div class="opt-item ' + (isA ? 'opt-correct' : '') + '">' +
-                            '<span class="opt-label">(ক)</span> <span class="opt-text">' + optA + '</span> ' + (isA ? '<span class="check-icon">✓</span>' : '') +
-                        '</div>' +
-                        '<div class="opt-item ' + (isB ? 'opt-correct' : '') + '">' +
-                            '<span class="opt-label">(খ)</span> <span class="opt-text">' + optB + '</span> ' + (isB ? '<span class="check-icon">✓</span>' : '') +
-                        '</div>' +
-                        '<div class="opt-item ' + (isC ? 'opt-correct' : '') + '">' +
-                            '<span class="opt-label">(গ)</span> <span class="opt-text">' + optC + '</span> ' + (isC ? '<span class="check-icon">✓</span>' : '') +
-                        '</div>' +
-                        '<div class="opt-item ' + (isD ? 'opt-correct' : '') + '">' +
-                            '<span class="opt-label">(ঘ)</span> <span class="opt-text">' + optD + '</span> ' + (isD ? '<span class="check-icon">✓</span>' : '') +
-                        '</div>' +
+                const layoutClass = detectOptionLayout(optA, optB, optC, optD);
+
+                questionsHtml += '<div class="question-container">' +
+                    '<div class="question-title">' + qNum + '. ' + qText + '</div>' +
+                    '<div class="options ' + layoutClass + '">' +
+                        '<div class="' + (isA ? 'correct-opt' : '') + '">(A)&nbsp;' + optA + (isA ? ' ✓' : '') + '</div>' +
+                        '<div class="' + (isB ? 'correct-opt' : '') + '">(B)&nbsp;' + optB + (isB ? ' ✓' : '') + '</div>' +
+                        '<div class="' + (isC ? 'correct-opt' : '') + '">(C)&nbsp;' + optC + (isC ? ' ✓' : '') + '</div>' +
+                        '<div class="' + (isD ? 'correct-opt' : '') + '">(D)&nbsp;' + optD + (isD ? ' ✓' : '') + '</div>' +
                     '</div>' +
                     (isSolve && (exp || shortcut || note) ? (
                         '<div class="explanation-box">' +
-                            (exp ? '<div class="exp-row"><b class="exp-badge">💡 ব্যাখ্যা:</b> ' + exp + '</div>' : '') +
-                            (shortcut ? '<div class="exp-row"><b class="exp-badge shortcut">⚡ শর্টকাট:</b> ' + shortcut + '</div>' : '') +
-                            (note ? '<div class="exp-row"><b class="exp-badge note">📌 নোট:</b> ' + note + '</div>' : '') +
+                            (exp ? '<div><b>ব্যাখ্যা:</b> ' + exp + '</div>' : '') +
+                            (shortcut ? '<div><b>শর্টকাট:</b> ' + shortcut + '</div>' : '') +
+                            (note ? '<div><b>নোট:</b> ' + note + '</div>' : '') +
                         '</div>'
                     ) : '') +
                 '</div>';
@@ -953,79 +980,98 @@
 '\x3Chtml lang="bn">' +
 '\x3Chead>' +
     '\x3Cmeta charset="UTF-8">' +
-    '\x3Ctitle>' + (isSolve ? 'সলভ শিট' : 'প্রশ্নপত্র') + ' - ' + examName + '\x3C/title>' +
+    '\x3Ctitle>' + escapeHtml(examName) + (isSolve ? ' (সলভ শিট)' : '') + '\x3C/title>' +
     '\x3Cmeta name="viewport" content="width=device-width, initial-scale=1.0">' +
-    '\x3Clink rel="preconnect" href="https://fonts.googleapis.com">' +
-    '\x3Clink rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
-    '\x3Clink href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">' +
     '\x3Clink rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">' +
     '\x3Cscript defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">\x3C/script>' +
+    '\x3Cscript defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/mhchem.min.js">\x3C/script>' +
     '\x3Cscript defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js">\x3C/script>' +
     '\x3Cstyle>' +
+        '@import url("https://fonts.maateen.me/kalpurush/font.css");' +
         '* { box-sizing: border-box; }' +
         'body {' +
-            'font-family: "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;' +
-            'margin: 0; padding: 15px; color: #1a1a1a; background: #f8fafc; line-height: 1.45;' +
+            'font-family: "Sonar Bangla", "Shonar Bangla", "Kalpurush", "Siyam Rupali", serif;' +
+            'font-size: 12pt;' +
+            'font-weight: normal;' +
+            'line-height: 1.32;' +
+            'background: #ffffff;' +
+            'color: #000000;' +
+            'margin: 0;' +
+            'padding: 18px 18px 75px 18px;' +
             '-webkit-print-color-adjust: exact; print-color-adjust: exact;' +
         '}' +
-        '.paper-wrapper { max-width: 900px; margin: 0 auto; background: #ffffff; padding: 24px 28px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }' +
-        '.exam-header { text-align: center; border-bottom: 2px solid #2d3436; padding-bottom: 12px; margin-bottom: 14px; }' +
-        '.inst-title { font-size: 20px; font-weight: 700; color: #1e3a8a; margin: 0 0 4px 0; letter-spacing: 0.5px; }' +
-        '.sub-inst-title { font-size: 13px; color: #4b5563; margin: 0 0 8px 0; }' +
-        '.exam-title-badge { display: inline-block; background: ' + (isSolve ? '#10b981' : '#0984e3') + '; color: #ffffff; font-size: 15px; font-weight: 600; padding: 3px 14px; border-radius: 20px; margin-bottom: 8px; }' +
-        '.meta-bar { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; font-size: 12.5px; font-weight: 600; color: #374151; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; }' +
-        '.instructions-box { font-size: 11.5px; color: #475569; margin-top: 8px; font-style: italic; }' +
-        '.columns-container { column-count: 2; column-gap: 24px; column-rule: 1px dashed #cbd5e1; margin-top: 14px; }' +
-        '.q-card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dotted #e2e8f0; font-size: 13px; }' +
-        '.q-header { margin-bottom: 6px; display: block; }' +
-        '.q-num { font-weight: 700; color: #1e3a8a; margin-right: 4px; font-size: 13.5px; }' +
-        '.q-text { font-weight: 500; color: #0f172a; }' +
-        '.q-tag { display: inline-block; font-size: 10px; color: #64748b; background: #f8fafc; border: 0.5px solid #e2e8f0; padding: 1px 5px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }' +
-        '.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; margin-top: 4px; font-size: 12px; }' +
-        '.opt-item { padding: 3px 6px; border-radius: 4px; color: #334155; display: flex; align-items: baseline; gap: 4px; background: #fafafa; border: 0.5px solid #f1f5f9; }' +
-        '.opt-label { font-weight: 600; color: #64748b; flex-shrink: 0; }' +
-        '.opt-text { flex-grow: 1; word-break: break-word; }' +
-        '.opt-correct { background: #dcfce7 !important; border-color: #86efac !important; color: #15803d !important; font-weight: 600 !important; }' +
-        '.check-icon { font-weight: bold; color: #16a34a; margin-left: 4px; font-size: 11px; }' +
-        '.explanation-box { margin-top: 6px; background: #f8fafc; border-left: 3px solid #10b981; padding: 5px 8px; border-radius: 4px; font-size: 11.5px; color: #334155; line-height: 1.4; }' +
-        '.exp-row { margin-bottom: 3px; }' +
-        '.exp-row:last-child { margin-bottom: 0; }' +
-        '.exp-badge { color: #059669; font-size: 11.5px; }' +
-        '.exp-badge.shortcut { color: #d97706; }' +
-        '.exp-badge.note { color: #7c3aed; }' +
-        '.floating-action-bar { position: fixed; bottom: 25px; right: 25px; display: flex; gap: 10px; z-index: 99999; background: rgba(255, 255, 255, 0.95); padding: 8px 12px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }' +
-        '.f-btn { border: none; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }' +
-        '.f-btn-print { background: #1e3a8a; color: #ffffff; }' +
-        '.f-btn-print:hover { background: #1e40af; }' +
+        '.paper-wrap { max-width: 900px; margin: 0 auto; }' +
+        '.exam-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 8px; margin-bottom: 14px; }' +
+        '.exam-title { margin: 0; font-size: 18pt; font-weight: bold; color: #000; }' +
+        '.exam-sub { margin: 3px 0 0 0; font-size: 11pt; color: #222; }' +
+        '.two-column-layout {' +
+            'column-count: 2;' +
+            'column-gap: 24px;' +
+            'column-rule: 1px solid #d1d5db;' +
+        '}' +
+        '.question-container {' +
+            'margin-bottom: 11px;' +
+            'break-inside: avoid;' +
+            'page-break-inside: avoid;' +
+            'display: inline-block;' +
+            'width: 100%;' +
+        '}' +
+        '.question-title { margin-bottom: 3px; font-weight: normal; }' +
+        '.options {' +
+            'display: grid;' +
+            'grid-template-columns: 1fr 1fr;' +
+            'column-gap: 12px;' +
+            'row-gap: 2px;' +
+            'margin-left: 10px;' +
+        '}' +
+        '.options.stack { grid-template-columns: 1fr; }' +
+        '.options.oneline {' +
+            'display: flex;' +
+            'flex-wrap: wrap;' +
+            'justify-content: space-between;' +
+            'gap: 8px;' +
+        '}' +
+        '.options > div { min-width: 0; }' +
+        '.correct-opt { color: #0b7a3e; font-weight: bold; }' +
+        '.explanation-box {' +
+            'margin: 4px 0 2px 10px;' +
+            'padding: 4px 8px;' +
+            'border-left: 2.5px solid #27ae60;' +
+            'background: #f9fafb;' +
+            'font-size: 10.5pt;' +
+            'color: #222;' +
+            'line-height: 1.35;' +
+        '}' +
+        '.katex { font-size: 1em; }' +
+        '.floating-action-bar { position: fixed; bottom: 18px; right: 18px; display: flex; gap: 8px; z-index: 99999; background: rgba(255,255,255,0.96); padding: 7px 12px; border-radius: 28px; box-shadow: 0 4px 14px rgba(0,0,0,0.16); border: 1px solid #d1d5db; font-family: sans-serif; }' +
+        '.f-btn { border: none; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }' +
+        '.f-btn-print { background: #1e3a8a; color: #fff; }' +
         '.f-btn-close { background: #e2e8f0; color: #334155; }' +
-        '.f-btn-close:hover { background: #cbd5e1; }' +
+        '@media screen and (max-width: 680px) {' +
+            'body { padding: 12px 12px 75px 12px; font-size: 11.5pt; }' +
+            '.two-column-layout { column-count: 1; }' +
+            '.exam-title { font-size: 15pt; }' +
+        '}' +
         '@media print {' +
-            'body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; }' +
-            '.paper-wrapper { max-width: 100% !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; }' +
+            '@page { size: A4 portrait; margin: 0.4in; }' +
+            'body { padding: 0 !important; margin: 0 !important; background: #fff !important; }' +
+            '.paper-wrap { max-width: 100% !important; }' +
+            '.two-column-layout { column-count: 2 !important; column-gap: 22px !important; }' +
             '.floating-action-bar { display: none !important; }' +
-            '@page { size: A4 portrait; margin: 10mm 12mm 12mm 12mm; }' +
         '}' +
     '\x3C/style>' +
 '\x3C/head>' +
 '\x3Cbody>' +
     '\x3Cdiv class="floating-action-bar">' +
-        '\x3Cbutton class="f-btn f-btn-print" onclick="window.print()">🖨️ প্রিন্ট / Save as PDF\x3C/button>' +
+        '\x3Cbutton class="f-btn f-btn-print" onclick="window.print()">🖨️ Print / Save as PDF\x3C/button>' +
         '\x3Cbutton class="f-btn f-btn-close" onclick="window.close()">✖️ বন্ধ করুন\x3C/button>' +
     '\x3C/div>' +
-    '\x3Cdiv class="paper-wrapper">' +
+    '\x3Cdiv class="paper-wrap">' +
         '\x3Cdiv class="exam-header">' +
-            '\x3Ch1 class="inst-title">HABIB\'S CARE EXAM PORTAL\x3C/h1>' +
-            '\x3Cp class="sub-inst-title">টেক্সটাইল ইঞ্জিনিয়ারিং ও ঢাবি প্রযুক্তি ইউনিট ভর্তি প্রস্তুতি\x3C/p>' +
-            '\x3Cdiv class="exam-title-badge">' + (isSolve ? '📝 সলভ শিট ও পূর্ণাঙ্গ ব্যাখ্যা' : '📄 প্রশ্নপত্র') + ' : ' + examName + '\x3C/div>' +
-            '\x3Cdiv class="meta-bar">' +
-                '\x3Cspan>মোট প্রশ্ন: ' + toBanglaDigits(totalQ) + ' টি\x3C/span>' +
-                '\x3Cspan>সময়: ' + toBanglaDigits(totalTime) + ' মিনিট\x3C/span>' +
-                '\x3Cspan>পূর্ণমান: ' + toBanglaDigits(totalMarks) + '\x3C/span>' +
-                '\x3Cspan>নেগেটিভ মার্ক: ' + toBanglaDigits(negMark) + '\x3C/span>' +
-            '\x3C/div>' +
-            (!isSolve ? '\x3Cdiv class="instructions-box">* নির্দেশাবলী: প্রতিটি প্রশ্নের সঠিক উত্তরটি বৃত্ত ভরাট বা চিহ্নিত করুন। প্রতিটি ভুল উত্তরের জন্য ' + toBanglaDigits(negMark) + ' নম্বর কাটা যাবে।\x3C/div>' : '') +
+            '\x3Ch1 class="exam-title">' + escapeHtml(examName) + (isSolve ? ' — সলভ শিট' : '') + '\x3C/h1>' +
+            '\x3Cp class="exam-sub">মোট প্রশ্ন: ' + toBanglaDigits(totalQ) + ' টি &nbsp;|&nbsp; সময়: ' + toBanglaDigits(totalTime) + ' মিনিট &nbsp;|&nbsp; পূর্ণমান: ' + toBanglaDigits(totalMarks) + ' &nbsp;|&nbsp; নেগেটিভ মার্ক: ' + toBanglaDigits(negMark) + '\x3C/p>' +
         '\x3C/div>' +
-        '\x3Cdiv class="columns-container">' +
+        '\x3Cdiv class="two-column-layout">' +
             questionsHtml +
         '\x3C/div>' +
     '\x3C/div>' +
@@ -1035,12 +1081,13 @@
                 'if (typeof renderMathInElement === "function") {' +
                     'renderMathInElement(document.body, {' +
                         'delimiters: [' +
-                            '{left: "$", right: "$", display: true},' +
-                            '{left: "\\\[", right: "\\\]", display: true},' +
-                            '{left: "$", right: "$", display: false},' +
-                            '{left: "\\\\(", right: "\\\\)", display: false}' +
+                            '{left: "$$", right: "$$", display: true},' +
+                            '{left: "\\\\[", right: "\\\\]", display: true},' +
+                            '{left: "\\\\(", right: "\\\\)", display: false},' +
+                            '{left: "$", right: "$", display: false}' +
                         '],' +
-                        'throwOnError: false' +
+                        'throwOnError: false,' +
+                        'strict: false' +
                     '});' +
                 '} else {' +
                     'setTimeout(renderKaTeX, 100);' +
@@ -1052,7 +1099,6 @@
 '\x3C/body>' +
 '\x3C/html>';
         }
-
 let allExamsCache = [];
         async function loadExamList() {
             try {
@@ -1209,88 +1255,162 @@ let allExamsCache = [];
             tbody.innerHTML = bodyHtml;
         }
 
+        function maskEmail(email) {
+            if (!email) return '-';
+            const s = String(email).trim();
+            if (!s || s.toLowerCase() === 'guest') return 'Guest';
+            const atIdx = s.indexOf('@');
+            if (atIdx === -1) return s.length > 3 ? s.slice(0, 3) + '****' : '****';
+            const local = s.slice(0, atIdx);
+            const domain = s.slice(atIdx);
+            if (local.length <= 2) return local.charAt(0) + '****' + domain;
+            const keep = local.length <= 4 ? 2 : 3;
+            return local.slice(0, keep) + '****' + domain;
+        }
+
+        function getOfficialLiveResults(results) {
+            // শুধুমাত্র লাইভ / প্রথমবার অংশগ্রহণকারী (practice ও guest বাদ) এবং প্রতি ইমেইলে ১ম বারের রেজাল্ট রাখা
+            const liveOnly = (results || []).filter(r => !r.isPractice && String(r.email || '').toLowerCase().trim() !== 'guest');
+            const firstAttemptByEmail = {};
+            const noEmailList = [];
+
+            liveOnly.forEach(r => {
+                const em = String(r.email || '').toLowerCase().trim();
+                if (!em) {
+                    noEmailList.push(r);
+                    return;
+                }
+                const ts = parseDate(r.timestamp);
+                const tMs = ts ? ts.getTime() : Number.MAX_SAFE_INTEGER;
+                if (!firstAttemptByEmail[em]) {
+                    firstAttemptByEmail[em] = { item: r, tMs };
+                } else if (tMs < firstAttemptByEmail[em].tMs) {
+                    firstAttemptByEmail[em] = { item: r, tMs };
+                }
+            });
+
+            const uniqueLive = Object.values(firstAttemptByEmail).map(x => x.item).concat(noEmailList);
+            uniqueLive.sort((a, b) => {
+                const scoreA = parseFloat(a.score) || 0;
+                const scoreB = parseFloat(b.score) || 0;
+                if (scoreB !== scoreA) return scoreB - scoreA;
+                return (parseFloat(a.timeTaken) || 0) - (parseFloat(b.timeTaken) || 0);
+            });
+            return uniqueLive;
+        }
+
         // --- PRINT MERIT LIST PDF ---
         function printMeritPDF() {
             const dropdown = document.getElementById('examDropdown');
-            const examName = (dropdown.selectedIndex > 0 ? dropdown.options[dropdown.selectedIndex].text : document.getElementById('examIdInput').value);
-            const tableRows = currentResults.filter(r => !r.isPractice);
-            
-            if(tableRows.length === 0) {
-                return Swal.fire('কোনো লাইভ ডাটা নেই', 'পিডিএফ তৈরির মতো কোনো লাইভ এক্সামের রেজাল্ট নেই!', 'info');
+            const tabId = (document.getElementById('examIdInput').value || '').trim();
+            const meta = (window.allExamsCache || []).find(e => String(e['Tab ID'] || '').trim() === tabId);
+            const rawExamName = (meta && meta['Exam Name'])
+                ? meta['Exam Name']
+                : (dropdown && dropdown.selectedIndex > 0 ? dropdown.options[dropdown.selectedIndex].text.replace(/\s*\[[^\]]*\]$/, '') : tabId);
+
+            const tableRows = getOfficialLiveResults(currentResults);
+
+            if (tableRows.length === 0) {
+                return Swal.fire('কোনো লাইভ ডাটা নেই', 'পিডিএফ তৈরির মতো কোনো লাইভ / প্রথমবার অংশগ্রহণের রেজাল্ট নেই!', 'info');
             }
 
             let rowsHtml = '';
             tableRows.forEach((r, idx) => {
-                const timeStr = `${Math.floor((r.timeTaken||0)/60)}m ${(r.timeTaken||0)%60}s`;
-                rowsHtml += `
-                    <tr>
-                        <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
-                        <td><strong>${r.student || 'Student'}</strong></td>
-                        <td>${r.email || '-'}</td>
-                        <td style="text-align:center; font-weight:bold; color:#00b894;">${parseFloat(r.score||0).toFixed(2)}</td>
-                        <td style="text-align:center;">${r.correct || 0}</td>
-                        <td style="text-align:center; color:#d63031;">${r.wrong || 0}</td>
-                        <td style="text-align:center;">${timeStr}</td>
-                    </tr>
-                `;
+                const timeStr = Math.floor((r.timeTaken || 0) / 60) + 'm ' + ((r.timeTaken || 0) % 60) + 's';
+                rowsHtml += '<tr>' +
+                    '<td style="text-align:center; font-weight:bold;">' + toBanglaDigits(idx + 1) + '</td>' +
+                    '<td><strong>' + escapeHtml(r.student || 'Student') + '</strong></td>' +
+                    '<td style="color:#475569;">' + escapeHtml(maskEmail(r.email)) + '</td>' +
+                    '<td style="text-align:center; font-weight:bold; color:#0b7a3e;">' + parseFloat(r.score || 0).toFixed(2) + '</td>' +
+                    '<td style="text-align:center;">' + toBanglaDigits(r.correct || 0) + '</td>' +
+                    '<td style="text-align:center; color:#c0392b;">' + toBanglaDigits(r.wrong || 0) + '</td>' +
+                    '<td style="text-align:center;">' + timeStr + '</td>' +
+                '</tr>';
             });
 
+            const todayStr = new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
             const printWin = window.open('', '_blank');
-            printWin.document.write(`
-                <!DOCTYPE html>
-                <html lang="bn">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>মেধা তালিকা - ${examName}</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
-                    <style>
-                        body { font-family: 'Hind Siliguri', sans-serif; padding: 30px; color: #2d3436; }
-                        .header { text-align: center; border-bottom: 2px solid #6c5ce7; padding-bottom: 15px; margin-bottom: 20px; }
-                        h1 { margin: 0; color: #6c5ce7; font-size: 24px; }
-                        h2 { margin: 5px 0 0 0; font-size: 17px; color: #2d3436; }
-                        .meta { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: 600; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-                        th, td { border: 1px solid #ddd; padding: 9px 12px; }
-                        th { background: #f1f2f6; color: #2d3436; font-weight: 700; }
-                        tr:nth-child(even) { background: #fdfdfd; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Textile & DU Tech Admission Examination</h1>
-                        <h2>অফিশিয়াল মেধা তালিকা (Official Merit List)</h2>
-                        <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold; color:#2c3e50;">পরীক্ষা: ${examName}</p>
-                    </div>
-                    <div class="meta">
-                        <span>মোট লাইভ পরীক্ষার্থী: ${tableRows.length} জন</span>
-                        <span>তারিখ: ${new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">মেরিট</th>
-                                <th style="text-align:left;">শিক্ষার্থীর নাম</th>
-                                <th style="text-align:left;">ইমেইল</th>
-                                <th>স্কোর</th>
-                                <th>সঠিক</th>
-                                <th>ভুল</th>
-                                <th>সময়</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
-                    ' + '<scr' + 'ipt>window.onload=function(){window.print();};</scr' + 'ipt>' + '
+            if (!printWin) {
+                return Swal.fire('পপআপ ব্লকড!', 'দয়া করে ব্রাউজারের পপআপ পারমিশন Allow করুন।', 'warning');
+            }
 
+            const meritHtml = '<!DOCTYPE html>' +
+'\x3Chtml lang="bn">' +
+'\x3Chead>' +
+    '\x3Cmeta charset="UTF-8">' +
+    '\x3Cmeta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    '\x3Ctitle>মেধা তালিকা - ' + escapeHtml(rawExamName) + '\x3C/title>' +
+    '\x3Cstyle>' +
+        '@import url("https://fonts.maateen.me/kalpurush/font.css");' +
+        '* { box-sizing: border-box; }' +
+        'body { font-family: "Sonar Bangla", "Shonar Bangla", "Kalpurush", "Siyam Rupali", serif; margin: 0; padding: 20px 16px 75px 16px; color: #111; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+        '.merit-wrap { max-width: 820px; margin: 0 auto; }' +
+        '.header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 10px; margin-bottom: 14px; }' +
+        '.header h1 { margin: 0; font-size: 20pt; font-weight: bold; color: #000; }' +
+        '.header p { margin: 4px 0 0 0; font-size: 12pt; color: #333; }' +
+        '.meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; font-size: 11.5pt; }' +
+        '.table-scroll { width: 100%; overflow-x: auto; }' +
+        'table { width: 100%; border-collapse: collapse; font-size: 11pt; }' +
+        'th, td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: left; }' +
+        'th { background: #f1f5f9; color: #111; font-weight: bold; text-align: center; }' +
+        'tr:nth-child(even) { background: #fafafa; }' +
+        '.floating-action-bar { position: fixed; bottom: 18px; right: 18px; display: flex; gap: 8px; z-index: 99999; background: rgba(255,255,255,0.96); padding: 7px 12px; border-radius: 28px; box-shadow: 0 4px 14px rgba(0,0,0,0.16); border: 1px solid #d1d5db; font-family: sans-serif; }' +
+        '.f-btn { border: none; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }' +
+        '.f-btn-print { background: #1e3a8a; color: #fff; }' +
+        '.f-btn-close { background: #e2e8f0; color: #334155; }' +
+        '@media screen and (max-width: 600px) {' +
+            'body { padding: 12px 10px 75px 10px; }' +
+            '.header h1 { font-size: 15pt; }' +
+            'table { font-size: 10pt; }' +
+            'th, td { padding: 5px 6px; white-space: nowrap; }' +
+        '}' +
+        '@media print {' +
+            '@page { size: A4 portrait; margin: 12mm; }' +
+            'body { padding: 0 !important; margin: 0 !important; }' +
+            '.merit-wrap { max-width: 100% !important; }' +
+            '.table-scroll { overflow: visible !important; }' +
+            '.floating-action-bar { display: none !important; }' +
+        '}' +
+    '\x3C/style>' +
+'\x3C/head>' +
+'\x3Cbody>' +
+    '\x3Cdiv class="floating-action-bar">' +
+        '\x3Cbutton class="f-btn f-btn-print" onclick="window.print()">🖨️ Print / Save as PDF\x3C/button>' +
+        '\x3Cbutton class="f-btn f-btn-close" onclick="window.close()">✖️ বন্ধ করুন\x3C/button>' +
+    '\x3C/div>' +
+    '\x3Cdiv class="merit-wrap">' +
+        '\x3Cdiv class="header">' +
+            '\x3Ch1>' + escapeHtml(rawExamName) + '\x3C/h1>' +
+            '\x3Cp>অফিশিয়াল মেধা তালিকা (শুধুমাত্র লাইভ পরীক্ষার্থী)\x3C/p>' +
+        '\x3C/div>' +
+        '\x3Cdiv class="meta">' +
+            '\x3Cspan>মোট লাইভ পরীক্ষার্থী: ' + toBanglaDigits(tableRows.length) + ' জন\x3C/span>' +
+            '\x3Cspan>তারিখ: ' + escapeHtml(todayStr) + '\x3C/span>' +
+        '\x3C/div>' +
+        '\x3Cdiv class="table-scroll">' +
+            '\x3Ctable>' +
+                '\x3Cthead>' +
+                    '\x3Ctr>' +
+                        '\x3Cth style="width:52px;">মেরিট\x3C/th>' +
+                        '\x3Cth style="text-align:left;">শিক্ষার্থীর নাম\x3C/th>' +
+                        '\x3Cth style="text-align:left;">ইমেইল\x3C/th>' +
+                        '\x3Cth>স্কোর\x3C/th>' +
+                        '\x3Cth>সঠিক\x3C/th>' +
+                        '\x3Cth>ভুল\x3C/th>' +
+                        '\x3Cth>সময়\x3C/th>' +
+                    '\x3C/tr>' +
+                '\x3C/thead>' +
+                '\x3Ctbody>' + rowsHtml + '\x3C/tbody>' +
+            '\x3C/table>' +
+        '\x3C/div>' +
+    '\x3C/div>' +
+'\x3C/body>' +
+'\x3C/html>';
 
-                    </div>
-</body>
-                </html>
-            `);
+            printWin.document.open();
+            printWin.document.write(meritHtml);
             printWin.document.close();
         }
-
         // --- EXPORT TO CSV ---
         function exportTableToCSV(filename) {
             const table = document.getElementById("resultTable");
