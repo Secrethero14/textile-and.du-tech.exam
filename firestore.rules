@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email is string;
+    }
+
+    function userEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && userEmail() == 'rafychowdhury14@gmail.com';
+    }
+
+    function isModerator() {
+      return isSignedIn() && exists(/databases/$(database)/documents/moderators/$(userEmail()));
+    }
+
+    function isStaff() {
+      return isSuperAdmin() || isModerator();
+    }
+
+    // ১. ইউজারদের প্রোফাইল ও মেন্টাল সাপোর্ট
+    match /users/{email} {
+      allow read, write: if isStaff() || (
+        isSignedIn() &&
+        (email == request.auth.token.email || email.lower() == userEmail())
+      );
+    }
+
+    // ২. পেমেন্ট রিকোয়েস্ট (সর্বোচ্চ নিরাপত্তা: কেউ নিজে নিজেকে approved করতে বা অন্যের তথ্য দেখতে পারবে না)
+    match /payment_requests/{docId} {
+      allow read: if isStaff() || (
+        isSignedIn() &&
+        (resource.data.email == userEmail() || resource.data.email == request.auth.token.email)
+      );
+
+      allow create: if isStaff() || (
+        isSignedIn() &&
+        request.resource.data.status == 'pending' &&
+        (request.resource.data.email == userEmail() || request.resource.data.email == request.auth.token.email)
+      );
+
+      allow update, delete: if isStaff();
+    }
+
+    // ৩. এক্সাম রেজাল্ট (মেরিট লিস্টের জন্য)
+    match /exam_results/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.email == 'guest' || (
+        isSignedIn() &&
+        (request.resource.data.email == userEmail() || request.resource.data.email == request.auth.token.email)
+      );
+      allow update: if false;
+      allow delete: if isSuperAdmin();
+    }
+
+    // ৪. এনরোলমেন্টস (ব্যাকওয়ার্ড কম্প্যাটিবিলিটি)
+    match /Enrollments/{docId} {
+      allow read: if isStaff() || (isSignedIn() && docId.lower() == userEmail());
+      allow write: if isSuperAdmin();
+    }
+
+    // ৫. অ্যাডমিন ও মডারেটর লিস্ট
+    match /admins/{docId} {
+      allow read: if isStaff() || (isSignedIn() && docId.lower() == userEmail());
+      allow write: if isSuperAdmin();
+    }
+
+    match /moderators/{docId} {
+      allow get: if isSuperAdmin() || (isSignedIn() && (
+        docId.lower() == userEmail() ||
+        (resource != null && resource.data.email == userEmail())
+      ));
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.email == userEmail());
+      allow write: if isSuperAdmin();
+    }
+
+    // ৬. ভুল ব্যাংক (Mistake Bank - ইউজার শুধু নিজের ভুল দেখতে, যোগ করতে ও মুছতে পারবে)
+    match /user_mistakes/{docId} {
+      allow read, update, delete: if isSuperAdmin() || (
+        isSignedIn() &&
+        (resource.data.email == userEmail() || resource.data.email == request.auth.token.email)
+      );
+      allow create: if isSignedIn() && (
+        request.resource.data.email == userEmail() ||
+        request.resource.data.email == request.auth.token.email
+      );
+    }
+
+    // ৭. সাপ্তাহিক রুটিন ও সাইট সেটিংস
+    match /weekly_routines/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /site_settings/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+  }
+}

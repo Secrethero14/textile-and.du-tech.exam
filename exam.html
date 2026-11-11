@@ -144,7 +144,7 @@
     <div class="container" id="loaderContainer">
         <div class="loader-container" id="loader">
             <div class="spinner"></div>
-            <p>তোমার ইন্টারনেট স্পিড নির্ভর করে, প্রশ্নপত্র লোড হচ্ছে...</p>
+            <p id="loaderStatusText">নিরাপত্তা ও প্রশ্নপত্র যাচাই করা হচ্ছে...</p>
         </div>
     </div>
 
@@ -156,6 +156,7 @@
     </div>
 
     <script>
+        (function() {
         // --- CONFIG ---
         const firebaseConfig = { apiKey: "AIzaSyBK1T5Nr1CjoPVWPsKnytrgjj05nU8fDs0", authDomain: "hstu---cou--exam-2026.firebaseapp.com", projectId: "hstu---cou--exam-2026", storageBucket: "hstu---cou--exam-2026.firebasestorage.app", messagingSenderId: "1058124789396", appId: "1:1058124789396:web:fc772af33deb7c18c9e681" };
         const JSON_BASE = "https://textile-du-tech-exam.vercel.app/public/questions/";
@@ -165,11 +166,114 @@
         const auth = firebase.auth();
         const urlParams = new URLSearchParams(window.location.search);
         const isMistakeMode = urlParams.get('mode') === 'mistakes';
-        const tabId = urlParams.get('id') || "Phy_1"; 
+        const rawTabId = urlParams.get('id');
+        const tabId = rawTabId ? rawTabId.trim() : ""; 
 
         let allQuestions = [], filteredQuestions = [], examConfig = {};
         let timerInterval, startTime, selectedSubjects = [];
-        let allFetchedQuestions = [], isSubmitting = false;
+        let allFetchedQuestions = [], isSubmitting = false, accessVerified = false;
+
+        // 🔴 নিরাপদ JSON Config পার্সার (Config-এ "upcoming" টেক্সট থাকলেও ক্র্যাশ করবে না) 🔴
+        function safeParseConfig(raw) {
+            if (!raw || typeof raw !== 'string') return null;
+            const s = raw.trim();
+            if (!s.startsWith('{') && !s.startsWith('[')) return null;
+            try { return JSON.parse(s); } catch (e) { return null; }
+        }
+
+        // 🔴 শিটের যেকোনো ফরম্যাটের কলাম ভ্যালু পাওয়ার হেল্পার 🔴
+        function getExamVal(item, keys) {
+            if (!item) return '';
+            for (const k of Object.keys(item)) {
+                const norm = k.trim().toLowerCase();
+                for (const target of keys) {
+                    if (norm === target.toLowerCase()) {
+                        if (item[k] !== undefined && item[k] !== null && String(item[k]).trim() !== '') {
+                            return String(item[k]).trim();
+                        }
+                    }
+                }
+            }
+            return '';
+        }
+
+        // 🕒 যেকোনো ফরম্যাটের শিডিউল তারিখ পার্স করার হেল্পার (ISO, DD/MM/YYYY, বাংলা ডিজিট) 🕒
+        function parseExamScheduleDate(str) {
+            if (!str) return null;
+            let s = String(str).trim();
+            if (!s) return null;
+            const bnMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+            s = s.replace(/[০-৯]/g, m => bnMap[m]);
+            let d = new Date(s);
+            if (!isNaN(d.getTime())) return d;
+
+            const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
+            if (dmyMatch) {
+                const day = parseInt(dmyMatch[1], 10);
+                const month = parseInt(dmyMatch[2], 10) - 1;
+                const year = parseInt(dmyMatch[3], 10);
+                let hour = dmyMatch[4] ? parseInt(dmyMatch[4], 10) : 0;
+                const min = dmyMatch[5] ? parseInt(dmyMatch[5], 10) : 0;
+                const sec = dmyMatch[6] ? parseInt(dmyMatch[6], 10) : 0;
+                const ampm = dmyMatch[7] ? dmyMatch[7].toUpperCase() : null;
+                if (ampm === 'PM' && hour < 12) hour += 12;
+                if (ampm === 'AM' && hour === 12) hour = 0;
+                d = new Date(year, month, day, hour, min, sec);
+                if (!isNaN(d.getTime())) return d;
+            }
+
+            const ymdMatch = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
+            if (ymdMatch) {
+                const year = parseInt(ymdMatch[1], 10);
+                const month = parseInt(ymdMatch[2], 10) - 1;
+                const day = parseInt(ymdMatch[3], 10);
+                let hour = ymdMatch[4] ? parseInt(ymdMatch[4], 10) : 0;
+                const min = ymdMatch[5] ? parseInt(ymdMatch[5], 10) : 0;
+                const sec = ymdMatch[6] ? parseInt(ymdMatch[6], 10) : 0;
+                const ampm = ymdMatch[7] ? ymdMatch[7].toUpperCase() : null;
+                if (ampm === 'PM' && hour < 12) hour += 12;
+                if (ampm === 'AM' && hour === 12) hour = 0;
+                d = new Date(year, month, day, hour, min, sec);
+                if (!isNaN(d.getTime())) return d;
+            }
+            return null;
+        }
+
+        function waitForAuthUser() {
+            return new Promise(resolve => {
+                let unsubscribe = null;
+                unsubscribe = firebase.auth().onAuthStateChanged(u => {
+                    if (typeof unsubscribe === 'function') unsubscribe();
+                    else setTimeout(() => { if (typeof unsubscribe === 'function') unsubscribe(); }, 0);
+                    resolve(u);
+                });
+            });
+        }
+
+        async function blockExamAndRedirect(opts) {
+            accessVerified = false;
+            allQuestions = [];
+            filteredQuestions = [];
+            allFetchedQuestions = [];
+            const loaderCont = document.getElementById('loaderContainer');
+            if (loaderCont) loaderCont.style.display = 'none';
+            const introM = document.getElementById('introModal');
+            if (introM) introM.style.display = 'none';
+            const qCont = document.getElementById('questionContainer');
+            if (qCont) qCont.innerHTML = '';
+
+            await Swal.fire({
+                icon: opts.icon || 'warning',
+                iconColor: opts.iconColor || undefined,
+                title: opts.title || 'অ্যাক্সেস সংরক্ষিত',
+                html: opts.html || 'এই পরীক্ষায় অংশগ্রহণ করার অনুমতি নেই।',
+                confirmButtonText: 'হোমপেজে ফিরে যান',
+                confirmButtonColor: '#0984e3',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            });
+            window.location.replace('index.html');
+        }
 
         function isAnswerLetter(val) {
             if (!val) return false;
@@ -217,24 +321,154 @@
             if (!isSubmitting && filteredQuestions.length > 0) { e.preventDefault(); e.returnValue = ''; }
         });
 
-        window.onload = async function() {
-            firebase.auth().onAuthStateChanged(user => {
-                const ui = document.getElementById('userInfo');
+        async function verifyExamAccess(user) {
+            if (isMistakeMode) {
+                accessVerified = true;
+                return true;
+            }
+
+            if (!tabId || !examConfig || !examConfig.matched) {
+                await blockExamAndRedirect({
+                    icon: 'error',
+                    title: 'পরীক্ষা পাওয়া যায়নি!',
+                    html: 'অনুরোধকৃত পরীক্ষাটির লিংক সঠিক নয় বা পরীক্ষাটি তালিকাভুক্ত নেই।'
+                });
+                return false;
+            }
+
+            const isPaid = examConfig.type === 'paid' || examConfig.anyMatchingPaid === true;
+
+            // 🕒 রুটিন অনুযায়ী শিডিউল্ড (UPCOMING) কি না যাচাই
+            let isScheduled = false;
+            let scheduledDate = null;
+            if (examConfig.startTime) {
+                scheduledDate = parseExamScheduleDate(examConfig.startTime);
+                if (scheduledDate && scheduledDate > new Date()) {
+                    isScheduled = true;
+                }
+            }
+            const statusStr = (examConfig.status || '').toLowerCase();
+            if (statusStr === 'upcoming' || statusStr === 'scheduled') {
+                isScheduled = true;
+            } else if (statusStr === 'live' || statusStr === 'unlocked' || statusStr === 'active') {
+                isScheduled = false;
+            }
+
+            // 🔒 ধাপ ১: পেইড পরীক্ষা হলে লগইন এবং Firestore ডাটাবেসে অনুমোদন যাচাই
+            if (isPaid) {
+                if (!user || !user.email) {
+                    await blockExamAndRedirect({
+                        icon: 'warning',
+                        iconColor: '#e67e22',
+                        title: '🔒 পেইড পরীক্ষা — লগইন প্রয়োজন',
+                        html: '<div style="font-size:14px; line-height:1.6;">এই পরীক্ষাটি <b>পেইড কোর্সের</b> অন্তর্ভুক্ত। পরীক্ষায় অংশগ্রহণ করতে হলে প্রথমে আপনার অনুমোদিত অ্যাকাউন্ট দিয়ে লগইন করুন।</div>'
+                    });
+                    return false;
+                }
+
+                let isApproved = false;
+                let isPending = false;
+                try {
+                    const normEmail = user.email.toLowerCase().trim();
+                    const snap = await db.collection("payment_requests")
+                        .where("email", "==", normEmail)
+                        .get();
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.status === 'approved') isApproved = true;
+                        else if (d.status === 'pending') isPending = true;
+                    });
+                } catch (err) {
+                    console.error("Enrollment verification error:", err);
+                    await blockExamAndRedirect({
+                        icon: 'error',
+                        title: 'অ্যাক্সেস যাচাই করা যায়নি',
+                        html: '<div style="font-size:14px; line-height:1.6;">সার্ভারের সাথে সংযোগ করে আপনার কোর্স স্ট্যাটাস যাচাই করা সম্ভব হয়নি। অনুগ্রহ করে হোমপেজ থেকে পুনরায় চেষ্টা করুন।</div>'
+                    });
+                    return false;
+                }
+
+                if (!isApproved) {
+                    if (isPending) {
+                        await blockExamAndRedirect({
+                            icon: 'info',
+                            iconColor: '#f39c12',
+                            title: '⏳ আবেদন প্রক্রিয়াধীন রয়েছে!',
+                            html: '<div style="font-size:14px; line-height:1.6;">আপনার কোর্সে ভর্তির আবেদনটি বর্তমানে <b>অ্যাডমিন ভেরিফিকেশন প্রক্রিয়াধীন</b> রয়েছে। অ্যাডমিন অনুমোদন দেওয়া মাত্রই পরীক্ষাটি স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে।</div>'
+                        });
+                    } else {
+                        await blockExamAndRedirect({
+                            icon: 'error',
+                            iconColor: '#e74c3c',
+                            title: '🔒 কোর্সটি লক করা আছে!',
+                            html: '<div style="font-size:14px; line-height:1.6;">এই পরীক্ষাটি শুধুমাত্র পেইড কোর্সে ভর্তি হওয়া শিক্ষার্থীদের জন্য সংরক্ষিত। সরাসরি লিংক বা অন্য কোনো মাধ্যমে প্রবেশের অনুমতি নেই।<br><br>হোমপেজ থেকে কোর্সে ভর্তি সম্পন্ন করে পরীক্ষাটি দিন।</div>'
+                        });
+                    }
+                    return false;
+                }
+            }
+
+            // 📅 ধাপ ২: পরীক্ষা রুটিন অনুযায়ী এখনো UPCOMING থাকলে প্রশ্ন লোড ব্লক
+            if (isScheduled) {
+                let timeHtml = 'রুটিনের নির্ধারিত সময়ে পরীক্ষাটি স্বয়ংক্রিয়ভাবে লাইভ হবে এবং তখন আপনি অংশগ্রহণ করতে পারবেন।';
+                if (scheduledDate && !isNaN(scheduledDate.getTime())) {
+                    const timeStr = scheduledDate.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + scheduledDate.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+                    timeHtml = `📅 নির্ধারিত লাইভ সময়: <b style="color:#0369a1;">${timeStr}</b><br><br>${timeHtml}`;
+                }
+                await blockExamAndRedirect({
+                    icon: 'info',
+                    iconColor: '#0284c7',
+                    title: '📅 এই পরীক্ষাটি রুটিন অনুযায়ী শিডিউল করা হয়েছে',
+                    html: `<div style="font-size:14px; line-height:1.6; text-align:left; background:#f0f9ff; border:1px solid #bae6fd; padding:12px; border-radius:8px;">${timeHtml}</div>`
+                });
+                return false;
+            }
+
+            accessVerified = true;
+            return true;
+        }
+
+        window.addEventListener('load', async function() {
+            // প্রারম্ভিক auth সমাধান না হওয়া পর্যন্ত অপেক্ষা করা হচ্ছে (ফলে লগইন ইউজার গেস্ট হিসেবে শনাক্ত হবে না)
+            const user = await waitForAuthUser();
+            const ui = document.getElementById('userInfo');
+            if (ui) {
                 if (user) {
                     ui.innerHTML = `<span class="user-badge" style="background:#d1ffd6; color:#00660e;">Logged in</span> ${user.displayName || user.email}`;
                 } else {
                     ui.innerHTML = `<span class="user-badge" style="background:#ffe0e0; color:#a80000;">Guest Mode</span>`;
                 }
+            }
+
+            // রিয়েল-টাইমে লগআউট হলে ইউজার ইনফো আপডেট রাখা
+            firebase.auth().onAuthStateChanged(u => {
+                if (!ui) return;
+                if (u) {
+                    ui.innerHTML = `<span class="user-badge" style="background:#d1ffd6; color:#00660e;">Logged in</span> ${u.displayName || u.email}`;
+                } else {
+                    ui.innerHTML = `<span class="user-badge" style="background:#ffe0e0; color:#a80000;">Guest Mode</span>`;
+                }
             });
 
-            try { await loadExamConfig(); await loadQuestions(); } 
-            catch (err) { alert("Error: " + err.message); }
-        };
+            try {
+                await loadExamConfig();
+                const allowed = await verifyExamAccess(user);
+                if (!allowed) return; // প্রশ্নপত্র একদমই ফেচ/লোড হবে না
+                await loadQuestions();
+            } catch (err) {
+                await blockExamAndRedirect({
+                    icon: 'error',
+                    title: 'লোড করা যায়নি!',
+                    html: 'পরীক্ষাটি লোড করতে সমস্যা হয়েছে: ' + (err.message || 'Unknown error')
+                });
+            }
+        });
 
         async function loadExamConfig() {
             if (isMistakeMode) {
                 const customConfig = JSON.parse(sessionStorage.getItem('reExamConfig') || '{}');
                 examConfig = {
+                    matched: true,
                     name: customConfig.name || 'ভুল ব্যাংক রি-টেস্ট (Mistake Re-Exam)',
                     time: customConfig.time || 20,
                     neg: customConfig.neg !== undefined ? customConfig.neg : 0.25,
@@ -245,9 +479,20 @@
                 document.getElementById('examTitle').innerText = examConfig.name;
                 return;
             }
+
+            if (!tabId) {
+                examConfig = { matched: false };
+                return;
+            }
+
             const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
             const data = await res.json();
-            const matchingExams = data.filter(e => e['Tab ID'] === tabId);
+            const matchingExams = data.filter(e => String(e['Tab ID'] || '').trim() === tabId);
+            if (matchingExams.length === 0) {
+                examConfig = { matched: false };
+                return;
+            }
+
             const urlName = urlParams.get('name');
             const urlRange = urlParams.get('range');
             let exam = null;
@@ -260,16 +505,26 @@
                     return r && String(r).trim() !== '';
                 }) || matchingExams[0];
             }
-            if(exam) {
+
+            if (exam) {
+                const parsedCfg = safeParseConfig(exam['Config']);
+                const anyPaid = matchingExams.some(e => String(e['Type'] || '').toLowerCase().trim() === 'paid');
+                const matchedExactByName = urlName ? ((exam['Exam Name'] || '').trim() === urlName.trim()) : true;
+
                 examConfig = {
+                    matched: true,
                     time: Number(exam['Total Time']), 
                     neg: exam['Negative Mark'] !== undefined && exam['Negative Mark'] !== "" ? Number(exam['Negative Mark']) : 0.25, 
                     totalMarks: exam['Total Marks'] ? Number(exam['Total Marks']) : null, 
                     name: exam['Exam Name'],
+                    category: exam['Category'] || '',
                     type: exam['Type'] ? String(exam['Type']).toLowerCase().trim() : 'exam', 
-                    config: exam['Config'] ? JSON.parse(exam['Config']) : null,
-                    optional: (exam['Config'] && JSON.parse(exam['Config']).optional) || false,
-                    fixed: (exam['Config'] && JSON.parse(exam['Config']).fixed) || [],
+                    anyMatchingPaid: !matchedExactByName && anyPaid,
+                    startTime: getExamVal(exam, ['start time', 'starttime', 'start_time', 'start']),
+                    status: getExamVal(exam, ['status', 'exam_status', 'state', 'config']),
+                    config: parsedCfg,
+                    optional: (parsedCfg && parsedCfg.optional) || false,
+                    fixed: (parsedCfg && parsedCfg.fixed) || [],
                     features: exam['Features'] || '',
                     range: (urlRange && urlRange.trim()) ? urlRange.trim() : (exam['Range'] || exam['range'] || exam['রেঞ্জ'] || exam['Question Range'] || '').trim(),
                     shuffle: exam['Shuffle'] !== undefined && exam['Shuffle'] !== '' ? (String(exam['Shuffle']).toLowerCase().trim() !== 'false' && String(exam['Shuffle']).toLowerCase().trim() !== 'no') : true
@@ -312,6 +567,7 @@
             return questions;
         }
         async function loadQuestions() {
+            if (!accessVerified) return;
             if (isMistakeMode) {
                 let rawQuestions = JSON.parse(sessionStorage.getItem('reExamQuestions') || '[]');
                 rawQuestions.forEach((q, idx) => { q.originalIndex = idx; });
@@ -366,6 +622,7 @@
         }
 
         function proceedFromIntro() {
+            if (!accessVerified) return;
             document.getElementById('introModal').style.display = 'none';
 
             if (examConfig.optional) {
@@ -675,7 +932,7 @@
         }
 
         async function submitExam() {
-            if (isSubmitting) return; 
+            if (!accessVerified || isSubmitting) return; 
             isSubmitting = true; 
             clearInterval(timerInterval);
             document.getElementById('motivationOverlay').style.display = 'flex';
@@ -881,6 +1138,16 @@
                 Swal.fire('Error', 'রেজাল্ট সেভ করা যায়নি: ' + err.message, 'error');
             }
         }
+
+
+        // শুধুমাত্র প্রয়োজনীয় UI কলব্যাকগুলো এক্সপোজ করা (কনসোল থেকে প্রশ্ন/লজিক বাইপাস রোধে)
+        window.proceedFromIntro = proceedFromIntro;
+        window.confirmSubjects = confirmSubjects;
+        window.confirmSelection = confirmSelection;
+        window.lockAnswer = lockAnswer;
+        window.attemptSubmit = attemptSubmit;
+        window.updateProgressBar = updateProgressBar;
+        })();
     </script>
     
     <script>

@@ -1095,7 +1095,7 @@ function navigateBack() {
                     `;
                 } else {
                     // 📝 সাধারণ এক্সাম কার্ড (শিডিউল্ড রুটিন এক্সাম সাপোর্ট সহ)
-                    const isPaid = (item['Type']||'').toLowerCase() === 'paid';
+                    const isPaid = itemType === 'paid';
                     
                     // 🕒 রুটিন অনুযায়ী শিডিউল্ড কি না যাচাই (সবার জন্য নির্ভুল তারিখ ও সময় পার্সিং)
                     let isScheduled = false;

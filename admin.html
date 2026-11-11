@@ -513,10 +513,16 @@
 
             if (!isSuperAdmin) {
                 try {
-                    const modSnap = await db.collection("moderators").where("email", "==", email).get();
-                    if (!modSnap.empty) {
+                    const modDoc = await db.collection("moderators").doc(email).get();
+                    if (modDoc.exists) {
                         isModerator = true;
-                        modData = modSnap.docs[0].data();
+                        modData = modDoc.data();
+                    } else {
+                        const modSnap = await db.collection("moderators").where("email", "==", email).get();
+                        if (!modSnap.empty) {
+                            isModerator = true;
+                            modData = modSnap.docs[0].data();
+                        }
                     }
                 } catch(e) {
                     console.error("Moderator lookup error:", e);
@@ -1783,13 +1789,15 @@ let allExamsCache = [];
             Swal.fire({ title: 'যোগ করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
-                const existing = await db.collection("moderators").where("email", "==", email).get();
-                if (!existing.empty) {
+                const existingDoc = await db.collection("moderators").doc(email).get();
+                const existing = existingDoc.exists ? null : await db.collection("moderators").where("email", "==", email).get();
+                if (existingDoc.exists || (existing && !existing.empty)) {
                     Swal.close();
                     return Swal.fire('ইতিমধ্যে যুক্ত!', 'এই জিমেইলটি ইতোমধ্যে মডারেটর তালিকায় রয়েছে।', 'info');
                 }
 
-                await db.collection("moderators").add({
+                // Firestore Security Rules (exists(.../moderators/$(email))) সমর্থনের জন্য ইমেইলকেই Document ID হিসেবে সেভ করা হচ্ছে
+                await db.collection("moderators").doc(email).set({
                     email: email,
                     name: note || 'Moderator',
                     role: 'moderator',
@@ -1846,9 +1854,26 @@ let allExamsCache = [];
                     tbody.innerHTML = '<tr><td colspan="5" style="padding:18px; color:#888; text-align:center;">বর্তমানে কোনো অতিরিক্ত মডারেটর যুক্ত নেই। উপরের বক্সে জিমেইল লিখে মডারেটর যোগ করুন।</td></tr>';
                     return;
                 }
+                // লিগ্যাসি অটো-আইডি মডারেটর ডকুমেন্ট থাকলে স্বয়ংক্রিয়ভাবে email-ID তে মাইগ্রেট করা হচ্ছে
+                const modDocs = [];
+                for (const doc of snap.docs) {
+                    const data = doc.data();
+                    const mEmail = String(data.email || '').toLowerCase().trim();
+                    if (mEmail && doc.id !== mEmail) {
+                        try {
+                            await db.collection("moderators").doc(mEmail).set({ ...data, email: mEmail }, { merge: true });
+                            await db.collection("moderators").doc(doc.id).delete();
+                            modDocs.push({ id: mEmail, ...data, email: mEmail });
+                        } catch (migErr) {
+                            modDocs.push({ id: doc.id, ...data });
+                        }
+                    } else {
+                        modDocs.push({ id: doc.id, ...data });
+                    }
+                }
+
                 let html = '';
-                snap.forEach(doc => {
-                    const m = { id: doc.id, ...doc.data() };
+                modDocs.forEach(m => {
                     const d = m.addedAt ? new Date(m.addedAt) : null;
                     const dStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
 

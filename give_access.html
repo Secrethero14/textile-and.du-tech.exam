@@ -376,10 +376,31 @@
             }
         });
 
-        // 🌟 ফর্ম সাবমিট ফাংশন (🔒 স্ট্যাটাস ডিফল্টভাবে "pending" হবে) 🌟
+        // 🌟 ফর্ম সাবমিট ফাংশন (🔒 লগইন ভেরিফাইড ও স্ট্যাটাস বাধ্যতামূলকভাবে "pending" হবে) 🌟
         async function submitForm() {
+            if (!auth.currentUser || !auth.currentUser.email) {
+                const loginRes = await Swal.fire({
+                    icon: 'info',
+                    title: 'প্রথমে লগইন করুন',
+                    text: 'ফর্ম সাবমিট করার জন্য আপনার অ্যাকাউন্টে লগইন থাকা আবশ্যক। Google দিয়ে লগইন করতে চান?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Google দিয়ে লগইন',
+                    cancelButtonText: 'হোমে ফিরে যান'
+                });
+                if (loginRes.isConfirmed) {
+                    try {
+                        await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+                    } catch (e) {
+                        return Swal.fire('সমস্যা!', 'লগইন করা যায়নি: ' + e.message, 'error');
+                    }
+                } else {
+                    return (window.location.href = 'index.html');
+                }
+            }
+
             const name = document.getElementById('sName').value.trim();
-            const email = document.getElementById('sEmail').value.trim().toLowerCase();
+            // 🔒 DOM/Inspect দিয়ে ইমেইল পাল্টালেও সরাসরি Firebase Auth-এর আসল ইমেইল ব্যবহৃত হবে
+            const email = auth.currentUser.email.trim().toLowerCase();
             const phone = document.getElementById('sPhone').value.trim();
             const last3 = document.getElementById('sLast3').value.trim();
             const gender = document.getElementById('sGender').value;
