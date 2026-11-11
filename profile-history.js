@@ -1,14 +1,3 @@
-// --- PARSE DATE ---
-function parseDate(data) {
-    if (!data) return null;
-    const raw = data.timestamp || data.date || data.time || data.created_at || data;
-    if (!raw) return null;
-    if (typeof raw.toDate === 'function') return raw.toDate(); 
-    if (raw.seconds) return new Date(raw.seconds * 1000); 
-    const date = new Date(raw);
-    return isNaN(date.getTime()) ? null : date;
-}
-
 // --- SYNC LIVE MISTAKE BANK STATS ---
 async function updateMistakeBankStat(email) {
     try {
@@ -88,10 +77,9 @@ async function fetchStudentData(email) {
         // বিষয় ও অধ্যায়ভিত্তিক পারফরম্যান্স রেন্ডার
         renderSubjectPerformance(exams);
 
-        // এক্সাম হিস্ট্রি লিস্ট রেন্ডার
+        // এক্সাম হিস্ট্রি লিস্ট রেন্ডার (একবারে DOM আপডেট)
         const listContainer = document.getElementById('historyList');
-        listContainer.innerHTML = ""; 
-        exams.forEach(exam => renderHistoryItem(exam, listContainer));
+        listContainer.innerHTML = exams.map(exam => buildHistoryItemHtml(exam)).join('');
 
     } catch (e) {
         console.error("fetchStudentData error:", e);
@@ -101,8 +89,18 @@ async function fetchStudentData(email) {
     }
 }
 
-// --- RENDER HISTORY ITEM ---
-function renderHistoryItem(data, container) {
+function escapeHistoryHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// --- BUILD HISTORY ITEM HTML ---
+function buildHistoryItemHtml(data) {
     const dateObj = parseDate(data);
     const dateStr = dateObj ? dateObj.toLocaleDateString("en-US", { 
         day: 'numeric', month: 'short', year: 'numeric', 
@@ -114,13 +112,14 @@ function renderHistoryItem(data, container) {
     const scoreStr = scoreNum.toFixed(2);
 
     const badgeHtml = data.isPractice ? '<span style="background:#dfe6e9; color:#636e72; padding:2px 8px; border-radius:12px; font-size:11px; margin-left:8px;">Practice</span>' : '';
-    const retakeLink = `exam.html?id=${data.examId}`;
-    const resultLink = `result.html?id=${data.id}`;
+    const safeExamName = escapeHistoryHtml(data.examName || "Untitled Exam");
+    const retakeLink = `exam.html?id=${encodeURIComponent(data.examId || '')}`;
+    const resultLink = `result.html?id=${encodeURIComponent(data.id || '')}`;
 
-    const html = `
+    return `
         <div class="history-item">
             <div>
-                <div class="exam-title">${data.examName || "Untited Exam"} ${badgeHtml}</div>
+                <div class="exam-title">${safeExamName} ${badgeHtml}</div>
                 <div class="exam-meta">
                     <span><i class="far fa-clock"></i> ${dateStr}</span>
                     <span class="score-badge ${scoreClass}">স্কোর: ${scoreStr}</span>
@@ -132,5 +131,4 @@ function renderHistoryItem(data, container) {
             </div>
         </div>
     `;
-    container.innerHTML += html;
 }

@@ -4,23 +4,38 @@ async function loadUserProfile(email) {
         const doc = await db.collection("users").doc(email).get();
         if (doc.exists) {
             const data = doc.data();
-            if(data.college) {
-                const el = document.getElementById('userCollege');
-                el.style.display = 'block';
-                el.querySelector('span').innerText = data.college;
-                document.getElementById('inpCollege').value = data.college;
+            const colEl = document.getElementById('userCollege');
+            if (colEl) {
+                if (data.college && String(data.college).trim() !== '') {
+                    colEl.style.display = 'block';
+                    colEl.querySelector('span').innerText = data.college;
+                    document.getElementById('inpCollege').value = data.college;
+                } else {
+                    colEl.style.display = 'none';
+                    document.getElementById('inpCollege').value = '';
+                }
             }
-            if(data.batch) {
-                const el = document.getElementById('userBatch');
-                el.style.display = 'block';
-                el.querySelector('span').innerText = data.batch;
-                document.getElementById('inpBatch').value = data.batch;
+            const batchEl = document.getElementById('userBatch');
+            if (batchEl) {
+                if (data.batch && String(data.batch).trim() !== '') {
+                    batchEl.style.display = 'block';
+                    batchEl.querySelector('span').innerText = data.batch;
+                    document.getElementById('inpBatch').value = data.batch;
+                } else {
+                    batchEl.style.display = 'none';
+                    document.getElementById('inpBatch').value = '';
+                }
             }
-            if(data.phone) {
-                const el = document.getElementById('userPhone');
-                el.style.display = 'block';
-                el.querySelector('span').innerText = data.phone;
-                document.getElementById('inpPhone').value = data.phone;
+            const phoneEl = document.getElementById('userPhone');
+            if (phoneEl) {
+                if (data.phone && String(data.phone).trim() !== '') {
+                    phoneEl.style.display = 'block';
+                    phoneEl.querySelector('span').innerText = data.phone;
+                    document.getElementById('inpPhone').value = data.phone;
+                } else {
+                    phoneEl.style.display = 'none';
+                    document.getElementById('inpPhone').value = '';
+                }
             }
             }
     } catch (e) { console.error("Profile load error:", e); }
