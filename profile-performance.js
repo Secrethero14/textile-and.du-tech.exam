@@ -1,4 +1,4 @@
-// --- SUBJECT NORMALIZER (অধ্যায়-ভিত্তিক ঝামেলা বাদ, শুধু মূল বিষয়ভিত্তিক) ---
+// --- SUBJECT NORMALIZER (শুধুমাত্র ৪টি মূল বিষয়: Physics, Chemistry, Higher Math, English) ---
 function normalizeSubject(raw) {
     if (!raw) return null;
     const s = String(raw).normalize('NFC').trim().toLowerCase();
@@ -51,21 +51,10 @@ function normalizeSubject(raw) {
         return 'ইংরেজি (English)';
     }
 
-    // ৫. বাংলা (Bangla)
-    if (s.includes('bangla') || s.includes('bengali') || s.includes('বাংলা')) {
-        return 'বাংলা (Bangla)';
-    }
-
-    // ৬. জীববিজ্ঞান (Biology)
-    if (s.includes('bio') || s.includes('জীববিজ্ঞান')) {
-        return 'জীববিজ্ঞান (Biology)';
-    }
-
-    // বাকি পরিচিত বিষয় (যেমন: সাধারণ জ্ঞান / বিজ্ঞান)
-    return 'অন্যান্য (Other)';
+    return null;
 }
 
-// --- RENDER SUBJECT-WISE PERFORMANCE (পরিচ্ছন্ন বিষয়ভিত্তিক পারফরম্যান্স) ---
+// --- RENDER SUBJECT-WISE PERFORMANCE (পরিচ্ছন্ন ৪ বিষয়ভিত্তিক পারফরম্যান্স) ---
 function renderSubjectPerformance(exams) {
     const container = document.getElementById('subjectPerformanceList');
     if (!container) return;
@@ -98,10 +87,7 @@ function renderSubjectPerformance(exams) {
         'পদার্থবিজ্ঞান (Physics)',
         'রসায়ন (Chemistry)',
         'উচ্চতর গণিত (Higher Math)',
-        'ইংরেজি (English)',
-        'বাংলা (Bangla)',
-        'জীববিজ্ঞান (Biology)',
-        'অন্যান্য (Other)'
+        'ইংরেজি (English)'
     ];
 
     const subjects = Object.keys(subjectStats).sort((a, b) => {
@@ -114,7 +100,7 @@ function renderSubjectPerformance(exams) {
         container.innerHTML = `
             <div style="text-align:center; padding: 25px 15px; color:#888;">
                 <i class="fas fa-chart-pie fa-2x" style="opacity:0.3; margin-bottom:10px;"></i>
-                <p style="margin:0; font-size:14px; color:#636e72;">তুমি এক্সাম দেওয়া শুরু করলে এখানে প্রতিটি বিষয়ের প্রস্তুতি ও অগ্রগতি স্বয়ংক্রিয়ভাবে দেখতে পাবে।</p>
+                <p style="margin:0; font-size:14px; color:#636e72;">তুমি এক্সাম দেওয়া শুরু করলে এখানে Physics, Chemistry, Math ও English-এর প্রস্তুতি ও অগ্রগতি দেখতে পাবে।</p>
             </div>
         `;
         return;
@@ -124,10 +110,7 @@ function renderSubjectPerformance(exams) {
         'পদার্থবিজ্ঞান (Physics)': '#0984e3',
         'রসায়ন (Chemistry)': '#00b894',
         'উচ্চতর গণিত (Higher Math)': '#6c5ce7',
-        'ইংরেজি (English)': '#e17055',
-        'বাংলা (Bangla)': '#f39c12',
-        'জীববিজ্ঞান (Biology)': '#10b981',
-        'অন্যান্য (Other)': '#64748b'
+        'ইংরেজি (English)': '#e17055'
     };
 
     let html = '';
