@@ -127,54 +127,7 @@ function toBanglaDigits(num) {
     return String(num).replace(/[0-9]/g, d => bDigits[d]);
 }
 
-// 🕒 যেকোনো ফরম্যাটের তারিখ নির্ভুলভাবে পার্স করার হেল্পার (ISO, DD/MM/YYYY, বাংলা ডিজিট ইত্যাদি)
-function parseExamScheduleDate(str) {
-    if (!str) return null;
-    let s = String(str).trim();
-    if (!s) return null;
-
-    // Convert Bengali digits to English
-    const bnMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-    s = s.replace(/[০-৯]/g, m => bnMap[m]);
-
-    // Try standard JavaScript date parse
-    let d = new Date(s);
-    if (!isNaN(d.getTime())) return d;
-
-    // Match DD/MM/YYYY or DD-MM-YYYY (e.g. 15/11/2026 or 15-11-2026 8:00 PM or 15/11/2026 20:00)
-    const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
-    if (dmyMatch) {
-        const day = parseInt(dmyMatch[1], 10);
-        const month = parseInt(dmyMatch[2], 10) - 1;
-        const year = parseInt(dmyMatch[3], 10);
-        let hour = dmyMatch[4] ? parseInt(dmyMatch[4], 10) : 0;
-        const min = dmyMatch[5] ? parseInt(dmyMatch[5], 10) : 0;
-        const sec = dmyMatch[6] ? parseInt(dmyMatch[6], 10) : 0;
-        const ampm = dmyMatch[7] ? dmyMatch[7].toUpperCase() : null;
-        if (ampm === 'PM' && hour < 12) hour += 12;
-        if (ampm === 'AM' && hour === 12) hour = 0;
-        d = new Date(year, month, day, hour, min, sec);
-        if (!isNaN(d.getTime())) return d;
-    }
-
-    // Match YYYY-MM-DD or YYYY/MM/DD with 12-hour AM/PM
-    const ymdMatch = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
-    if (ymdMatch) {
-        const year = parseInt(ymdMatch[1], 10);
-        const month = parseInt(ymdMatch[2], 10) - 1;
-        const day = parseInt(ymdMatch[3], 10);
-        let hour = ymdMatch[4] ? parseInt(ymdMatch[4], 10) : 0;
-        const min = ymdMatch[5] ? parseInt(ymdMatch[5], 10) : 0;
-        const sec = ymdMatch[6] ? parseInt(ymdMatch[6], 10) : 0;
-        const ampm = ymdMatch[7] ? ymdMatch[7].toUpperCase() : null;
-        if (ampm === 'PM' && hour < 12) hour += 12;
-        if (ampm === 'AM' && hour === 12) hour = 0;
-        d = new Date(year, month, day, hour, min, sec);
-        if (!isNaN(d.getTime())) return d;
-    }
-
-    return null;
-}
+// 🕒 তারিখ পার্সিং ও এক্সাম স্টেট এখন schedule-utils.js থেকে লোড হয়
 
 // 👤 সাইডবারের ইউজার বক্সে ক্লিক করলে সরাসরি প্রোফাইল পেজে যাওয়ার হ্যান্ডলার
 function handleDrawerProfileClick() {
@@ -562,11 +515,14 @@ function navigateBack() {
                 dashboardView.style.opacity = '1';
                 updateNavBar(user);
                 checkEnrollment(user.email);
+                loadUserGivenExams(user.email);
                 if (window.openPaymentAfterLogin) {
                     window.openPaymentAfterLogin = false;
                     setTimeout(() => { openPaymentModal(); }, 600);
                 }
             } else if (isGuest) {
+                userGivenExamIds = new Set();
+                loadedGivenForEmail = null;
                 sysLoader.style.display = 'none';
                 loginView.style.display = 'none';
                 dashboardView.style.display = 'block';
@@ -859,6 +815,37 @@ function navigateBack() {
             }
         }
 
+        let userGivenExamIds = new Set();
+        let loadedGivenForEmail = null;
+
+        async function loadUserGivenExams(email) {
+            if (!email) {
+                userGivenExamIds = new Set();
+                loadedGivenForEmail = null;
+                return;
+            }
+            const rawEmail = String(email).trim();
+            const normEmail = rawEmail.toLowerCase();
+            if (loadedGivenForEmail === normEmail) return;
+            loadedGivenForEmail = normEmail;
+
+            try {
+                const emailList = rawEmail === normEmail ? [normEmail] : [rawEmail, normEmail];
+                const snap = await db.collection("exam_results").where("email", "in", emailList).get();
+                const nextSet = new Set();
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if (d && d.examId) nextSet.add(String(d.examId).trim());
+                });
+                userGivenExamIds = nextSet;
+                if (allExams && allExams.length > 0) {
+                    renderView();
+                }
+            } catch (err) {
+                console.warn("Could not load user exam history:", err);
+            }
+        }
+
         async function loadExams() {
             try {
                 const res = await fetch(JSON_BASE + "exam-index.json?v=" + new Date().getTime());
@@ -1071,6 +1058,7 @@ function navigateBack() {
 
         // 🔴 আইটেম (এক্সাম বনাম ভিডিও) কার্ড রেন্ডারার 🔴
         function renderItems(filtered, container, prependHtml = "") {
+            window.currentExamsList = [];
             let html = prependHtml;
             filtered.forEach(item => {
                 const link = getItemLink(item);
@@ -1094,28 +1082,23 @@ function navigateBack() {
                         </a>
                     `;
                 } else {
-                    // 📝 সাধারণ এক্সাম কার্ড (শিডিউল্ড রুটিন এক্সাম সাপোর্ট সহ)
+                    // 📝 সাধারণ এক্সাম কার্ড (UPCOMING -> LIVE -> FREE/PRACTICE/GIVEN লাইফসাইকেল সাপোর্ট)
                     const isPaid = itemType === 'paid';
-                    
-                    // 🕒 রুটিন অনুযায়ী শিডিউল্ড কি না যাচাই (সবার জন্য নির্ভুল তারিখ ও সময় পার্সিং)
-                    let isScheduled = false;
                     const startTimeVal = getItemVal(item, ['start time', 'starttime', 'start_time', 'start']);
-                    if (startTimeVal) {
-                        const schedD = parseExamScheduleDate(startTimeVal);
-                        if (schedD && schedD > new Date()) {
-                            isScheduled = true;
-                        }
-                    }
-                    const statusStr = getItemVal(item, ['status', 'exam_status', 'state', 'config']).toLowerCase();
-                    if (statusStr === 'upcoming' || statusStr === 'scheduled') {
-                        isScheduled = true;
-                    } else if (statusStr === 'live' || statusStr === 'unlocked' || statusStr === 'active') {
-                        isScheduled = false;
-                    }
+                    const endTimeVal = getItemVal(item, ['end time', 'endtime', 'end_time', 'end']);
+                    const statusStr = getItemVal(item, ['status', 'exam_status', 'state', 'config']);
+                    const phaseState = getExamPhaseState({
+                        startTime: startTimeVal,
+                        endTime: endTimeVal,
+                        status: statusStr
+                    });
+
+                    const tabKey = String(item['Tab ID'] || '').trim();
+                    const hasGiven = tabKey && userGivenExamIds.has(tabKey);
 
                     const itemRange = (item['Range'] || item['range'] || item['রেঞ্জ'] || item['Question Range'] || '').trim();
                     const itemName = (item['Exam Name'] || '').trim();
-                    let examUrl = `exam.html?id=${encodeURIComponent(item['Tab ID'])}`;
+                    let examUrl = `exam.html?id=${encodeURIComponent(tabKey)}`;
                     if (itemName) examUrl += `&name=${encodeURIComponent(itemName)}`;
                     if (itemRange) examUrl += `&range=${encodeURIComponent(itemRange)}`;
 
@@ -1124,36 +1107,52 @@ function navigateBack() {
                     let btnHtml = '';
                     let isBtnUnlocked = false;
 
-                    // ১. FREE (ফ্রি এক্সাম): যে কেউ যেকোনো সময় দিতে পারবে
-                    if (!isPaid) {
-                        badge = `<span class="badge badge-free">FREE</span>`;
-                        action = `location.href='${examUrl}'`;
-                        btnHtml = 'Start Exam <i class="fas fa-arrow-right"></i>';
-                        isBtnUnlocked = true;
-                    } 
-                    // ৩ (ক). PAID & UPCOMING / LOCKED (যাঁরা কোর্স কেনেনি):
-                    else if (!userEnrollment) {
+                    // ১. PAID & কোর্স কেনা নেই: সবসময় লকড থাকবে
+                    if (isPaid && !userEnrollment) {
                         badge = `<span class="badge badge-paid">PAID</span>`;
                         action = 'openPaymentModal()';
                         btnHtml = '<i class="fas fa-lock"></i> Locked';
-                    } 
-                    // শিক্ষার্থী কোর্স কিনেছে (userEnrollment == true)
+                    }
+                    // ২. UPCOMING (ফ্রি বা এনরোল্ড পেইড): নির্ধারিত সময় শুরু না হলে কার্ডেই UPCOMING দেখাবে
+                    else if (phaseState.phase === 'upcoming') {
+                        badge = !isPaid
+                            ? `<span class="badge badge-upcoming"><i class="fas fa-clock"></i> FREE • UPCOMING</span>`
+                            : `<span class="badge badge-upcoming"><i class="fas fa-clock"></i> UPCOMING</span>`;
+                        window.currentExamsList = window.currentExamsList || [];
+                        const modalIdx = window.currentExamsList.push(item) - 1;
+                        action = `showScheduledExamModal(window.currentExamsList[${modalIdx}])`;
+                        btnHtml = '<i class="fas fa-clock"></i> রুটিন অনুযায়ী শিডিউল্ড';
+                    }
+                    // ৩. LIVE (Start ও End সময়ের মধ্যে অথবা Config = live): লাইভ ট্যাগ দেখাবে
+                    else if (phaseState.phase === 'live') {
+                        badge = hasGiven
+                            ? `<span class="badge badge-live"><span class="live-dot"></span> LIVE • GIVEN</span>`
+                            : `<span class="badge badge-live"><span class="live-dot"></span> LIVE</span>`;
+                        action = `location.href='${examUrl}'`;
+                        btnHtml = hasGiven
+                            ? 'Practice Again <i class="fas fa-redo"></i>'
+                            : 'Start Live Exam <i class="fas fa-arrow-right"></i>';
+                        isBtnUnlocked = true;
+                    }
+                    // ৪. LIVE শেষ (practice) বা স্বাভাবিক খোলা এক্সাম (open): কখনোই লক হবে না
                     else {
-                        // ৩ (খ). PAID & UPCOMING (রুটিনের জন্য অপেক্ষমান এক্সাম)
-                        if (isScheduled) {
-                            badge = `<span class="badge" style="background:#e0f2fe; color:#0284c7; font-weight:700;"><i class="fas fa-clock"></i> UPCOMING</span>`;
-                            window.currentExamsMap = window.currentExamsMap || {};
-                            window.currentExamsMap[item['Tab ID']] = item;
-                            action = `showScheduledExamModal(window.currentExamsMap['${item['Tab ID']}'])`;
-                            btnHtml = '<i class="fas fa-clock"></i> রুটিন অনুযায়ী শিডিউল্ড';
-                        } 
-                        // ২. PAID & UNLOCKED (রুটিন অনুযায়ী উন্মুক্ত এক্সাম / নির্ধারিত সময় পার হয়েছে / প্র্যাকটিস এক্সাম)
-                        else {
-                            badge = `<span class="badge badge-free" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;"><i class="fas fa-unlock-alt"></i> UNLOCKED</span>`;
-                            action = `location.href='${examUrl}'`;
-                            btnHtml = 'Start Exam <i class="fas fa-arrow-right"></i>';
-                            isBtnUnlocked = true;
+                        const isEndedPractice = phaseState.phase === 'practice' || itemType === 'practice';
+                        if (!isPaid) {
+                            badge = hasGiven
+                                ? `<span class="badge badge-given"><i class="fas fa-check-circle"></i> FREE • GIVEN</span>`
+                                : `<span class="badge badge-free">FREE</span>`;
+                        } else if (hasGiven) {
+                            badge = `<span class="badge badge-given"><i class="fas fa-check-circle"></i> GIVEN</span>`;
+                        } else if (isEndedPractice) {
+                            badge = `<span class="badge badge-practice"><i class="fas fa-unlock-alt"></i> PRACTICE</span>`;
+                        } else {
+                            badge = `<span class="badge badge-practice"><i class="fas fa-unlock-alt"></i> UNLOCKED</span>`;
                         }
+                        action = `location.href='${examUrl}'`;
+                        btnHtml = hasGiven
+                            ? 'Practice Again <i class="fas fa-redo"></i>'
+                            : (isEndedPractice ? 'Practice Exam <i class="fas fa-arrow-right"></i>' : 'Start Exam <i class="fas fa-arrow-right"></i>');
+                        isBtnUnlocked = true;
                     }
                     
                     html += `
@@ -1487,15 +1486,27 @@ function navigateBack() {
 
         function showScheduledExamModal(item) {
             const examName = item['Exam Name'] || 'পরীক্ষা';
+            const isPaid = String(item['Type'] || '').trim().toLowerCase() === 'paid';
             let timeNotice = 'রুটিনের নির্ধারিত সময়ে এই পরীক্ষাটি স্বয়ংক্রিয়ভাবে লাইভ হবে।';
             const startTimeVal = getItemVal(item, ['start time', 'starttime', 'start_time', 'start']);
+            const endTimeVal = getItemVal(item, ['end time', 'endtime', 'end_time', 'end']);
             if (startTimeVal) {
                 const d = parseExamScheduleDate(startTimeVal);
                 if (d && !isNaN(d.getTime())) {
                     const timeStr = d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
-                    timeNotice = `📅 নির্ধারিত লাইভ সময়: <b style="color:#0369a1;">${timeStr}</b>`;
+                    timeNotice = `📅 নির্ধারিত লাইভ শুরু: <b style="color:#0369a1;">${timeStr}</b>`;
+                    if (endTimeVal) {
+                        const ed = parseExamScheduleDate(endTimeVal);
+                        if (ed && !isNaN(ed.getTime())) {
+                            const endStr = ed.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + ed.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+                            timeNotice += `<br>🏁 লাইভ শেষ (এরপর প্র্যাকটিস চলবে): <b style="color:#475569;">${endStr}</b>`;
+                        }
+                    }
                 }
             }
+            const accessStatusHtml = isPaid
+                ? '<i class="fas fa-check-circle" style="color:#16a34a; font-size:16px;"></i> আপনি কোর্সটিতে সফলভাবে যুক্ত আছেন'
+                : '<i class="fas fa-gift" style="color:#16a34a; font-size:16px;"></i> এটি সবার জন্য উন্মুক্ত (ফ্রি) পরীক্ষা';
 
             Swal.fire({
                 icon: 'info',
@@ -1508,14 +1519,14 @@ function navigateBack() {
                         </p>
                         <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px;">
                             <div style="color:#15803d; font-weight:700; font-size:14px; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
-                                <i class="fas fa-check-circle" style="color:#16a34a; font-size:16px;"></i> আপনি কোর্সটিতে সফলভাবে যুক্ত আছেন
+                                ${accessStatusHtml}
                             </div>
                             <div style="font-size:13px; color:#334155; margin-top:6px;">
                                 ${timeNotice}
                             </div>
                         </div>
                         <p style="margin:0 0 14px 0; font-size:13px; color:#475569;">
-                            🕒 রুটিনের নির্ধারিত সময়ে পরীক্ষাটি লাইভ হবে এবং আপনি অংশগ্রহণ করতে পারবেন। পরীক্ষা একবার লাইভ হওয়ার পর এটি আজীবন আপনার জন্য উন্মুক্ত থাকবে এবং যতবার খুশি প্র্যাকটিস করতে পারবেন।
+                            🕒 রুটিনের নির্ধারিত সময়ে পরীক্ষাটি লাইভ হবে এবং আপনি অংশগ্রহণ করতে পারবেন। পরীক্ষা একবার লাইভ হওয়ার পর এটি কখনোই লক হবে না—যতবার খুশি প্র্যাকটিস করতে পারবেন।
                         </p>
                         <button type="button" onclick="Swal.close(); openRoutineModal();" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:#0984e3; color:white; border:none; padding:12px 14px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer; box-shadow:0 3px 8px rgba(9,132,227,0.3);">
                             <i class="fas fa-calendar-alt"></i> পূর্ণাঙ্গ পরীক্ষার রুটিন দেখুন ও ডাউনলোড করুন

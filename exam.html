@@ -155,6 +155,7 @@
         <button class="btn-submit" onclick="attemptSubmit()">জমা দিন</button>
     </div>
 
+    <script src="schedule-utils.js"></script>
     <script>
         (function() {
         // --- CONFIG ---
@@ -197,47 +198,7 @@
             return '';
         }
 
-        // 🕒 যেকোনো ফরম্যাটের শিডিউল তারিখ পার্স করার হেল্পার (ISO, DD/MM/YYYY, বাংলা ডিজিট) 🕒
-        function parseExamScheduleDate(str) {
-            if (!str) return null;
-            let s = String(str).trim();
-            if (!s) return null;
-            const bnMap = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-            s = s.replace(/[০-৯]/g, m => bnMap[m]);
-            let d = new Date(s);
-            if (!isNaN(d.getTime())) return d;
-
-            const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
-            if (dmyMatch) {
-                const day = parseInt(dmyMatch[1], 10);
-                const month = parseInt(dmyMatch[2], 10) - 1;
-                const year = parseInt(dmyMatch[3], 10);
-                let hour = dmyMatch[4] ? parseInt(dmyMatch[4], 10) : 0;
-                const min = dmyMatch[5] ? parseInt(dmyMatch[5], 10) : 0;
-                const sec = dmyMatch[6] ? parseInt(dmyMatch[6], 10) : 0;
-                const ampm = dmyMatch[7] ? dmyMatch[7].toUpperCase() : null;
-                if (ampm === 'PM' && hour < 12) hour += 12;
-                if (ampm === 'AM' && hour === 12) hour = 0;
-                d = new Date(year, month, day, hour, min, sec);
-                if (!isNaN(d.getTime())) return d;
-            }
-
-            const ymdMatch = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?)?$/i);
-            if (ymdMatch) {
-                const year = parseInt(ymdMatch[1], 10);
-                const month = parseInt(ymdMatch[2], 10) - 1;
-                const day = parseInt(ymdMatch[3], 10);
-                let hour = ymdMatch[4] ? parseInt(ymdMatch[4], 10) : 0;
-                const min = ymdMatch[5] ? parseInt(ymdMatch[5], 10) : 0;
-                const sec = ymdMatch[6] ? parseInt(ymdMatch[6], 10) : 0;
-                const ampm = ymdMatch[7] ? ymdMatch[7].toUpperCase() : null;
-                if (ampm === 'PM' && hour < 12) hour += 12;
-                if (ampm === 'AM' && hour === 12) hour = 0;
-                d = new Date(year, month, day, hour, min, sec);
-                if (!isNaN(d.getTime())) return d;
-            }
-            return null;
-        }
+        // 🕒 শিডিউল পার্সিং এখন schedule-utils.js (parseExamScheduleDate ও getExamPhaseState) থেকে আসে 🕒
 
         function waitForAuthUser() {
             return new Promise(resolve => {
@@ -338,21 +299,14 @@
 
             const isPaid = examConfig.type === 'paid' || examConfig.anyMatchingPaid === true;
 
-            // 🕒 রুটিন অনুযায়ী শিডিউল্ড (UPCOMING) কি না যাচাই
-            let isScheduled = false;
-            let scheduledDate = null;
-            if (examConfig.startTime) {
-                scheduledDate = parseExamScheduleDate(examConfig.startTime);
-                if (scheduledDate && scheduledDate > new Date()) {
-                    isScheduled = true;
-                }
-            }
-            const statusStr = (examConfig.status || '').toLowerCase();
-            if (statusStr === 'upcoming' || statusStr === 'scheduled') {
-                isScheduled = true;
-            } else if (statusStr === 'live' || statusStr === 'unlocked' || statusStr === 'active') {
-                isScheduled = false;
-            }
+            // 🕒 রুটিন অনুযায়ী শিডিউল্ড (UPCOMING) কি না যাচাই (schedule-utils.js)
+            const phaseState = getExamPhaseState({
+                startTime: examConfig.startTime,
+                endTime: examConfig.endTime,
+                status: examConfig.status
+            });
+            const isScheduled = phaseState.phase === 'upcoming';
+            const scheduledDate = phaseState.startDate;
 
             // 🔒 ধাপ ১: পেইড পরীক্ষা হলে লগইন এবং Firestore ডাটাবেসে অনুমোদন যাচাই
             if (isPaid) {
@@ -521,6 +475,7 @@
                     type: exam['Type'] ? String(exam['Type']).toLowerCase().trim() : 'exam', 
                     anyMatchingPaid: !matchedExactByName && anyPaid,
                     startTime: getExamVal(exam, ['start time', 'starttime', 'start_time', 'start']),
+                    endTime: getExamVal(exam, ['end time', 'endtime', 'end_time', 'end']),
                     status: getExamVal(exam, ['status', 'exam_status', 'state', 'config']),
                     config: parsedCfg,
                     optional: (parsedCfg && parsedCfg.optional) || false,
@@ -1055,7 +1010,14 @@
                     userEmail = user.email; userName = user.displayName || "Student";
                     const checkSnapshot = await db.collection("exam_results")
                         .where("email", "==", user.email).where("examId", "==", tabId).limit(1).get();
-                    if (!checkSnapshot.empty || examConfig.type === 'practice') isPracticeMode = true; 
+                    const submitPhase = getExamPhaseState({
+                        startTime: examConfig.startTime,
+                        endTime: examConfig.endTime,
+                        status: examConfig.status
+                    });
+                    if (!checkSnapshot.empty || examConfig.type === 'practice' || submitPhase.phase === 'practice') {
+                        isPracticeMode = true;
+                    }
                 } else {
                     isPracticeMode = true; 
                 }
