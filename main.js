@@ -1134,16 +1134,16 @@ function navigateBack() {
                             : 'Start Live Exam <i class="fas fa-arrow-right"></i>';
                         isBtnUnlocked = true;
                     }
-                    // ৪. LIVE শেষ (practice) বা স্বাভাবিক খোলা এক্সাম (open): কখনোই লক হবে না
+                    // ৪. LIVE শেষ হওয়ার পর বা স্বাভাবিক খোলা এক্সাম: পরে যুক্ত হওয়া ইউজারের ১ম বারও মেরিট সহ লাইভ হিসেবে কাউন্ট হবে
                     else {
-                        const isEndedPractice = phaseState.phase === 'practice' || itemType === 'practice';
+                        const isExplicitPractice = itemType === 'practice';
                         if (!isPaid) {
                             badge = hasGiven
                                 ? `<span class="badge badge-given"><i class="fas fa-check-circle"></i> FREE • GIVEN</span>`
                                 : `<span class="badge badge-free">FREE</span>`;
                         } else if (hasGiven) {
                             badge = `<span class="badge badge-given"><i class="fas fa-check-circle"></i> GIVEN</span>`;
-                        } else if (isEndedPractice) {
+                        } else if (isExplicitPractice) {
                             badge = `<span class="badge badge-practice"><i class="fas fa-unlock-alt"></i> PRACTICE</span>`;
                         } else {
                             badge = `<span class="badge badge-practice"><i class="fas fa-unlock-alt"></i> UNLOCKED</span>`;
@@ -1151,7 +1151,7 @@ function navigateBack() {
                         action = `location.href='${examUrl}'`;
                         btnHtml = hasGiven
                             ? 'Practice Again <i class="fas fa-redo"></i>'
-                            : (isEndedPractice ? 'Practice Exam <i class="fas fa-arrow-right"></i>' : 'Start Exam <i class="fas fa-arrow-right"></i>');
+                            : (isExplicitPractice ? 'Practice Exam <i class="fas fa-arrow-right"></i>' : 'Start Exam <i class="fas fa-arrow-right"></i>');
                         isBtnUnlocked = true;
                     }
                     

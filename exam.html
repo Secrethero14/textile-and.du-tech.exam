@@ -1006,16 +1006,20 @@
                     const unsubscribe = firebase.auth().onAuthStateChanged(u => { unsubscribe(); resolve(u); });
                 });
 
+                let attemptedDuringLive = false;
+                const submitPhase = getExamPhaseState({
+                    startTime: examConfig.startTime,
+                    endTime: examConfig.endTime,
+                    status: examConfig.status
+                });
+                attemptedDuringLive = submitPhase.phase === 'live';
+
                 if (user) {
                     userEmail = user.email; userName = user.displayName || "Student";
                     const checkSnapshot = await db.collection("exam_results")
                         .where("email", "==", user.email).where("examId", "==", tabId).limit(1).get();
-                    const submitPhase = getExamPhaseState({
-                        startTime: examConfig.startTime,
-                        endTime: examConfig.endTime,
-                        status: examConfig.status
-                    });
-                    if (!checkSnapshot.empty || examConfig.type === 'practice' || submitPhase.phase === 'practice') {
+                    // পরে যুক্ত হওয়া শিক্ষার্থীর ১ম বারের পরীক্ষাও অফিসিয়াল/মেরিট হিসেবে কাউন্ট হবে; কেবল ২য় বার দিলে বা Type='practice' হলেই isPractice: true হবে
+                    if (!checkSnapshot.empty || examConfig.type === 'practice') {
                         isPracticeMode = true;
                     }
                 } else {
@@ -1030,6 +1034,7 @@
                     analysis: chapterAnalysis, userAnswers,
                     questionOrder: filteredQuestions.map(q => q.originalIndex),
                     isPractice: isPracticeMode,
+                    attemptedDuringLive: attemptedDuringLive,
                     isMistakeReExam: isMistakeMode
                 };
 
