@@ -12,6 +12,7 @@
     
     <!-- SweetAlert2 & Fonts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="math-format.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -912,20 +913,7 @@
         }
 
         function formatExplanationForPrint(raw) {
-            if (!raw) return '';
-            let s = String(raw).trim();
-            s = s.replace(/\n/g, '<br>');
-            s = s.replace(/।\s+/g, '।<br>');
-            s = s.replace(/([^\d]):\s+/g, '$1:<br>');
-            if (s.includes('$')) {
-                s = s.replace(/\\Rightarrow/g, '$<br>$\\Rightarrow');
-                s = s.replace(/\$\$/g, '$ $');
-            }
-            s = s.replace(/([→⇌⇋↔])/g, '<br>$1');
-            s = s.replace(/(ধাপ\s*[০-৯\d]+:)/g, '<br>$1');
-            s = s.replace(/(<br>\s*)+/g, '<br>');
-            if (s.startsWith('<br>')) s = s.substring(4);
-            return s;
+            return typeof formatExplanationHtml === 'function' ? formatExplanationHtml(raw) : String(raw || '');
         }
 
         function buildPrintDocHtml(questions, examMeta, mode) {
@@ -939,11 +927,11 @@
             let questionsHtml = '';
             questions.forEach((q, idx) => {
                 const qNum = toBanglaDigits(idx + 1);
-                const qText = q['প্রশ্ন (LaTeX সহ)'] || q['question'] || '';
-                const optA = q['অপশন A'] || q['optA'] || '';
-                const optB = q['অপশন B'] || q['optB'] || '';
-                const optC = q['অপশন C'] || q['optC'] || '';
-                const optD = q['অপশন D'] || q['optD'] || '';
+                const qText = sanitizeInlineLatex(q['প্রশ্ন (LaTeX সহ)'] || q['question'] || '');
+                const optA = sanitizeInlineLatex(q['অপশন A'] || q['optA'] || '');
+                const optB = sanitizeInlineLatex(q['অপশন B'] || q['optB'] || '');
+                const optC = sanitizeInlineLatex(q['অপশন C'] || q['optC'] || '');
+                const optD = sanitizeInlineLatex(q['অপশন D'] || q['optD'] || '');
                 const rawAns = q['উত্তর'] || q['ans'] || '';
                 const rightAns = normalizeMCQAns(rawAns);
                 const expRaw = q['বিস্তারিত ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা (LaTeX সহ)'] || q['ব্যাখ্যা'] || '';
