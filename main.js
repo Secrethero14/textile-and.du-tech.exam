@@ -1247,7 +1247,7 @@ function navigateBack() {
                 if (snapSingle.exists) {
                     const data = snapSingle.data();
                     currentRoutineData = {
-                        week: data.week || "চলতি সপ্তাহ",
+                        week: data.week || "বর্তমান রুটিন",
                         dates: data.dates || "",
                         image: data.image || "",
                         pdf: data.pdf || "",
@@ -1262,7 +1262,7 @@ function navigateBack() {
             // 3. Fallback to settings.json
             const s = window.siteSettings || {};
             currentRoutineData = {
-                week: s.routine_title || "চলতি সপ্তাহ",
+                week: s.routine_title || "বর্তমান রুটিন",
                 dates: s.routine_dates || "",
                 image: s.routine_image || s.routine || "",
                 pdf: s.routine_pdf || "",
@@ -1295,23 +1295,55 @@ function navigateBack() {
             if (e.key === 'Escape') closeSideNav();
         });
 
+        let routineLoadSeq = 0;
+
         async function openRoutineModal() {
             const modal = document.getElementById('routineModal');
             if (!modal) return;
+
+            const seq = ++routineLoadSeq;
+            const titleEl = document.getElementById('routineCurrentWeekTitle');
+            const datesEl = document.getElementById('routineCurrentDateRange');
+            const noticeBox = document.getElementById('routineNoticeBox');
+            const noticeText = document.getElementById('routineNoticeText');
+            const loaderEl = document.getElementById('routineLoader');
+            const imgEl = document.getElementById('routineImageEl');
+            const placeholder = document.getElementById('routinePlaceholder');
+            const dlImgBtn = document.getElementById('routineDownloadImgBtn');
+            const dlPdfBtn = document.getElementById('routineDownloadPdfBtn');
+            const dateEl = document.getElementById('routineUpdateDate');
+            const archiveWrapper = document.getElementById('routineArchiveWrapper');
+            const archiveDisplay = document.getElementById('archiveRoutineDisplay');
+
+            // ব্লিংক বা আগের ডেটা ঝলকানো আটকাতে মোডাল খোলার আগেই আগের স্টেট রিসেট করা হচ্ছে
+            if (titleEl) titleEl.innerText = 'বর্তমান রুটিন';
+            if (datesEl) datesEl.innerText = '';
+            if (dateEl) dateEl.innerText = 'ব্যাচ ২০২৬-২৭';
+            if (noticeBox) noticeBox.style.display = 'none';
+            if (imgEl) {
+                imgEl.onload = null;
+                imgEl.onerror = null;
+                imgEl.src = '';
+                imgEl.style.display = 'none';
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            if (loaderEl) loaderEl.style.display = 'block';
+            if (dlImgBtn) { dlImgBtn.href = '#'; dlImgBtn.style.display = 'none'; }
+            if (dlPdfBtn) { dlPdfBtn.href = '#'; dlPdfBtn.style.display = 'none'; }
+            if (archiveWrapper) archiveWrapper.style.display = 'none';
+            if (archiveDisplay) archiveDisplay.style.display = 'none';
+
             modal.style.display = 'flex';
 
             const { current, all } = await fetchWeeklyRoutines();
+            if (seq !== routineLoadSeq) return;
             const routine = current || {};
 
-            // Week Title & Date Range
-            const titleEl = document.getElementById('routineCurrentWeekTitle');
-            const datesEl = document.getElementById('routineCurrentDateRange');
-            if (titleEl) titleEl.innerText = routine.week || "চলতি সপ্তাহের রুটিন";
+            // Title & Date Range
+            if (titleEl) titleEl.innerText = routine.week || "বর্তমান রুটিন";
             if (datesEl) datesEl.innerText = routine.dates ? "(" + routine.dates + ")" : "";
 
             // Notice
-            const noticeBox = document.getElementById('routineNoticeBox');
-            const noticeText = document.getElementById('routineNoticeText');
             if (routine.notice && String(routine.notice).trim() !== '') {
                 if (noticeText) noticeText.innerText = String(routine.notice).trim();
                 if (noticeBox) noticeBox.style.display = 'block';
@@ -1320,10 +1352,6 @@ function navigateBack() {
             }
 
             // Image
-            const imgEl = document.getElementById('routineImageEl');
-            const placeholder = document.getElementById('routinePlaceholder');
-            const dlImgBtn = document.getElementById('routineDownloadImgBtn');
-
             if (routine.image && String(routine.image).trim() !== '') {
                 let imgSrc = String(routine.image).trim();
                 if (imgSrc.includes('drive.google.com/file/d/')) {
@@ -1331,8 +1359,24 @@ function navigateBack() {
                     imgSrc = 'https://drive.google.com/uc?export=view&id=' + fileId;
                 }
                 if (imgEl) {
+                    imgEl.onload = function() {
+                        if (seq !== routineLoadSeq) return;
+                        if (loaderEl) loaderEl.style.display = 'none';
+                        imgEl.style.display = 'block';
+                    };
+                    imgEl.onerror = function() {
+                        if (seq !== routineLoadSeq) return;
+                        if (loaderEl) loaderEl.style.display = 'none';
+                        imgEl.style.display = 'none';
+                        if (placeholder) placeholder.style.display = 'block';
+                    };
                     imgEl.src = imgSrc;
-                    imgEl.style.display = 'block';
+                    if (imgEl.complete && imgEl.naturalWidth > 0) {
+                        if (loaderEl) loaderEl.style.display = 'none';
+                        imgEl.style.display = 'block';
+                    }
+                } else if (loaderEl) {
+                    loaderEl.style.display = 'none';
                 }
                 if (placeholder) placeholder.style.display = 'none';
                 if (dlImgBtn) {
@@ -1340,6 +1384,7 @@ function navigateBack() {
                     dlImgBtn.style.display = 'inline-flex';
                 }
             } else {
+                if (loaderEl) loaderEl.style.display = 'none';
                 if (imgEl) {
                     imgEl.src = '';
                     imgEl.style.display = 'none';
@@ -1349,7 +1394,6 @@ function navigateBack() {
             }
 
             // PDF
-            const dlPdfBtn = document.getElementById('routineDownloadPdfBtn');
             if (routine.pdf && String(routine.pdf).trim() !== '') {
                 if (dlPdfBtn) {
                     dlPdfBtn.href = String(routine.pdf).trim();
@@ -1360,7 +1404,6 @@ function navigateBack() {
             }
 
             // Date
-            const dateEl = document.getElementById('routineUpdateDate');
             if (dateEl && routine.updatedAt) {
                 try {
                     const d = new Date(routine.updatedAt);
@@ -1370,22 +1413,19 @@ function navigateBack() {
                 } catch(e) {}
             }
 
-            // 📂 Archive Section Handling
-            const archiveWrapper = document.getElementById('routineArchiveWrapper');
+            // 📂 আগের রুটিন সেকশন
             const archiveSelect = document.getElementById('routineArchiveSelect');
             const archiveBadge = document.getElementById('archiveCountBadge');
-            const archiveDisplay = document.getElementById('archiveDisplayDisplay');
 
-            // Find archived routines (all routines other than current)
             const archives = all.filter(r => r !== routine && (r.id !== routine.id));
             if (archiveWrapper && archiveSelect) {
                 if (archives.length > 0) {
                     archiveWrapper.style.display = 'block';
-                    if (archiveBadge) archiveBadge.innerText = archives.length + 'টি পূর্ববর্তী রুটিন';
+                    if (archiveBadge) archiveBadge.innerText = archives.length + 'টি আগের রুটিন';
 
-                    let opts = '<option value="">-- পূর্ববর্তী যেকোনো সপ্তাহের রুটিন দেখতে নির্বাচন করুন --</option>';
+                    let opts = '<option value="">-- আগের যেকোনো রুটিন দেখতে নির্বাচন করুন --</option>';
                     archives.forEach((r, idx) => {
-                        const optTitle = (r.week || ('সপ্তাহ ' + (idx + 1))) + (r.dates ? ' (' + r.dates + ')' : '');
+                        const optTitle = (r.week || ('আগের রুটিন ' + (idx + 1))) + (r.dates ? ' (' + r.dates + ')' : '');
                         opts += `<option value="${r.id || idx}">${optTitle}</option>`;
                     });
                     archiveSelect.innerHTML = opts;
@@ -1415,7 +1455,7 @@ function navigateBack() {
             const imgEl = document.getElementById('archiveDisplayImg');
             const dlBtn = document.getElementById('archiveDisplayDownloadBtn');
 
-            if (titleEl) titleEl.innerText = r.week || 'আর্কাইভ রুটিন';
+            if (titleEl) titleEl.innerText = r.week || 'আগের রুটিন';
             if (datesEl) datesEl.innerText = r.dates || '';
 
             let imgSrc = r.image || '';

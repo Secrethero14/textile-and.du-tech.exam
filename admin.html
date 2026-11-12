@@ -174,26 +174,26 @@
 
         <div class="card" style="border-left: 5px solid #00b894; margin-top: 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-calendar-alt" style="color:#00b894;"></i> সাপ্তাহিক পরীক্ষার রুটিন ও নোটিশ ব্যবস্থাপনা</h3>
-                <span style="font-size:12px; color:#636e72;">প্রতি সপ্তাহে নতুন রুটিন পাবলিশ করুন, আগের রুটিনগুলো স্বয়ংক্রিয়ভাবে শিক্ষার্থীদের আর্কাইভে থাকবে</span>
+                <h3 style="margin:0; border:none; padding:0;"><i class="fas fa-calendar-alt" style="color:#00b894;"></i> পরীক্ষার রুটিন ও নোটিশ ব্যবস্থাপনা</h3>
+                <span style="font-size:12px; color:#636e72;">যেকোনো সময় নতুন রুটিন পাবলিশ করুন, পুরোনো রুটিনগুলো স্বয়ংক্রিয়ভাবে আগের রুটিন তালিকায় থাকবে</span>
             </div>
             
             <!-- নতুন রুটিন প্রকাশ ফরম -->
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:20px;">
-                <h4 style="margin:0 0 12px 0; font-size:14.5px; color:#0f172a;"><i class="fas fa-plus-circle" style="color:#00b894;"></i> নতুন সপ্তাহের রুটিন পাবলিশ করুন</h4>
+                <h4 style="margin:0 0 12px 0; font-size:14.5px; color:#0f172a;"><i class="fas fa-plus-circle" style="color:#00b894;"></i> নতুন রুটিন পাবলিশ করুন</h4>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
                         <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                            সপ্তাহের নাম / নম্বর:
+                            রুটিনের শিরোনাম / নাম:
                         </label>
-                        <input type="text" id="adminRoutineWeek" class="input-box" style="width:100%;" placeholder="যেমন: সপ্তাহ ০৩ (চলতি)..." required>
+                        <input type="text" id="adminRoutineWeek" class="input-box" style="width:100%;" placeholder="যেমন: নভেম্বর মাসের রুটিন বা ফাইনাল মডেল টেস্ট..." required>
                     </div>
                     <div>
                         <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
                             তারিখের সীমা (Date Range):
                         </label>
-                        <input type="text" id="adminRoutineDates" class="input-box" style="width:100%;" placeholder="যেমন: ১০ নভেম্বর - ১৭ নভেম্বর ২০২৬...">
+                        <input type="text" id="adminRoutineDates" class="input-box" style="width:100%;" placeholder="যেমন: ১ নভেম্বর - ৩০ নভেম্বর ২০২৬...">
                     </div>
                 </div>
 
@@ -214,15 +214,15 @@
 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                        <i class="fas fa-bullhorn"></i> এই সপ্তাহের বিশেষ নির্দেশনা / নোটিশ:
+                        <i class="fas fa-bullhorn"></i> বিশেষ নির্দেশনা / নোটিশ:
                     </label>
-                    <textarea id="adminRoutineNotice" class="input-box" rows="2" style="width:100%; resize:vertical;" placeholder="শিক্ষার্থীদের উদ্দেশ্যে এই সপ্তাহের পরীক্ষার বিশেষ নির্দেশনা বা বার্তা লিখুন..."></textarea>
+                    <textarea id="adminRoutineNotice" class="input-box" rows="2" style="width:100%; resize:vertical;" placeholder="শিক্ষার্থীদের উদ্দেশ্যে পরীক্ষার বিশেষ নির্দেশনা বা বার্তা লিখুন..."></textarea>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <label style="font-size:13px; color:#2d3436; cursor:pointer; display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" id="adminRoutineIsCurrent" checked style="width:16px; height:16px;">
-                        <b>এটিকে "চলতি সপ্তাহের রুটিন" হিসেবে সেট করুন</b> (আগের রুটিন স্বয়ংক্রিয়ভাবে আর্কাইভে থাকবে)
+                        <b>এটিকে "বর্তমান রুটিন" হিসেবে সেট করুন</b> (পুরোনো রুটিন স্বয়ংক্রিয়ভাবে আগের রুটিন তালিকায় থাকবে)
                     </label>
                     <button type="button" class="btn btn-export" onclick="publishWeeklyRoutine()" style="background:#00b894;">
                         <i class="fas fa-paper-plane"></i> নতুন রুটিন পাবলিশ করুন
@@ -230,17 +230,17 @@
                 </div>
             </div>
 
-            <!-- প্রকাশিত সকল রুটিনের তালিকা (Active & Archive) -->
+            <!-- প্রকাশিত সকল রুটিনের তালিকা (বর্তমান ও আগের) -->
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h4 style="margin:0; font-size:14px; color:#0f172a;"><i class="fas fa-list"></i> প্রকাশিত রুটিনসমূহ ও আর্কাইভ তালিকা</h4>
+                    <h4 style="margin:0; font-size:14px; color:#0f172a;"><i class="fas fa-list"></i> প্রকাশিত রুটিনসমূহের তালিকা</h4>
                     <button class="btn btn-load" onclick="loadAdminRoutineSettings()" style="padding:4px 10px; font-size:12px;"><i class="fas fa-sync-alt"></i> রিফ্রেশ</button>
                 </div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th style="text-align:left;">সপ্তাহ ও তারিখ</th>
+                                <th style="text-align:left;">রুটিনের নাম ও তারিখ</th>
                                 <th>স্ট্যাটাস</th>
                                 <th>লিংক</th>
                                 <th>পাবলিশ তারিখ</th>
@@ -602,7 +602,7 @@
             try {
                 const snap = await db.collection("weekly_routines").orderBy("createdAt", "desc").get();
                 if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; color:#888; text-align:center;">বর্তমানে কোনো সাপ্তাহিক রুটিন পাবলিশ করা নেই। উপরের বক্সে তথ্য লিখে প্রথম রুটিনটি পাবলিশ করুন।</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; color:#888; text-align:center;">বর্তমানে কোনো রুটিন পাবলিশ করা নেই। উপরের বক্সে তথ্য লিখে প্রথম রুটিনটি পাবলিশ করুন।</td></tr>';
                     return;
                 }
 
@@ -619,7 +619,7 @@
                             ${r.dates ? `<br><span style="font-size:12px; color:#64748b;">${r.dates}</span>` : ''}
                         </td>
                         <td>
-                            ${isCur ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;"><i class="fas fa-check-circle"></i> চলতি সপ্তাহ</span>' : '<span class="badge" style="background:#f1f5f9; color:#64748b;">আর্কাইভ</span>'}
+                            ${isCur ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;"><i class="fas fa-check-circle"></i> বর্তমান রুটিন</span>' : '<span class="badge" style="background:#f1f5f9; color:#64748b;">আগের রুটিন</span>'}
                         </td>
                         <td>
                             ${r.image ? `<a href="${r.image}" target="_blank" style="color:#0284c7; font-size:13px; text-decoration:none; margin-right:8px;"><i class="fas fa-image"></i> ছবি</a>` : ''}
@@ -627,7 +627,7 @@
                         </td>
                         <td style="font-size:12px; color:#64748b;">${dStr}</td>
                         <td>
-                            ${!isCur ? `<button class="btn" onclick="setRoutineAsCurrent('${r.id}')" style="background:#0984e3; color:white; padding:4px 8px; font-size:11px; margin-right:5px; border-radius:5px;" title="এটিকে চলতি রুটিন হিসেবে সেট করুন"><i class="fas fa-star"></i> চলতি করুন</button>` : ''}
+                            ${!isCur ? `<button class="btn" onclick="setRoutineAsCurrent('${r.id}')" style="background:#0984e3; color:white; padding:4px 8px; font-size:11px; margin-right:5px; border-radius:5px;" title="এটিকে বর্তমান রুটিন হিসেবে সেট করুন"><i class="fas fa-star"></i> বর্তমান করুন</button>` : ''}
                             <button class="btn" onclick="deleteWeeklyRoutine('${r.id}', '${r.week || 'রুটিন'}')" style="background:#ff7675; color:white; padding:4px 8px; font-size:11px; border-radius:5px;" title="মুছে ফেলুন">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -657,7 +657,7 @@
             const isCurrent = isCurInp ? isCurInp.checked : true;
 
             if (!week) {
-                return Swal.fire('সপ্তাহের নাম দিন', 'দয়া করে সপ্তাহের নাম বা নম্বর লিখুন (যেমন: সপ্তাহ ০৩)।', 'warning');
+                return Swal.fire('রুটিনের নাম দিন', 'দয়া করে রুটিনের শিরোনাম বা নাম লিখুন (যেমন: নভেম্বর মাসের রুটিন)।', 'warning');
             }
             if (!image && !pdf) {
                 return Swal.fire('রুটিন দিন', 'দয়া করে রুটিনের ছবির লিংক অথবা PDF লিংক প্রদান করুন।', 'warning');
@@ -740,7 +740,7 @@
                     });
                 }
 
-                Swal.fire('সফল!', 'রুটিনটিকে চলতি সপ্তাহের রুটিন হিসেবে নির্ধারণ করা হয়েছে।', 'success');
+                Swal.fire('সফল!', 'রুটিনটিকে বর্তমান রুটিন হিসেবে নির্ধারণ করা হয়েছে।', 'success');
                 loadAdminRoutineSettings();
             } catch(err) {
                 console.error(err);
