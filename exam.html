@@ -913,6 +913,7 @@
                 let mistakesToSave = [];
                 let solvedMistakeIds = [];
                 let solvedQuestionTexts = [];
+                let correctIndicesInRegularExam = [];
                 
                 const timeTaken = Math.floor((new Date() - startTime) / 1000);
 
@@ -978,6 +979,10 @@
                                 }
                                 const qTxt = (q["প্রশ্ন (LaTeX সহ)"] || q.question || "").trim();
                                 if (qTxt) solvedQuestionTexts.push(qTxt);
+                            } else {
+                                correctIndicesInRegularExam.push(qIdx);
+                                const qTxt = (q["প্রশ্ন (LaTeX সহ)"] || q.question || "").trim();
+                                if (qTxt) solvedQuestionTexts.push(qTxt);
                             }
                         } else {
                             secureScore -= negativeMark; 
@@ -1028,6 +1033,13 @@
 
                 if (user) {
                     userEmail = user.email; userName = user.displayName || "Student";
+                    if (correctIndicesInRegularExam.length > 0 && tabId) {
+                        const normEmail = user.email.toLowerCase().trim();
+                        correctIndicesInRegularExam.forEach(idx => {
+                            const docId = (normEmail + "_" + tabId + "_" + idx).replace(/[/\s#\?]/g, "_");
+                            solvedMistakeIds.push(docId);
+                        });
+                    }
                     const checkSnapshot = await db.collection("exam_results")
                         .where("email", "==", user.email).where("examId", "==", tabId).limit(1).get();
                     // পরে যুক্ত হওয়া শিক্ষার্থীর ১ম বারের পরীক্ষাও অফিসিয়াল/মেরিট হিসেবে কাউন্ট হবে; কেবল ২য় বার দিলে বা Type='practice' হলেই isPractice: true হবে
