@@ -11,7 +11,9 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/mhchem.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="math-format.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -685,7 +687,8 @@
                 
                 const card = document.createElement('div');
                 card.className = 'q-card'; card.id = `card-${index}`;
-                const qText = q["প্রশ্ন (LaTeX সহ)"];
+                const rawQText = q["প্রশ্ন (LaTeX সহ)"] || q["Question"] || "";
+                const qText = typeof sanitizeInlineLatex === 'function' ? sanitizeInlineLatex(rawQText) : rawQText;
                 const sub = q["Subject"] ? `<span style="background:#eee; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px;">${q["Subject"]}</span>` : "";
 
                 if (!isMCQ(q)) { 
@@ -696,9 +699,11 @@
                         // রেডিও বাটনের বদলে শুধু div ব্যবহার করা হয়েছে, যেন ব্রাউজার অটো-ফিল করতে না পারে
                         ['A', 'B', 'C', 'D'].forEach(opt => {
                             if(q[`অপশন ${opt}`]) {
+                                const optVal = q[`অপশন ${opt}`];
+                                const optClean = typeof sanitizeInlineLatex === 'function' ? sanitizeInlineLatex(optVal) : optVal;
                                 optionsHtml += `
                                 <div class="opt-label" id="lbl-${qIdx}-${opt}" onclick="lockAnswer(${qIdx}, '${opt}')">
-                                    <span class="custom-radio"></span> <span style="flex-grow:1;">${q[`অপশন ${opt}`]}</span>
+                                    <span class="custom-radio"></span> <span style="flex-grow:1;">${optClean}</span>
                                 </div>`;
                             }
                         });
@@ -710,17 +715,24 @@
                 container.appendChild(card);
             });
 
-            // 🔴 KaTeX কনফিগারেশন আপডেট 🔴
-            if (typeof renderMathInElement === 'function') {
-                renderMathInElement(document.body, { 
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true}, 
-                        {left: '\\[', right: '\\]', display: true}, 
-                        {left: '$', right: '$', display: false},
-                        {left: '\\(', right: '\\)', display: false}
-                    ] 
-                });
+            // 🔴 KaTeX কনফিগারেশন আপডেট (নিরাপদ স্ট্রিক্ট অফ ও রিট্রাই সহ) 🔴
+            function renderExamKaTeX() {
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(container, { 
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true}, 
+                            {left: '\\[', right: '\\]', display: true}, 
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false}
+                        ],
+                        throwOnError: false,
+                        strict: false
+                    });
+                } else {
+                    setTimeout(renderExamKaTeX, 100);
+                }
             }
+            renderExamKaTeX();
             updateProgressBar();
         }
 

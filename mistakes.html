@@ -18,9 +18,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- KaTeX for LaTeX Math rendering -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/mhchem.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="math-format.js"></script>
 
     <style>
         @import url('https://fonts.maateen.me/solaiman-lipi/font.css');
@@ -1630,15 +1632,16 @@
                     optsHtml += `
                         <div class="${optClass}">
                             <div class="opt-letter">${opt.key}</div>
-                            <div style="flex-grow:1;">${opt.text}</div>
+                            <div style="flex-grow:1;">${typeof sanitizeInlineLatex === "function" ? sanitizeInlineLatex(opt.text) : opt.text}</div>
                             ${badge}
                         </div>`;
                 });
 
-                const explanation = m.explanation ? `
+                const formattedExp = m.explanation ? (typeof formatExplanationHtml === "function" ? formatExplanationHtml(m.explanation) : m.explanation) : '';
+                const explanation = formattedExp ? `
                     <div class="exp-box">
                         <strong><i class="fas fa-lightbulb"></i> ব্যাখ্যা:</strong>
-                        <div>${m.explanation}</div>
+                        <div style="margin-top:5px; line-height:1.6;">${formattedExp}</div>
                     </div>` : '';
 
                 const exInfo = m.allExams && m.allExams.length > 0 ? `
@@ -1661,7 +1664,7 @@
                             </button>
                         </div>
                         ${exInfo}
-                        <div class="q-title">${idx + 1}. ${m.question || 'প্রশ্ন পাওয়া যায়নি'}</div>
+                        <div class="q-title">${idx + 1}. ${typeof sanitizeInlineLatex === "function" ? sanitizeInlineLatex(m.question || "") : (m.question || "প্রশ্ন পাওয়া যায়নি")}</div>
                         <div class="opt-list">${optsHtml}</div>
                         ${explanation}
                     </div>`;
@@ -1670,17 +1673,23 @@
             container.innerHTML = cardsHtml;
 
             // Render KaTeX Math
-            if (typeof renderMathInElement === 'function') {
-                renderMathInElement(container, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '\\[', right: '\\]', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\(', right: '\\)', display: false}
-                    ],
-                    throwOnError: false
-                });
+            function renderMistakesKaTeX() {
+                if (typeof renderMathInElement === 'function') {
+                    renderMathInElement(container, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '\\[', right: '\\]', display: true},
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false}
+                        ],
+                        throwOnError: false,
+                        strict: false
+                    });
+                } else {
+                    setTimeout(renderMistakesKaTeX, 100);
+                }
             }
+            renderMistakesKaTeX();
         }
 
         // --- ⚡ রি-টেস্ট এক্সিকিউশন লজিক ⚡ ---
