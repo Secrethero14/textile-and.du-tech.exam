@@ -1467,6 +1467,181 @@ function navigateBack() {
             if (modal) modal.style.display = 'none';
         }
 
+        // ==============================================
+        // 💡 সাজেশন ও গাইডলাইন (GUIDELINES & RESOURCES)
+        // ==============================================
+        let allGuidelines = [];
+        let currentGuidelineFilter = 'all';
+
+        async function openGuidelineModal() {
+            const modal = document.getElementById('guidelineModal');
+            if (!modal) return;
+
+            const loader = document.getElementById('guidelineLoader');
+            const listEl = document.getElementById('guidelineItemsList');
+            const placeholder = document.getElementById('guidelineEmptyPlaceholder');
+            const badge = document.getElementById('guidelineCountBadge');
+
+            if (loader) loader.style.display = 'block';
+            if (listEl) listEl.innerHTML = '';
+            if (placeholder) placeholder.style.display = 'none';
+
+            // Reset filter tabs to 'all'
+            currentGuidelineFilter = 'all';
+            document.querySelectorAll('.g-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const firstTab = document.querySelector('.g-tab-btn');
+            if (firstTab) firstTab.classList.add('active');
+
+            modal.style.display = 'flex';
+
+            try {
+                const snap = await db.collection("guidelines_resources").orderBy("createdAt", "desc").get();
+                allGuidelines = [];
+                snap.forEach(doc => {
+                    allGuidelines.push({ id: doc.id, ...doc.data() });
+                });
+                if (badge) {
+                    badge.innerText = allGuidelines.length > 0 ? (allGuidelines.length + 'টি গাইডলাইন ও সাজেশন') : 'গুরুত্বপূর্ণ টপিক ও পড়ার গাইডলাইন';
+                }
+                renderGuidelines('all');
+            } catch(e) {
+                console.error("Guidelines fetch error:", e);
+                if (loader) loader.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'block';
+            }
+        }
+
+        function closeGuidelineModal() {
+            const modal = document.getElementById('guidelineModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function filterGuidelinesBySubject(sub) {
+            currentGuidelineFilter = sub;
+            document.querySelectorAll('.g-tab-btn').forEach(btn => {
+                const btnSub = btn.getAttribute('onclick') || '';
+                if (btnSub.includes("'" + sub + "'")) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            renderGuidelines(sub);
+        }
+
+        function renderGuidelines(sub) {
+            const loader = document.getElementById('guidelineLoader');
+            const listEl = document.getElementById('guidelineItemsList');
+            const placeholder = document.getElementById('guidelineEmptyPlaceholder');
+            if (loader) loader.style.display = 'none';
+            if (!listEl) return;
+
+            let filtered = allGuidelines;
+            if (sub && sub !== 'all') {
+                filtered = allGuidelines.filter(g => (g.subject || '').trim() === sub.trim());
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '';
+                if (placeholder) placeholder.style.display = 'block';
+                return;
+            }
+
+            if (placeholder) placeholder.style.display = 'none';
+            let html = '';
+            filtered.forEach(item => {
+                const isPaid = !!item.isPaid;
+                const subName = item.subject || 'সাধারণ';
+                const chName = item.chapter ? item.chapter.trim() : '';
+
+                html += `
+                    <div class="guideline-card-item">
+                        <div class="gci-left">
+                            <div class="gci-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="gci-info">
+                                <div class="gci-badges">
+                                    <span class="badge-sub">${subName}</span>
+                                    ${chName ? `<span class="badge-ch">${chName}</span>` : ''}
+                                    ${isPaid ? '<span class="badge-pro"><i class="fas fa-crown"></i> ব্যাচ স্পেশাল</span>' : '<span class="badge-free"><i class="fas fa-unlock"></i> সবার জন্য ফ্রি</span>'}
+                                </div>
+                                <h4 class="gci-title">${item.title || 'সাজেশন ও গাইডলাইন'}</h4>
+                            </div>
+                        </div>
+                        <div class="gci-action">
+                            <button type="button" class="gci-btn ${isPaid ? 'gci-btn-pro' : 'gci-btn-free'}" onclick="openGuidelineItem('${item.id}')">
+                                ${isPaid ? '<i class="fas fa-lock"></i> ড্রাইভ থেকে দেখুন' : '<i class="fab fa-google-drive"></i> ড্রাইভ থেকে দেখুন'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        async function openGuidelineItem(docId) {
+            const item = allGuidelines.find(g => g.id === docId);
+            if (!item || !item.driveLink) {
+                Swal.fire('ফাইল পাওয়া যায়নি', 'এই গাইডলাইনের ড্রাইভ লিংক সক্রিয় নেই।', 'error');
+                return;
+            }
+
+            const driveUrl = formatRoutineDriveLink(item.driveLink);
+
+            // If Free: Open directly
+            if (!item.isPaid) {
+                window.open(driveUrl, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            // If Paid: Check login and enrollment
+            const user = auth.currentUser;
+            if (!user) {
+                const res = await Swal.fire({
+                    title: '🔒 ব্যাচ স্পেশাল সাজেশন',
+                    html: '<b>' + (item.title || 'সাজেশন') + '</b> ফাইলটি শুধুমাত্র আমাদের কোর্সে ভর্তি হওয়া শিক্ষার্থীদের জন্য সংরক্ষিত।<br><br>অ্যাক্সেস পেতে কোর্সে ভর্তি হন অথবা অ্যাকাউন্টে লগইন করুন।',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'কোর্সে ভর্তি হন',
+                    cancelButtonText: 'লগইন করুন',
+                    confirmButtonColor: '#0984e3',
+                    cancelButtonColor: '#6c5ce7'
+                });
+                if (res.isConfirmed) {
+                    closeGuidelineModal();
+                    openPaymentModal();
+                } else if (res.dismiss === Swal.DismissReason.cancel) {
+                    closeGuidelineModal();
+                    openLoginModal();
+                }
+                return;
+            }
+
+            if (userEnrollment === 'TextileFull') {
+                window.open(driveUrl, '_blank', 'noopener,noreferrer');
+            } else {
+                const res = await Swal.fire({
+                    title: '🔒 অনুমোদন প্রয়োজন',
+                    html: 'আপনার অ্যাকাউন্টটি এখনও প্রিমিয়াম কোর্সে অনুমোদিত (Approved) হয়নি।<br><br>পেমেন্ট সম্পন্ন করে থাকলে অ্যাডমিন দ্রুত অ্যাপ্রুভ করে দেবে। আপনি এখনই কোর্সে ভর্তি আবেদন করতে পারেন।',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'কোর্সে ভর্তি হন',
+                    cancelButtonText: 'ঠিক আছে',
+                    confirmButtonColor: '#0984e3'
+                });
+                if (res.isConfirmed) {
+                    closeGuidelineModal();
+                    openPaymentModal();
+                }
+            }
+        }
+
+        window.openGuidelineModal = openGuidelineModal;
+        window.closeGuidelineModal = closeGuidelineModal;
+        window.filterGuidelinesBySubject = filterGuidelinesBySubject;
+        window.openGuidelineItem = openGuidelineItem;
+
         function showScheduledExamModal(item) {
             const examName = item['Exam Name'] || 'পরীক্ষা';
             const isPaid = String(item['Type'] || '').trim().toLowerCase() === 'paid';

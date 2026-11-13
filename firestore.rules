@@ -100,5 +100,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isStaff();
     }
+
+    // ৮. সাজেশন ও গাইডলাইন রিসোর্স
+    match /guidelines_resources/{docId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
   }
 }

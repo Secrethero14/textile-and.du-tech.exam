@@ -153,6 +153,16 @@
                 <i class="fas fa-chevron-right drawer-chevron"></i>
             </a>
 
+            <!-- 💡 সাজেশন ও গাইডলাইন 💡 -->
+            <a href="javascript:void(0)" onclick="closeSideNav(); openGuidelineModal();" class="drawer-menu-item">
+                <div class="drawer-item-icon guideline-icon"><i class="fas fa-lightbulb"></i></div>
+                <div class="drawer-item-text">
+                    <span class="drawer-item-title">সাজেশন ও গাইডলাইন</span>
+                    <span class="drawer-item-sub">অধ্যায়ভিত্তিক গুরুত্বপূর্ণ গাইডলাইন ও টপিক</span>
+                </div>
+                <i class="fas fa-chevron-right drawer-chevron"></i>
+            </a>
+
             <a href="mistakes.html" class="drawer-menu-item">
                 <div class="drawer-item-icon mistake-icon"><i class="fas fa-book-open"></i></div>
                 <div class="drawer-item-text">
@@ -480,6 +490,81 @@
             <!-- ক্লোজ বাটন -->
             <div style="text-align:right; margin-top:10px;">
                 <button type="button" onclick="closeRoutineModal()" style="background:#f1f5f9; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 💡 সাজেশন ও গাইডলাইন মোডাল 💡 -->
+    <div id="guidelineModal" class="modal-overlay" onclick="if(event.target === this) closeGuidelineModal()">
+        <div class="modal-content routine-modal-content">
+            <!-- Modal Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 15px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size:16px; color:#1e293b; font-weight:700;">সাজেশন ও গাইডলাইন</h3>
+                        <span id="guidelineCountBadge" style="font-size:12px; color:#64748b;">গুরুত্বপূর্ণ টপিক ও পড়ার গাইডলাইন</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeGuidelineModal()" style="background:none; border:none; font-size:26px; color:#94a3b8; cursor:pointer; padding:0 5px; line-height:1;" title="বন্ধ করুন">&times;</button>
+            </div>
+
+            <!-- 🌟 ব্যানার: কীভাবে এই সেকশন ব্যবহার করবে 🌟 -->
+            <div class="guideline-instruction-banner">
+                <div class="gib-icon"><i class="fas fa-lightbulb"></i></div>
+                <div class="gib-text">
+                    <h4 class="gib-title">কোন অধ্যায় কীভাবে পড়বা ও গুরুত্বপূর্ণ টপিক</h4>
+                    <p class="gib-desc">
+                        কোন অধ্যায় কীভাবে পড়বা এবং কোন অধ্যায় থেকে কোন কোন টপিক গুরুত্বপূর্ণ—এগুলো নিয়েই এই সেকশন। নির্দিষ্ট বিষয়ের গাইডলাইন বা সাজেশন পেতে এবং গুরুত্বপূর্ণ টপিক দেখতে নিচের নির্দিষ্ট ফোল্ডারে ক্লিক করো।
+                    </p>
+                </div>
+            </div>
+
+            <!-- 📂 বিষয়ভিত্তিক ফোল্ডার ফিল্টার ট্যাব 📂 -->
+            <div class="guideline-folder-tabs" id="guidelineFolderTabs">
+                <button type="button" class="g-tab-btn active" onclick="filterGuidelinesBySubject('all')">
+                    <i class="fas fa-th-large"></i> সব বিষয়
+                </button>
+                <button type="button" class="g-tab-btn" onclick="filterGuidelinesBySubject('পদার্থবিজ্ঞান')">
+                    <i class="fas fa-atom"></i> পদার্থবিজ্ঞান
+                </button>
+                <button type="button" class="g-tab-btn" onclick="filterGuidelinesBySubject('রসায়ন')">
+                    <i class="fas fa-flask"></i> রসায়ন
+                </button>
+                <button type="button" class="g-tab-btn" onclick="filterGuidelinesBySubject('উচ্চতর গণিত')">
+                    <i class="fas fa-square-root-alt"></i> উচ্চতর গণিত
+                </button>
+                <button type="button" class="g-tab-btn" onclick="filterGuidelinesBySubject('ইংরেজি')">
+                    <i class="fas fa-book"></i> ইংরেজি
+                </button>
+                <button type="button" class="g-tab-btn" onclick="filterGuidelinesBySubject('সাধারণ নির্দেশিকা')">
+                    <i class="fas fa-info-circle"></i> সাধারণ নির্দেশিকা
+                </button>
+            </div>
+
+            <!-- লোডার -->
+            <div id="guidelineLoader" style="padding:25px 15px; color:#64748b; text-align:center;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color:#d97706; margin-bottom:8px;"></i>
+                <p style="margin:0; font-size:13px; font-weight:600;">লোড হচ্ছে...</p>
+            </div>
+
+            <!-- গাইডলাইন আইটেম তালিকা -->
+            <div id="guidelineItemsList" class="guideline-items-grid"></div>
+
+            <!-- খালি অবস্থা (কোনো ডামি ডাটা ছাড়া) -->
+            <div id="guidelineEmptyPlaceholder" style="display:none; padding:30px 15px; color:#64748b; text-align:center; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; margin-top:10px;">
+                <i class="fas fa-folder-open fa-3x" style="color:#cbd5e1; margin-bottom:10px;"></i>
+                <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই এই বিষয়ের সাজেশন ও গাইডলাইন যুক্ত করা হবে</p>
+                <p style="margin:0; font-size:12px;">অ্যাডমিন নতুন গাইডলাইন বা সাজেশন পিডিএফ প্রকাশ করা মাত্রই এই ফোল্ডারে পাওয়া যাবে।</p>
+            </div>
+
+            <!-- ক্লোজ বাটন -->
+            <div style="text-align:right; margin-top:15px;">
+                <button type="button" onclick="closeGuidelineModal()" style="background:#f1f5f9; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-weight:bold; font-size:13px; cursor:pointer;">
                     বন্ধ করুন
                 </button>
             </div>

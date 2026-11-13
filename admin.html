@@ -256,6 +256,95 @@
             </div>
         </div>
 
+        <!-- 💡 সাজেশন ও গাইডলাইন ব্যবস্থাপনা কার্ড 💡 -->
+        <div class="card" style="border-left: 5px solid #f39c12; margin-top: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin:0; border:none; padding:0; color:#d35400;"><i class="fas fa-lightbulb" style="color:#f39c12;"></i> সাজেশন ও গাইডলাইন ব্যবস্থাপনা</h3>
+                <span style="font-size:12px; color:#636e72;">অধ্যায়ভিত্তিক পড়ার গাইডলাইন, গুরুত্বপূর্ণ টপিক ও সাজেশন পিডিএফ আপলোড করুন</span>
+            </div>
+            
+            <!-- নতুন সাজেশন / গাইডলাইন প্রকাশ ফরম -->
+            <div style="background:#fffbeb; border:1px solid #fef08a; border-radius:10px; padding:16px; margin-bottom:20px;">
+                <h4 style="margin:0 0 12px 0; font-size:14.5px; color:#92400e;"><i class="fas fa-plus-circle" style="color:#d97706;"></i> নতুন সাজেশন বা গাইডলাইন যুক্ত করুন</h4>
+                
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            গাইডলাইন / সাজেশনের শিরোনাম:
+                        </label>
+                        <input type="text" id="adminGuidelineTitle" class="input-box" style="width:100%;" placeholder="যেমন: ভেক্টর - সেরা রিভিশন ও গুরুত্বপূর্ণ টপিক..." required>
+                    </div>
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            বিষয় (Subject):
+                        </label>
+                        <select id="adminGuidelineSubject" class="select-box" style="width:100%;">
+                            <option value="পদার্থবিজ্ঞান">পদার্থবিজ্ঞান</option>
+                            <option value="রসায়ন">রসায়ন</option>
+                            <option value="উচ্চতর গণিত">উচ্চতর গণিত</option>
+                            <option value="ইংরেজি">ইংরেজি</option>
+                            <option value="সাধারণ নির্দেশিকা">সাধারণ নির্দেশিকা</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            অধ্যায় / টপিক (ঐচ্ছিক):
+                        </label>
+                        <input type="text" id="adminGuidelineChapter" class="input-box" style="width:100%;" placeholder="যেমন: গতিবিদ্যা বা অধ্যায় ১...">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            <i class="fab fa-google-drive"></i> গুগল ড্রাইভ পিডিএফ লিংক (Drive PDF URL):
+                        </label>
+                        <input type="url" id="adminGuidelineLink" class="input-box" style="width:100%;" placeholder="Google Drive ফাইলের শেয়ার লিংক পেস্ট করুন..." required>
+                    </div>
+                    <div>
+                        <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
+                            অ্যাক্সেস পারমিশন:
+                        </label>
+                        <select id="adminGuidelineAccess" class="select-box" style="width:100%;">
+                            <option value="free">সবার জন্য ফ্রি (Free for All)</option>
+                            <option value="paid">শুধু ব্যাচ শিক্ষার্থীদের জন্য (Paid / Enrolled Only)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="text-align:right;">
+                    <button type="button" class="btn btn-export" onclick="publishGuidelineResource()" style="background:#d97706;">
+                        <i class="fas fa-paper-plane"></i> গাইডলাইন পাবলিশ করুন
+                    </button>
+                </div>
+            </div>
+
+            <!-- প্রকাশিত সকল গাইডলাইনের তালিকা -->
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="margin:0; font-size:14px; color:#0f172a;"><i class="fas fa-list"></i> প্রকাশিত গাইডলাইন ও সাজেশনের তালিকা</h4>
+                    <button class="btn btn-load" onclick="loadAdminGuidelines()" style="padding:4px 10px; font-size:12px;"><i class="fas fa-sync-alt"></i> রিফ্রেশ</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">শিরোনাম ও বিষয়</th>
+                                <th>অধ্যায়</th>
+                                <th>অ্যাক্সেস</th>
+                                <th>ড্রাইভ লিংক</th>
+                                <th>তারিখ</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminGuidelineTableBody">
+                            <tr><td colspan="6" style="padding:15px; color:#888;">গাইডলাইন তালিকা লোড হচ্ছে...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     <!-- ============================================== -->
     <!-- TAB 2: STUDENT ACCESS & ENROLLMENT LOG -->
     <!-- ============================================== -->
@@ -567,6 +656,7 @@
                 checkMentalSupportBadge();
                 listenPendingRequests();
                 loadAdminRoutineSettings();
+                loadAdminGuidelines();
             } else {
                 // অননুমোদিত ইউজার: অ্যাক্সেস ডিনাইড
                 loading.style.display = 'none';
@@ -766,6 +856,137 @@
                 await db.collection("weekly_routines").doc(docId).delete();
                 Swal.fire('মুছে ফেলা হয়েছে', 'রুটিনটি তালিকা থেকে সফলভাবে মুছে ফেলা হয়েছে।', 'success');
                 loadAdminRoutineSettings();
+            } catch(err) {
+                console.error(err);
+                Swal.fire('Error', 'মুছে ফেলা সম্ভব হয়নি: ' + err.message, 'error');
+            }
+        }
+
+        // ==============================================
+        // 💡 সাজেশন ও গাইডলাইন ব্যবস্থাপনা (ADMIN GUIDELINES)
+        // ==============================================
+        function formatDriveUrlAdmin(url) {
+            if (!url) return '';
+            let link = String(url).trim();
+            if (link.includes('drive.google.com')) {
+                const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (m && m[1]) {
+                    return 'https://drive.google.com/uc?export=view&id=' + m[1];
+                }
+            }
+            return link;
+        }
+
+        async function loadAdminGuidelines() {
+            const tbody = document.getElementById('adminGuidelineTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:15px; color:#888;"><i class="fas fa-spinner fa-spin"></i> গাইডলাইন তালিকা লোড হচ্ছে...</td></tr>';
+
+            try {
+                const snap = await db.collection("guidelines_resources").orderBy("createdAt", "desc").get();
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; color:#888; text-align:center;">বর্তমানে কোনো সাজেশন বা গাইডলাইন পাবলিশ করা নেই। উপরের বক্সে তথ্য লিখে প্রথম গাইডলাইনটি পাবলিশ করুন।</td></tr>';
+                    return;
+                }
+
+                let tHtml = '';
+                snap.forEach(doc => {
+                    const g = { id: doc.id, ...doc.data() };
+                    const d = g.createdAt ? new Date(g.createdAt) : null;
+                    const dStr = (d && !isNaN(d.getTime())) ? d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' }) : '-';
+                    const isPaid = !!g.isPaid;
+                    const driveUrl = formatDriveUrlAdmin(g.driveLink);
+
+                    tHtml += '<tr>' +
+                        '<td style="text-align:left;">' +
+                            '<strong style="color:#0f172a; font-size:14px;">' + (g.title || 'শিরোনামহীন') + '</strong>' +
+                            '<br><span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:11px; margin-top:3px;">' + (g.subject || 'সাধারণ') + '</span>' +
+                        '</td>' +
+                        '<td>' + (g.chapter ? '<span style="font-size:12px; color:#475569;">' + g.chapter + '</span>' : '<span style="color:#aaa;">-</span>') + '</td>' +
+                        '<td>' +
+                            (isPaid ? '<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:bold;"><i class="fas fa-lock"></i> পেইড (ব্যাচ)</span>' : '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;"><i class="fas fa-unlock"></i> ফ্রি</span>') +
+                        '</td>' +
+                        '<td>' +
+                            (g.driveLink ? '<a href="' + driveUrl + '" target="_blank" rel="noopener noreferrer" style="color:#0284c7; font-size:13px; text-decoration:none;"><i class="fab fa-google-drive"></i> ড্রাইভ ফাইল</a>' : '-') +
+                        '</td>' +
+                        '<td style="font-size:12px; color:#64748b;">' + dStr + '</td>' +
+                        '<td>' +
+                            '<button class="btn" onclick="deleteGuidelineResource(\'' + g.id + '\', \'' + (g.title || 'গাইডলাইন').replace(/'/g, "\\'") + '\')" style="background:#ff7675; color:white; padding:4px 8px; font-size:11px; border-radius:5px;" title="মুছে ফেলুন">' +
+                                '<i class="fas fa-trash"></i>' +
+                            '</button>' +
+                        '</td>' +
+                    '</tr>';
+                });
+                tbody.innerHTML = tHtml;
+            } catch (err) {
+                console.error("loadAdminGuidelines error:", err);
+                tbody.innerHTML = '<tr><td colspan="6" style="padding:15px; color:red;">গাইডলাইন লোড করতে সমস্যা হয়েছে: ' + err.message + '</td></tr>';
+            }
+        }
+
+        async function publishGuidelineResource() {
+            const titleInp = document.getElementById('adminGuidelineTitle');
+            const subInp = document.getElementById('adminGuidelineSubject');
+            const chInp = document.getElementById('adminGuidelineChapter');
+            const linkInp = document.getElementById('adminGuidelineLink');
+            const accessInp = document.getElementById('adminGuidelineAccess');
+
+            const title = (titleInp ? titleInp.value : '').trim();
+            const subject = (subInp ? subInp.value : 'পদার্থবিজ্ঞান').trim();
+            const chapter = (chInp ? chInp.value : '').trim();
+            const driveLink = (linkInp ? linkInp.value : '').trim();
+            const isPaid = accessInp ? (accessInp.value === 'paid') : false;
+
+            if (!title) {
+                return Swal.fire('শিরোনাম দিন', 'দয়া করে গাইডলাইন বা সাজেশনের শিরোনাম লিখুন।', 'warning');
+            }
+            if (!driveLink) {
+                return Swal.fire('ড্রাইভ লিংক দিন', 'দয়া করে গুগল ড্রাইভের ফাইল লিংক পেস্ট করুন।', 'warning');
+            }
+
+            Swal.fire({ title: 'পাবলিশ হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                await db.collection("guidelines_resources").add({
+                    title: title,
+                    subject: subject,
+                    chapter: chapter,
+                    driveLink: driveLink,
+                    isPaid: isPaid,
+                    createdAt: new Date().toISOString(),
+                    publishedBy: auth.currentUser ? auth.currentUser.email : 'admin'
+                });
+
+                if (titleInp) titleInp.value = '';
+                if (chInp) chInp.value = '';
+                if (linkInp) linkInp.value = '';
+
+                Swal.fire('সফল!', '<b>' + title + '</b> সফলভাবে পাবলিশ করা হয়েছে। শিক্ষার্থীরা এখনই এটি ওয়েবসাইটে দেখতে পাবে।', 'success');
+                loadAdminGuidelines();
+            } catch(err) {
+                console.error(err);
+                Swal.fire('Error', 'পাবলিশ করা সম্ভব হয়নি: ' + err.message, 'error');
+            }
+        }
+
+        async function deleteGuidelineResource(docId, title) {
+            const confirm = await Swal.fire({
+                title: 'গাইডলাইন মুছে ফেলবেন?',
+                html: 'আপনি কি নিশ্চিত যে <b>' + title + '</b> মুছে ফেলতে চান?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff7675',
+                cancelButtonColor: '#b2bec3',
+                confirmButtonText: 'হ্যাঁ, মুছুন',
+                cancelButtonText: 'না'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                await db.collection("guidelines_resources").doc(docId).delete();
+                Swal.fire('মুছে ফেলা হয়েছে', 'গাইডলাইনটি তালিকা থেকে সফলভাবে মুছে ফেলা হয়েছে।', 'success');
+                loadAdminGuidelines();
             } catch(err) {
                 console.error(err);
                 Swal.fire('Error', 'মুছে ফেলা সম্ভব হয়নি: ' + err.message, 'error');
