@@ -201,9 +201,9 @@
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
                         <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
-                            <i class="fas fa-image"></i> রুটিনের ছবির লিংক (Image URL):
+                            <i class="fab fa-google-drive"></i> রুটিনের গুগল ড্রাইভ / ইমেজ লিংক (Drive / Image URL):
                         </label>
-                        <input type="url" id="adminRoutineImg" class="input-box" style="width:100%;" placeholder="যেমন: Imgur বা Google Drive ইমেজ লিংক...">
+                        <input type="url" id="adminRoutineImg" class="input-box" style="width:100%;" placeholder="Google Drive ফাইল লিংক বা ইমেজ লিংক পেস্ট করুন...">
                     </div>
                     <div>
                         <label style="font-size:13px; font-weight:bold; color:#2d3436; margin-bottom:4px; display:block;">
@@ -623,7 +623,7 @@
                             ${isCur ? '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:bold;"><i class="fas fa-check-circle"></i> বর্তমান রুটিন</span>' : '<span class="badge" style="background:#f1f5f9; color:#64748b;">আগের রুটিন</span>'}
                         </td>
                         <td>
-                            ${r.image ? `<a href="${r.image}" target="_blank" style="color:#0284c7; font-size:13px; text-decoration:none; margin-right:8px;"><i class="fas fa-image"></i> ছবি</a>` : ''}
+                            ${r.image ? `<a href="${r.image}" target="_blank" style="color:#0284c7; font-size:13px; text-decoration:none; margin-right:8px;"><i class="${String(r.image).includes('drive.google.com') ? 'fab fa-google-drive' : 'fas fa-image'}"></i> ${String(r.image).includes('drive.google.com') ? 'ড্রাইভ লিংক' : 'ছবি'}</a>` : ''}
                             ${r.pdf ? `<a href="${r.pdf}" target="_blank" style="color:#10b981; font-size:13px; text-decoration:none;"><i class="fas fa-file-pdf"></i> PDF</a>` : ''}
                         </td>
                         <td style="font-size:12px; color:#64748b;">${dStr}</td>

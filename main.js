@@ -1295,6 +1295,26 @@ function navigateBack() {
         });
 
         let routineLoadSeq = 0;
+        let currentRoutineDriveUrl = '';
+
+        function formatRoutineDriveLink(url) {
+            if (!url) return '';
+            let link = String(url).trim();
+            if (link.includes('drive.google.com')) {
+                const m = link.match(/\/d\/([a-zA-Z0-9_-]+)/) || link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                if (m && m[1]) {
+                    return 'https://drive.google.com/uc?export=view&id=' + m[1];
+                }
+            }
+            return link;
+        }
+
+        function openCurrentRoutineDrive() {
+            if (currentRoutineDriveUrl) {
+                window.open(currentRoutineDriveUrl, '_blank', 'noopener,noreferrer');
+            }
+        }
+        window.openCurrentRoutineDrive = openCurrentRoutineDrive;
 
         async function openRoutineModal() {
             const modal = document.getElementById('routineModal');
@@ -1306,25 +1326,22 @@ function navigateBack() {
             const noticeBox = document.getElementById('routineNoticeBox');
             const noticeText = document.getElementById('routineNoticeText');
             const loaderEl = document.getElementById('routineLoader');
-            const imgEl = document.getElementById('routineImageEl');
-            const placeholder = document.getElementById('routinePlaceholder');
+            const dlBox = document.getElementById('routineDownloadBox');
+            const actionBtns = document.getElementById('routineActionButtons');
             const dlImgBtn = document.getElementById('routineDownloadImgBtn');
             const dlPdfBtn = document.getElementById('routineDownloadPdfBtn');
+            const placeholder = document.getElementById('routinePlaceholder');
             const dateEl = document.getElementById('routineUpdateDate');
             const archiveWrapper = document.getElementById('routineArchiveWrapper');
             const archiveDisplay = document.getElementById('archiveRoutineDisplay');
 
-            // ব্লিংক বা আগের ডেটা ঝলকানো আটকাতে মোডাল খোলার আগেই আগের স্টেট রিসেট করা হচ্ছে
+            // ব্লিংক বা আগের ডেটা ঝলকানো আটকাতে মোডাল খোলার আগেই আগের স্টেট রিসেট করা
             if (titleEl) titleEl.innerText = 'বর্তমান রুটিন';
             if (datesEl) datesEl.innerText = '';
-            if (dateEl) dateEl.innerText = 'ব্যাচ ২০২৬-২৭';
+            if (dateEl) { dateEl.innerText = ''; dateEl.style.display = 'none'; }
             if (noticeBox) noticeBox.style.display = 'none';
-            if (imgEl) {
-                imgEl.onload = null;
-                imgEl.onerror = null;
-                imgEl.src = '';
-                imgEl.style.display = 'none';
-            }
+            if (dlBox) dlBox.style.display = 'none';
+            if (actionBtns) actionBtns.style.display = 'none';
             if (placeholder) placeholder.style.display = 'none';
             if (loaderEl) loaderEl.style.display = 'block';
             if (dlImgBtn) { dlImgBtn.href = '#'; dlImgBtn.style.display = 'none'; }
@@ -1350,56 +1367,31 @@ function navigateBack() {
                 if (noticeBox) noticeBox.style.display = 'none';
             }
 
-            // Image
-            if (routine.image && String(routine.image).trim() !== '') {
-                let imgSrc = String(routine.image).trim();
-                if (imgSrc.includes('drive.google.com/file/d/')) {
-                    const fileId = imgSrc.split('/d/')[1].split('/')[0];
-                    imgSrc = 'https://drive.google.com/uc?export=view&id=' + fileId;
-                }
-                if (imgEl) {
-                    imgEl.onload = function() {
-                        if (seq !== routineLoadSeq) return;
-                        if (loaderEl) loaderEl.style.display = 'none';
-                        imgEl.style.display = 'block';
-                    };
-                    imgEl.onerror = function() {
-                        if (seq !== routineLoadSeq) return;
-                        if (loaderEl) loaderEl.style.display = 'none';
-                        imgEl.style.display = 'none';
-                        if (placeholder) placeholder.style.display = 'block';
-                    };
-                    imgEl.src = imgSrc;
-                    if (imgEl.complete && imgEl.naturalWidth > 0) {
-                        if (loaderEl) loaderEl.style.display = 'none';
-                        imgEl.style.display = 'block';
-                    }
-                } else if (loaderEl) {
-                    loaderEl.style.display = 'none';
-                }
-                if (placeholder) placeholder.style.display = 'none';
+            // Routine Download Link / Card
+            const rawRoutineLink = (routine.image || routine.pdf || '').trim();
+            if (rawRoutineLink) {
+                currentRoutineDriveUrl = formatRoutineDriveLink(rawRoutineLink);
+                if (loaderEl) loaderEl.style.display = 'none';
+                if (dlBox) dlBox.style.display = 'flex';
+                if (actionBtns) actionBtns.style.display = 'flex';
                 if (dlImgBtn) {
-                    dlImgBtn.href = imgSrc;
+                    dlImgBtn.href = currentRoutineDriveUrl;
                     dlImgBtn.style.display = 'inline-flex';
                 }
+                if (routine.pdf && String(routine.pdf).trim() && routine.pdf !== routine.image) {
+                    if (dlPdfBtn) {
+                        dlPdfBtn.href = formatRoutineDriveLink(routine.pdf);
+                        dlPdfBtn.style.display = 'inline-flex';
+                    }
+                } else if (dlPdfBtn) {
+                    dlPdfBtn.style.display = 'none';
+                }
+                if (placeholder) placeholder.style.display = 'none';
             } else {
                 if (loaderEl) loaderEl.style.display = 'none';
-                if (imgEl) {
-                    imgEl.src = '';
-                    imgEl.style.display = 'none';
-                }
+                if (dlBox) dlBox.style.display = 'none';
+                if (actionBtns) actionBtns.style.display = 'none';
                 if (placeholder) placeholder.style.display = 'block';
-                if (dlImgBtn) dlImgBtn.style.display = 'none';
-            }
-
-            // PDF
-            if (routine.pdf && String(routine.pdf).trim() !== '') {
-                if (dlPdfBtn) {
-                    dlPdfBtn.href = String(routine.pdf).trim();
-                    dlPdfBtn.style.display = 'inline-flex';
-                }
-            } else {
-                if (dlPdfBtn) dlPdfBtn.style.display = 'none';
             }
 
             // Date
@@ -1408,8 +1400,11 @@ function navigateBack() {
                     const d = new Date(routine.updatedAt);
                     if (!isNaN(d.getTime())) {
                         dateEl.innerText = 'আপডেট: ' + d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+                        dateEl.style.display = 'inline';
                     }
                 } catch(e) {}
+            } else if (dateEl) {
+                dateEl.style.display = 'none';
             }
 
             // 📂 আগের রুটিন সেকশন
@@ -1451,33 +1446,21 @@ function navigateBack() {
 
             const titleEl = document.getElementById('archiveDisplayTitle');
             const datesEl = document.getElementById('archiveDisplayDates');
-            const imgEl = document.getElementById('archiveDisplayImg');
             const dlBtn = document.getElementById('archiveDisplayDownloadBtn');
 
             if (titleEl) titleEl.innerText = r.week || 'আগের রুটিন';
             if (datesEl) datesEl.innerText = r.dates || '';
 
-            let imgSrc = r.image || '';
-            if (imgSrc.includes('drive.google.com/file/d/')) {
-                const fileId = imgSrc.split('/d/')[1].split('/')[0];
-                imgSrc = 'https://drive.google.com/uc?export=view&id=' + fileId;
-            }
-
-            if (imgEl) {
-                if (imgSrc) {
-                    imgEl.src = imgSrc;
-                    imgEl.style.display = 'block';
-                } else {
-                    imgEl.style.display = 'none';
-                }
-            }
+            const rawLink = (r.image || r.pdf || '').trim();
+            const driveLink = formatRoutineDriveLink(rawLink);
 
             if (dlBtn) {
-                dlBtn.href = imgSrc || r.pdf || '#';
+                dlBtn.href = driveLink || '#';
             }
 
             displayBox.style.display = 'block';
         }
+
 
         function closeRoutineModal() {
             const modal = document.getElementById('routineModal');

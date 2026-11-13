@@ -211,11 +211,11 @@
                     <div class="rqb-icon"><i class="fas fa-calendar-alt"></i></div>
                     <div class="rqb-text">
                         <span class="rqb-title">পরীক্ষার পূর্ণাঙ্গ রুটিন ও নোটিশ</span>
-                        <span class="rqb-sub">পরীক্ষার শিডিউল দেখুন ও ডাউনলোড করুন</span>
+                        <span class="rqb-sub">রুটিন ডাউনলোড করতে এখানে ক্লিক করুন</span>
                     </div>
                 </div>
                 <div class="rqb-btn">
-                    <span>রুটিন দেখুন</span>
+                    <span>রুটিন ডাউনলোড</span>
                     <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
@@ -387,7 +387,7 @@
                     </div>
                     <div>
                         <h3 id="routineModalTitle" style="margin:0; font-size:16px; color:#1e293b; font-weight:700;">পরীক্ষার রুটিন ও নোটিশ</h3>
-                        <span id="routineUpdateDate" style="font-size:12px; color:#64748b;">ব্যাচ ২০২৬-২৭</span>
+                        <span id="routineUpdateDate" style="font-size:12px; color:#64748b; display:none;"></span>
                     </div>
                 </div>
                 <button type="button" onclick="closeRoutineModal()" style="background:none; border:none; font-size:26px; color:#94a3b8; cursor:pointer; padding:0 5px; line-height:1;" title="বন্ধ করুন">&times;</button>
@@ -411,28 +411,45 @@
                     <span id="routineNoticeText"></span>
                 </div>
 
-                <!-- রুটিন ছবি প্রিভিউ -->
-                <div id="routineImageContainer">
-                    <div id="routineLoader" style="padding:30px 15px; color:#64748b; text-align:center;">
-                        <i class="fas fa-spinner fa-spin fa-2x" style="color:#0284c7; margin-bottom:8px;"></i>
-                        <p style="margin:0; font-size:13px; font-weight:600;">রুটিন লোড হচ্ছে...</p>
+                <!-- রুটিন লোডার -->
+                <div id="routineLoader" style="padding:25px 15px; color:#64748b; text-align:center;">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color:#0284c7; margin-bottom:8px;"></i>
+                    <p style="margin:0; font-size:13px; font-weight:600;">রুটিন লোড হচ্ছে...</p>
+                </div>
+
+                <!-- 🌟 রুটিন ডাউনলোড বক্স / কার্ড (ক্লিক করলেই ড্রাইভ দিয়ে ওপেন হবে) 🌟 -->
+                <div id="routineDownloadBox" class="routine-download-box" onclick="openCurrentRoutineDrive()" style="display:none;" title="গুগল ড্রাইভে রুটিন দেখতে ক্লিক করুন">
+                    <div class="rdb-left">
+                        <div class="rdb-icon">
+                            <i class="fab fa-google-drive"></i>
+                        </div>
+                        <div class="rdb-details">
+                            <h4 class="rdb-title">রুটিন ডাউনলোড করুন</h4>
+                            <p class="rdb-desc">গুগল ড্রাইভ (Google Drive) থেকে রুটিন দেখতে বা সরাসরি ডাউনলোড করতে এখানে ক্লিক করুন</p>
+                        </div>
                     </div>
-                    <img id="routineImageEl" src="" alt="Exam Routine" style="display:none;" onclick="window.open(this.src, '_blank')" title="বড় করে দেখতে ক্লিক করুন">
-                    <div id="routinePlaceholder" style="display:none; padding:25px 15px; color:#64748b; text-align:center;">
-                        <i class="fas fa-calendar-day fa-3x" style="color:#94a3b8; margin-bottom:10px;"></i>
-                        <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই রুটিন প্রকাশ করা হবে</p>
-                        <p style="margin:0; font-size:12px;">অ্যাডমিন রুটিন প্রকাশ করা মাত্রই আপনি এই পপআপ থেকে সরাসরি রুটিন দেখতে এবং নিজের ফোনে ডাউনলোড করে নিতে পারবেন।</p>
+                    <div class="rdb-btn-wrapper">
+                        <span class="rdb-action-btn">
+                            <i class="fas fa-external-link-alt"></i> ড্রাইভ লিংক ওপেন
+                        </span>
                     </div>
                 </div>
 
                 <!-- ডাউনলোড ও একশন বাটন -->
-                <div id="routineActionButtons" class="routine-actions-wrap">
-                    <a id="routineDownloadImgBtn" href="#" download="exam_routine.jpg" target="_blank" class="routine-action-btn routine-btn-blue" style="display:none;">
-                        <i class="fas fa-download"></i> বর্তমান রুটিন ডাউনলোড
+                <div id="routineActionButtons" class="routine-actions-wrap" style="display:none; margin-top:10px;">
+                    <a id="routineDownloadImgBtn" href="#" target="_blank" rel="noopener noreferrer" class="routine-action-btn routine-btn-blue">
+                        <i class="fab fa-google-drive"></i> রুটিন ডাউনলোড করুন (Google Drive)
                     </a>
-                    <a id="routineDownloadPdfBtn" href="#" target="_blank" class="routine-action-btn routine-btn-green" style="display:none;">
+                    <a id="routineDownloadPdfBtn" href="#" target="_blank" rel="noopener noreferrer" class="routine-action-btn routine-btn-green" style="display:none;">
                         <i class="fas fa-file-pdf"></i> রুটিন PDF ডাউনলোড
                     </a>
+                </div>
+
+                <!-- প্লেসহোল্ডার (যদি এখনো রুটিন পাবলিশ না হয়ে থাকে) -->
+                <div id="routinePlaceholder" style="display:none; padding:25px 15px; color:#64748b; text-align:center;">
+                    <i class="fas fa-calendar-day fa-3x" style="color:#94a3b8; margin-bottom:10px;"></i>
+                    <p style="margin:0 0 6px 0; font-size:14px; font-weight:600; color:#334155;">শীঘ্রই রুটিন প্রকাশ করা হবে</p>
+                    <p style="margin:0; font-size:12px;">অ্যাডমিন নতুন রুটিন প্রকাশ করা মাত্রই আপনি এই পপআপ থেকে সরাসরি রুটিন দেখতে এবং ডাউনলোড করে নিতে পারবেন।</p>
                 </div>
             </div>
 
@@ -448,14 +465,13 @@
 
                 <!-- সিলেক্ট করা আর্কাইভ রুটিন প্রিভিউ -->
                 <div id="archiveRoutineDisplay" style="display:none; margin-top:12px; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:12px; text-align:center;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:4px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:4px;">
                         <strong id="archiveDisplayTitle" style="color:#0f172a; font-size:14px;"></strong>
                         <span id="archiveDisplayDates" style="font-size:12px; color:#64748b;"></span>
                     </div>
-                    <img id="archiveDisplayImg" src="" alt="Archive Routine" style="max-width:100%; max-height:400px; height:auto; border-radius:6px; margin-bottom:10px; cursor:zoom-in;" onclick="window.open(this.src, '_blank')">
                     <div style="display:flex; gap:10px; justify-content:center;">
-                        <a id="archiveDisplayDownloadBtn" href="#" target="_blank" download="archive_routine.jpg" class="routine-action-btn routine-btn-blue" style="width:auto; min-width:unset; padding:8px 16px;">
-                            <i class="fas fa-download"></i> এই রুটিন ডাউনলোড
+                        <a id="archiveDisplayDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" class="routine-action-btn routine-btn-blue" style="width:auto; min-width:unset; padding:9px 18px;">
+                            <i class="fab fa-google-drive"></i> এই রুটিন ডাউনলোড করুন (Google Drive)
                         </a>
                     </div>
                 </div>
