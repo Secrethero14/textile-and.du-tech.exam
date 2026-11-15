@@ -87,13 +87,13 @@ window.siteSettings = {
     telegram_link: "https://t.me/careforcandidates",
     telegram_helper: "https://t.me/Admissionhelper007",
     course_fee: "149",
-    course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
+    course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭",
     course_features: "অধ্যায় ভিত্তিক এক্সাম, পেপার ফাইনাল এক্সাম, মডেল টেস্ট এক্সাম, প্রশ্ন ব্যাংক সলভ এক্সাম, ভুল প্রশ্ন ব্যাংক থেকে নিজের ভুল প্রশ্নের এক্সাম, সলভ শীট, গুরুত্বপূর্ণ টপিক সাজেশন ও গাইডলাইন, টেলিগ্রাম পোল সলভ"
 };
 
 window.siteCourses = [
     {
-        name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স",
+        name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭",
         fee: "149",
         banner: "",
         features: [
@@ -462,14 +462,121 @@ function navigateBack() {
             }
         }
 
-        // 🔴 মোবাইলের ব্যাক বাটন ও পেমেন্ট মডাল ক্লোজ লজিক 🔴
-        window.addEventListener('popstate', function(e) {
-            const payModal = document.getElementById('paymentModal');
-            // যদি পেমেন্ট মডাল ওপেন থাকে, ব্যাক চাপলে শুধু মডাল বন্ধ হবে (পেজ বদলাবে না)
-            if (payModal && payModal.style.display === 'flex') {
-                payModal.style.display = 'none';
+        // 🔴 সর্বজনীন মোডাল, সুইট-অ্যালার্ট ও ড্রয়ার মোবাইল ব্যাক বাটন ম্যানেজার 🔴
+        let activeModalStack = [];
+        let ignorePopstateCount = 0;
+
+        function pushModalHistory(modalId) {
+            if (activeModalStack.length > 0) {
+                const currentTop = activeModalStack[activeModalStack.length - 1];
+                if (currentTop !== modalId) {
+                    if (currentTop === 'swal') {
+                        activeModalStack[activeModalStack.length - 1] = modalId;
+                        try { history.replaceState({ isModal: true, modalId: modalId }, ''); } catch(e) {}
+                        return;
+                    }
+                    activeModalStack.push(modalId);
+                    try { history.pushState({ isModal: true, modalId: modalId }, ''); } catch(e) {}
+                    return;
+                }
                 return;
             }
+            activeModalStack.push(modalId);
+            try { history.pushState({ isModal: true, modalId: modalId }, ''); } catch(e) {}
+        }
+
+        function dismissModalHistory(modalId) {
+            const idx = activeModalStack.lastIndexOf(modalId);
+            if (idx !== -1) {
+                activeModalStack.splice(idx, 1);
+                ignorePopstateCount++;
+                try { history.back(); } catch(e) {}
+            }
+        }
+
+        // SweetAlert2 (Swal.fire) হুক যাতে সব অ্যালার্ট/নোটিসে মোবাইল ব্যাক কাজ করে
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            const _origSwalFire = Swal.fire.bind(Swal);
+            Swal.fire = function(...args) {
+                const firstArg = args[0];
+                const isToast = firstArg && (firstArg.toast === true || (firstArg.timer && !firstArg.showConfirmButton && !firstArg.showCloseButton));
+                if (!isToast) {
+                    pushModalHistory('swal');
+                }
+                const promise = _origSwalFire(...args);
+                if (!isToast && promise && typeof promise.then === 'function') {
+                    promise.then(() => {
+                        const idx = activeModalStack.lastIndexOf('swal');
+                        if (idx !== -1) {
+                            dismissModalHistory('swal');
+                        }
+                    }).catch(() => {});
+                }
+                return promise;
+            };
+        }
+
+        window.addEventListener('popstate', function(e) {
+            if (ignorePopstateCount > 0) {
+                ignorePopstateCount--;
+                return;
+            }
+
+            if (activeModalStack.length > 0) {
+                const lastModal = activeModalStack.pop();
+                if (lastModal === 'swal') {
+                    if (typeof Swal !== 'undefined' && Swal.isVisible && Swal.isVisible()) Swal.close();
+                    return;
+                } else if (lastModal === 'paymentModal') {
+                    closePaymentModal(true);
+                    return;
+                } else if (lastModal === 'routineModal') {
+                    closeRoutineModal(true);
+                    return;
+                } else if (lastModal === 'guidelineModal') {
+                    closeGuidelineModal(true);
+                    return;
+                } else if (lastModal === 'authModal') {
+                    closeAuthModal(true);
+                    return;
+                } else if (lastModal === 'sideNavDrawer') {
+                    closeSideNav(true);
+                    return;
+                }
+            }
+
+            // সেফটি ফলব্যাক: যদি স্ট্যাক খালি থাকলেও DOM-এ কোনো পপআপ খোলা থাকে
+            if (typeof Swal !== 'undefined' && Swal.isVisible && Swal.isVisible()) {
+                Swal.close();
+                return;
+            }
+            const payModal = document.getElementById('paymentModal');
+            if (payModal && (payModal.style.display === 'flex' || payModal.style.display === 'block')) {
+                closePaymentModal(true);
+                return;
+            }
+            const routineModal = document.getElementById('routineModal');
+            if (routineModal && (routineModal.style.display === 'flex' || routineModal.style.display === 'block')) {
+                closeRoutineModal(true);
+                return;
+            }
+            const guidelineModal = document.getElementById('guidelineModal');
+            if (guidelineModal && (guidelineModal.style.display === 'flex' || guidelineModal.style.display === 'block')) {
+                closeGuidelineModal(true);
+                return;
+            }
+            const authModal = document.getElementById('authModal');
+            if (authModal && (authModal.style.display === 'flex' || authModal.style.display === 'block')) {
+                closeAuthModal(true);
+                return;
+            }
+            const drawer = document.getElementById('sideNavDrawer');
+            if (drawer && drawer.classList.contains('open')) {
+                closeSideNav(true);
+                return;
+            }
+
+            // কোনো পপআপ বা মোডাল খোলা না থাকলে স্বাভাবিক রাউট সিঙ্ক
             syncRouteFromHash();
         });
 
@@ -577,11 +684,15 @@ function navigateBack() {
         function logout() { isGuest = false; window.openPaymentAfterLogin = false; try { localStorage.removeItem('user_mistakes'); sessionStorage.clear(); } catch(e) {} document.getElementById('system-loader').style.display = 'flex'; auth.signOut().then(() => location.reload()); }
 
         function showLoginModal() { 
+            pushModalHistory('authModal');
             document.getElementById('authModal').style.display = 'flex'; 
             document.getElementById('authMsg').innerText = "";
             document.getElementById('authMsg').className = 'auth-message';
         }
-        function closeAuthModal() { document.getElementById('authModal').style.display = 'none'; }
+        function closeAuthModal(fromBack = false) { 
+            document.getElementById('authModal').style.display = 'none'; 
+            if (!fromBack) dismissModalHistory('authModal');
+        }
         
         function toggleAuthMode() {
             isRegistering = !isRegistering;
@@ -1275,6 +1386,7 @@ function navigateBack() {
         // ☰ SIDE DRAWER NAVIGATION LOGIC (RIGHT SIDE)
         // ==============================================
         function openSideNav() {
+            pushModalHistory('sideNavDrawer');
             const drawer = document.getElementById('sideNavDrawer');
             const overlay = document.getElementById('sideNavOverlay');
             if (drawer) drawer.classList.add('open');
@@ -1282,12 +1394,17 @@ function navigateBack() {
             document.body.style.overflow = 'hidden';
         }
 
-        function closeSideNav() {
+        function closeSideNav(fromBackOrSkip = false) {
             const drawer = document.getElementById('sideNavDrawer');
             const overlay = document.getElementById('sideNavOverlay');
             if (drawer) drawer.classList.remove('open');
             if (overlay) overlay.classList.remove('open');
             document.body.style.overflow = '';
+            if (!fromBackOrSkip) dismissModalHistory('sideNavDrawer');
+            else {
+                const idx = activeModalStack.lastIndexOf('sideNavDrawer');
+                if (idx !== -1) activeModalStack.splice(idx, 1);
+            }
         }
 
         document.addEventListener('keydown', function(e) {
@@ -1317,6 +1434,7 @@ function navigateBack() {
         window.openCurrentRoutineDrive = openCurrentRoutineDrive;
 
         async function openRoutineModal() {
+            pushModalHistory('routineModal');
             const modal = document.getElementById('routineModal');
             if (!modal) return;
 
@@ -1462,9 +1580,10 @@ function navigateBack() {
         }
 
 
-        function closeRoutineModal() {
+        function closeRoutineModal(fromBack = false) {
             const modal = document.getElementById('routineModal');
             if (modal) modal.style.display = 'none';
+            if (!fromBack) dismissModalHistory('routineModal');
         }
 
         // ==============================================
@@ -1474,6 +1593,7 @@ function navigateBack() {
         let currentGuidelineFilter = 'all';
 
         async function openGuidelineModal() {
+            pushModalHistory('guidelineModal');
             const modal = document.getElementById('guidelineModal');
             if (!modal) return;
 
@@ -1511,9 +1631,10 @@ function navigateBack() {
             }
         }
 
-        function closeGuidelineModal() {
+        function closeGuidelineModal(fromBack = false) {
             const modal = document.getElementById('guidelineModal');
             if (modal) modal.style.display = 'none';
+            if (!fromBack) dismissModalHistory('guidelineModal');
         }
 
         function filterGuidelinesBySubject(sub) {
@@ -1819,12 +1940,12 @@ function navigateBack() {
             window.activePaymentCourse = course;
 
             const fee = course ? (course.fee || (window.siteSettings && window.siteSettings.course_fee) || '100') : ((window.siteSettings && window.siteSettings.course_fee) || '100');
-            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন ফুল কোর্স');
+            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭');
             const bFee = toBanglaDigits(fee);
 
             // Update modal title (ফি শুধু শিরোনামে থাকবে)
             const mTitle = document.getElementById('modalPayTitle');
-            if (mTitle) mTitle.innerText = `কোর্সে ভর্তি ও পেমেন্ট (${bFee} টাকা)`;
+            if (mTitle) mTitle.innerText = `টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭ (${bFee} টাকা)`;
 
             // Keep currently selected method or default to bkash
             const sel = document.getElementById('payMethodSelect');
@@ -1834,13 +1955,14 @@ function navigateBack() {
             const payModal = document.getElementById('paymentModal');
             if (payModal) {
                 payModal.style.display = 'flex';
-                history.pushState({ modal: 'payment' }, '');
+                pushModalHistory('paymentModal');
             }
         }
 
-        function closePaymentModal() { 
+        function closePaymentModal(fromBack = false) { 
             const payModal = document.getElementById('paymentModal');
             if (payModal) payModal.style.display = 'none';
+            if (!fromBack) dismissModalHistory('paymentModal');
         }
 
         function toggleHelp() { document.getElementById('socialLinks').classList.toggle('show'); }
