@@ -87,13 +87,13 @@ window.siteSettings = {
     telegram_link: "https://t.me/careforcandidates",
     telegram_helper: "https://t.me/Admissionhelper007",
     course_fee: "149",
-    course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭",
+    course_title: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২৬-২৭",
     course_features: "অধ্যায় ভিত্তিক এক্সাম, পেপার ফাইনাল এক্সাম, মডেল টেস্ট এক্সাম, প্রশ্ন ব্যাংক সলভ এক্সাম, ভুল প্রশ্ন ব্যাংক থেকে নিজের ভুল প্রশ্নের এক্সাম, সলভ শীট, গুরুত্বপূর্ণ টপিক সাজেশন ও গাইডলাইন, টেলিগ্রাম পোল সলভ"
 };
 
 window.siteCourses = [
     {
-        name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭",
+        name: "টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২৬-২৭",
         fee: "149",
         banner: "",
         features: [
@@ -1940,12 +1940,12 @@ function navigateBack() {
             window.activePaymentCourse = course;
 
             const fee = course ? (course.fee || (window.siteSettings && window.siteSettings.course_fee) || '100') : ((window.siteSettings && window.siteSettings.course_fee) || '100');
-            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭');
+            const name = course ? (course.name || (window.siteSettings && window.siteSettings.course_title)) : (window.siteSettings ? window.siteSettings.course_title : 'টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২৬-২৭');
             const bFee = toBanglaDigits(fee);
 
             // Update modal title (ফি শুধু শিরোনামে থাকবে)
             const mTitle = document.getElementById('modalPayTitle');
-            if (mTitle) mTitle.innerText = `টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২০২৬-২৭ (${bFee} টাকা)`;
+            if (mTitle) mTitle.innerText = `টেক্সটাইল ইঞ্জিনিয়ারিং অ্যাডমিশন কোর্স ২৬-২৭ (${bFee} টাকা)`;
 
             // Keep currently selected method or default to bkash
             const sel = document.getElementById('payMethodSelect');
